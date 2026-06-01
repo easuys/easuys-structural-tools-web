@@ -162,7 +162,11 @@ export function initApp(documentRef = globalThis.document) {
     documentRef.querySelector("[data-save]").textContent = text.save;
     documentRef.querySelector("[data-load]").textContent = text.load;
     documentRef.querySelectorAll("[data-lang]").forEach((button) => {
-      button.setAttribute("aria-current", button.dataset.lang === state.lang ? "true" : "false");
+      if (button.dataset.lang === state.lang) {
+        button.setAttribute("aria-current", "page");
+      } else {
+        button.removeAttribute("aria-current");
+      }
     });
     input.value = formatJson(activeTool.sample);
   }
@@ -175,7 +179,8 @@ export function initApp(documentRef = globalThis.document) {
   });
 
   documentRef.querySelectorAll("[data-lang]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
       state.lang = button.dataset.lang;
       render();
     });

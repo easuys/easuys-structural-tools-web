@@ -7,11 +7,17 @@ import { API_BASE_URL, TOOL_CATALOG, formatJson } from "../app.js";
 test("frontend is configured for structural subdomain and private API", async () => {
   const cname = await readFile(new URL("../CNAME", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const css = await readFile(new URL("../styles.css", import.meta.url), "utf8");
 
   assert.equal(cname.trim(), "structural.easuys.com");
   assert.match(html, /EA Suys Structural Tools/);
   assert.match(html, /class="site-header"/);
   assert.match(html, /https:\/\/www\.easuys\.be\/images\/logo\.jpg/);
+  assert.match(html, /https:\/\/www\.easuys\.be\/favicon\.ico/);
+  assert.match(html, /<a href="#en" data-lang="en" aria-current="page">EN<\/a>/);
+  assert.match(css, /\.page\s*{\s*max-width: 1140px;/);
+  assert.match(css, /\.lang-switch a\s*{/);
+  assert.match(css, /\.tool-shell button\s*{/);
   assert.equal(
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"
