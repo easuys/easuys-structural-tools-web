@@ -40,6 +40,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_axial_screw",
     "ec5_steel_timber_screw_connection",
     "ec5_timber_contact_moment_joint",
+    "ec5_timber_timber_single_shear_connection",
     "ec6_beam_bearing",
     "ec6_inplane_shear_wall",
     "ec6_lateral_wall_resistance",
@@ -272,6 +273,64 @@ test("steel-timber screw form metadata builds nested spacing payload", () => {
   });
 });
 
+test("timber-timber single-shear form metadata builds nested spacing payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_timber_timber_single_shear_connection", {
+    t1_mm: "90",
+    t2_mm: "70",
+    n: "5",
+    timber_type_1: "Glulam",
+    timber_type_2: "LVL",
+    rho_k_1: "430",
+    rho_k_2: "500",
+    service_class_1: "1",
+    service_class_2: "2",
+    load_duration: "Medium-term",
+    fastener_type: "Bolt",
+    d_mm: "12",
+    f_uk_mpa: "500",
+    pre_drilled: true,
+    use_rope_effect: false,
+    f_ax_rk_n: "0",
+    "spacings.a1_mm": "100",
+    "spacings.a2_mm": "55",
+    "spacings.a3t_mm": "125",
+    "spacings.a3c_mm": "190",
+    "spacings.a4t_mm": "80",
+    "spacings.a4c_mm": "45",
+    alpha_deg: "30",
+    f_v_ed_kn: "18.5",
+  });
+
+  assert.deepEqual(payload, {
+    t1_mm: 90,
+    t2_mm: 70,
+    n: 5,
+    timber_type_1: "Glulam",
+    timber_type_2: "LVL",
+    rho_k_1: 430,
+    rho_k_2: 500,
+    service_class_1: 1,
+    service_class_2: 2,
+    load_duration: "Medium-term",
+    fastener_type: "Bolt",
+    d_mm: 12,
+    f_uk_mpa: 500,
+    pre_drilled: true,
+    use_rope_effect: false,
+    f_ax_rk_n: 0,
+    spacings: {
+      a1_mm: 100,
+      a2_mm: 55,
+      a3t_mm: 125,
+      a3c_mm: 190,
+      a4t_mm: 80,
+      a4c_mm: 45,
+    },
+    alpha_deg: 30,
+    f_v_ed_kn: 18.5,
+  });
+});
+
 test("all first-wave tools expose form metadata", () => {
   assert.deepEqual(
     Object.entries(TOOL_CATALOG).filter(([, tool]) => !tool.form).map(([toolId]) => toolId),
@@ -356,6 +415,27 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Utilization", value: "0.929" },
     { label: "Governing mode", value: "Interpolated" },
     { label: "Warnings", value: "None" },
+  ]);
+
+  const timberTimber = buildResultSummaryItems({
+    calculator_id: "ec5_timber_timber_single_shear_connection",
+    result: {
+      overall_status: "PASS",
+      r_d_kn: 18.07582291764916,
+      utilization_ratio: 0.8298377378633236,
+      n_effective: 4,
+      governing_mode: "Mode f (Two plastic hinges)",
+      warning_codes: ["ROPE_EFFECT_INCLUDED"],
+    },
+  }, "en");
+
+  assert.deepEqual(timberTimber, [
+    { label: "Status", value: "PASS" },
+    { label: "Rd", value: "18.076 kN" },
+    { label: "Utilization", value: "0.83" },
+    { label: "Effective n", value: "4" },
+    { label: "Governing mode", value: "Mode f (Two plastic hinges)" },
+    { label: "Warnings", value: "ROPE_EFFECT_INCLUDED" },
   ]);
 });
 
