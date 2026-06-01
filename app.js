@@ -1087,10 +1087,54 @@ const TEXT = {
   },
 };
 
+const RESULT_SUMMARY_FIELDS = {
+  ec6_masonry_strength: [
+    { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "fk_mpa"], label: { nl: "fk", en: "fk", fr: "fk" }, unit: "MPa" },
+    { path: ["result", "fd_mpa"], label: { nl: "fd", en: "fd", fr: "fd" }, unit: "MPa" },
+    { path: ["result", "check_passed"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
+  ],
+  ec6_beam_bearing: [
+    { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "contact_pressure_mpa"], label: { nl: "Contactspanning", en: "Contact pressure", fr: "Contrainte contact" }, unit: "MPa" },
+    { path: ["result", "design_bearing_resistance_mpa"], label: { nl: "Ontwerpweerstand", en: "Design resistance", fr: "Resistance de calcul" }, unit: "MPa" },
+    { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
+  ec6_inplane_shear_wall: [
+    { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "bending_utilization_ratio"], label: { nl: "Buiging", en: "Bending utilization", fr: "Utilisation flexion" } },
+    { path: ["result", "shear_utilization_ratio"], label: { nl: "Schuif", en: "Shear utilization", fr: "Utilisation cisaillement" } },
+    { path: ["result", "v_rd_kn"], label: { nl: "VRd", en: "VRd", fr: "VRd" }, unit: "kN" },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
+  ec6_lateral_wall_resistance: [
+    { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "axis_1_utilization_ratio"], label: { nl: "As 1", en: "Axis 1 utilization", fr: "Utilisation axe 1" } },
+    { path: ["result", "axis_2_utilization_ratio"], label: { nl: "As 2", en: "Axis 2 utilization", fr: "Utilisation axe 2" } },
+    { path: ["result", "bending_model"], label: { nl: "Model", en: "Model", fr: "Modele" } },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
+};
+
 const STORAGE_KEY = "ea-suys-structural-tools-input";
 
 export function formatJson(value) {
   return JSON.stringify(value, null, 2);
+}
+
+export function buildResultSummaryItems(response, lang = "en") {
+  const fields = RESULT_SUMMARY_FIELDS[response?.calculator_id] || [];
+  return fields
+    .map((field) => {
+      const value = valueAtPath(response, field.path);
+      if (value === undefined || value === null) return null;
+      return {
+        label: field.label[lang] || field.label.en,
+        value: formatSummaryValue(value, field),
+      };
+    })
+    .filter(Boolean);
 }
 
 export function buildPayloadFromFormValues(toolId, values) {
@@ -1111,6 +1155,7 @@ export function initApp(documentRef = globalThis.document) {
   const tabs = documentRef.querySelector("[data-tool-tabs]");
   const input = documentRef.querySelector("[data-json-input]");
   const output = documentRef.querySelector("[data-result-output]");
+  const resultSummary = documentRef.querySelector("[data-result-summary]");
   const form = documentRef.querySelector("[data-calculator-form]");
   const friendlyForm = documentRef.querySelector("[data-friendly-form]");
 
@@ -1128,6 +1173,7 @@ export function initApp(documentRef = globalThis.document) {
     documentRef.querySelector("[data-save]").textContent = text.save;
     documentRef.querySelector("[data-load]").textContent = text.load;
     renderFriendlyForm(friendlyForm, activeTool, state.lang, text.form);
+    renderResultSummary(resultSummary, null, state.lang);
     documentRef.querySelectorAll("[data-lang]").forEach((button) => {
       if (button.dataset.lang === state.lang) {
         button.setAttribute("aria-current", "page");
@@ -1164,6 +1210,7 @@ export function initApp(documentRef = globalThis.document) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     output.textContent = "";
+    renderResultSummary(resultSummary, null, state.lang);
     try {
       const payload = JSON.parse(input.value);
       const response = await fetch(`${API_BASE_URL}${TOOL_CATALOG[state.toolId].endpoint}`, {
@@ -1172,8 +1219,10 @@ export function initApp(documentRef = globalThis.document) {
         body: JSON.stringify(payload),
       });
       const result = await response.json();
+      renderResultSummary(resultSummary, result, state.lang);
       output.textContent = formatJson(result);
     } catch (error) {
+      renderResultSummary(resultSummary, null, state.lang);
       output.textContent = formatJson({ error: error.message });
     }
   });
@@ -1239,6 +1288,19 @@ function syncJsonFromFriendlyForm(toolId, container, input) {
   if (payload) input.value = formatJson(payload);
 }
 
+function renderResultSummary(container, response, lang) {
+  const items = buildResultSummaryItems(response, lang);
+  if (!items.length) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+  container.hidden = false;
+  container.innerHTML = `<dl>${items.map((item) =>
+    `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`
+  ).join("")}</dl>`;
+}
+
 function coerceFieldValue(field, rawValue) {
   if (field.value_type === "boolean") return rawValue === true || rawValue === "true" || rawValue === "on";
   if (field.value_type !== "number") return String(rawValue);
@@ -1264,6 +1326,19 @@ function setValueAtPath(target, path, value) {
 
 function cloneJson(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function formatSummaryValue(value, field) {
+  if (field.format === "status") return String(value).toUpperCase();
+  if (field.format === "check") return value ? "PASS" : "FAIL";
+  if (field.format === "warnings") return Array.isArray(value) && value.length ? value.join(", ") : "None";
+  if (typeof value === "number") return `${formatSummaryNumber(value)}${field.unit ? ` ${field.unit}` : ""}`;
+  return String(value);
+}
+
+function formatSummaryNumber(value) {
+  const decimals = Math.abs(value) >= 100 ? 1 : 3;
+  return value.toFixed(decimals).replace(/\.?0+$/, "");
 }
 
 if (typeof document !== "undefined") {

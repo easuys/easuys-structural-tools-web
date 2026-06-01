@@ -6,6 +6,7 @@ import {
   API_BASE_URL,
   TOOL_CATALOG,
   buildPayloadFromFormValues,
+  buildResultSummaryItems,
   formatJson,
 } from "../app.js";
 
@@ -21,11 +22,13 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /https:\/\/www\.easuys\.be\/favicon\.ico/);
   assert.match(html, /<a href="#en" data-lang="en" aria-current="page">EN<\/a>/);
   assert.match(html, /data-friendly-form/);
+  assert.match(html, /data-result-summary/);
   assert.match(css, /\.page\s*{\s*max-width: 1140px;/);
   assert.match(css, /\.lang-switch a\s*{/);
   assert.match(css, /\.tool-shell button\s*{/);
   assert.match(css, /\.friendly-fields\s*{/);
   assert.match(css, /\.friendly-field-checkbox\s*{/);
+  assert.match(css, /\.result-summary dl\s*{/);
   assert.equal(
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"
@@ -275,6 +278,45 @@ test("all first-wave tools expose form metadata", () => {
     []
   );
   assert.equal(buildPayloadFromFormValues("unknown_tool", {}), null);
+});
+
+test("masonry result summaries format returned API fields only", () => {
+  const masonry = buildResultSummaryItems({
+    calculator_id: "ec6_masonry_strength",
+    status: "ok",
+    result: {
+      fk_mpa: 7.715799694536624,
+      fd_mpa: 4.538705702668603,
+      check_passed: true,
+    },
+  }, "en");
+
+  assert.deepEqual(masonry, [
+    { label: "Status", value: "OK" },
+    { label: "fk", value: "7.716 MPa" },
+    { label: "fd", value: "4.539 MPa" },
+    { label: "Check", value: "PASS" },
+  ]);
+
+  const lateral = buildResultSummaryItems({
+    calculator_id: "ec6_lateral_wall_resistance",
+    result: {
+      overall_status: "PASS",
+      axis_1_utilization_ratio: 0.2223157894736842,
+      axis_2_utilization_ratio: 0.6034285714285714,
+      bending_model: "two_way",
+      warning_codes: ["ALPHA2_NEAREST_TABLE_VALUE"],
+    },
+  }, "en");
+
+  assert.deepEqual(lateral, [
+    { label: "Status", value: "PASS" },
+    { label: "Axis 1 utilization", value: "0.222" },
+    { label: "Axis 2 utilization", value: "0.603" },
+    { label: "Model", value: "two_way" },
+    { label: "Warnings", value: "ALPHA2_NEAREST_TABLE_VALUE" },
+  ]);
+  assert.deepEqual(buildResultSummaryItems({ calculator_id: "ec5_axial_screw", result: {} }, "en"), []);
 });
 
 test("formatJson is stable", () => {

@@ -579,6 +579,41 @@ a:hover {
     margin: 0 0 12px;
 }
 
+.result-summary[hidden] {
+    display: none;
+}
+
+.result-summary {
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+}
+
+.result-summary dl {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+}
+
+.result-summary div {
+    min-width: 0;
+}
+
+.result-summary dt {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.result-summary dd {
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+}
+
 .result-panel pre {
     background: #101820;
     color: #f2f5f7;
@@ -616,5 +651,9 @@ a:hover {
     .calculator textarea,
     .result-panel pre {
         min-height: 22rem;
+    }
+
+    .result-summary dl {
+        grid-template-columns: 1fr;
     }
 }
