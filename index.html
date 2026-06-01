@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EA Suys Structural Tools</title>
+  <meta name="description" content="Indicative EC5 and EC6 structural calculation tools by EA Suys.">
+  <meta name="robots" content="index, follow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="https://www.easuys.be/index-en.html">
+      <span class="brand-mark">EA</span>
+      <span>
+        <strong>EA Suys</strong>
+        <small>Structural Tools</small>
+      </span>
+    </a>
+    <nav class="language-tabs" aria-label="Language">
+      <button type="button" data-lang="nl">NL</button>
+      <button type="button" data-lang="en" aria-current="true">EN</button>
+      <button type="button" data-lang="fr">FR</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <aside class="tool-nav" aria-label="Calculators" data-tool-tabs></aside>
+    <section class="workspace">
+      <header class="workspace-header">
+        <h1 data-tool-title>EA Suys Structural Tools</h1>
+        <p data-tool-status>Indicative calculation record.</p>
+      </header>
+
+      <form class="calculator" data-calculator-form>
+        <label for="json-input" data-input-label>Input JSON</label>
+        <textarea id="json-input" data-json-input spellcheck="false"></textarea>
+        <div class="actions">
+          <button type="submit" class="primary" data-calculate>Calculate</button>
+          <button type="button" data-save>Save</button>
+          <button type="button" data-load>Load</button>
+        </div>
+      </form>
+
+      <section class="result-panel" aria-live="polite">
+        <h2 data-result-heading>Result</h2>
+        <pre data-result-output>{}</pre>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
