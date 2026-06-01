@@ -25,6 +25,7 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(css, /\.lang-switch a\s*{/);
   assert.match(css, /\.tool-shell button\s*{/);
   assert.match(css, /\.friendly-fields\s*{/);
+  assert.match(css, /\.friendly-field-checkbox\s*{/);
   assert.equal(
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"
@@ -63,6 +64,30 @@ test("masonry strength form metadata builds the API payload", () => {
     fb_mpa: 12.5,
     fm_mpa: 10,
     gamma_m: 2,
+  });
+});
+
+test("beam bearing form metadata builds numeric and boolean API payload", () => {
+  const payload = buildPayloadFromFormValues("ec6_beam_bearing", {
+    fd_mpa: "2.8",
+    unit_group: "group_1",
+    n_edc_kn: "95",
+    bearing_length_mm: "180",
+    bearing_width_mm: "140",
+    edge_distance_a1_mm: "90",
+    wall_height_below_hc_mm: "450",
+    top_of_wall: true,
+  });
+
+  assert.deepEqual(payload, {
+    fd_mpa: 2.8,
+    unit_group: "group_1",
+    n_edc_kn: 95,
+    bearing_length_mm: 180,
+    bearing_width_mm: 140,
+    edge_distance_a1_mm: 90,
+    wall_height_below_hc_mm: 450,
+    top_of_wall: true,
   });
 });
 

@@ -541,10 +541,19 @@ a:hover {
     width: 100%;
 }
 
-.friendly-field > span:last-child:not(:first-child) {
-    color: var(--muted);
-    font-size: 0.78rem;
-    font-weight: 500;
+.friendly-field input[type="checkbox"] {
+    height: 18px;
+    min-height: 18px;
+    width: 18px;
+}
+
+.friendly-field-checkbox {
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    grid-template-columns: 18px 1fr;
+    min-height: 38px;
+    padding: 8px 10px;
 }
 
 .calculator textarea,

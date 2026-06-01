@@ -163,6 +163,71 @@ export const TOOL_CATALOG = {
       wall_height_below_hc_mm: 600,
       top_of_wall: false,
     },
+    form: {
+      fields: [
+        {
+          name: "fd_mpa",
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "fd", en: "fd", fr: "fd" },
+          unit: "MPa",
+        },
+        {
+          name: "unit_group",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Groep", en: "Group", fr: "Groupe" },
+          options: ["group_1", "group_2", "group_3", "group_4"],
+        },
+        {
+          name: "n_edc_kn",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "NEdc", en: "NEdc", fr: "NEdc" },
+          unit: "kN",
+        },
+        {
+          name: "bearing_length_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Opleglengte", en: "Bearing length", fr: "Longueur d'appui" },
+          unit: "mm",
+        },
+        {
+          name: "bearing_width_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Oplegbreedte", en: "Bearing width", fr: "Largeur d'appui" },
+          unit: "mm",
+        },
+        {
+          name: "edge_distance_a1_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Randafstand a1", en: "Edge distance a1", fr: "Distance au bord a1" },
+          unit: "mm",
+        },
+        {
+          name: "wall_height_below_hc_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Wandhoogte hc", en: "Wall height hc", fr: "Hauteur du mur hc" },
+          unit: "mm",
+        },
+        {
+          name: "top_of_wall",
+          value_type: "boolean",
+          control: "checkbox",
+          label: { nl: "Bovenaan wand", en: "Top of wall", fr: "Haut du mur" },
+        },
+      ],
+    },
   },
   ec6_inplane_shear_wall: {
     endpoint: "/calculate/ec6/inplane-shear-wall",
@@ -365,26 +430,30 @@ function renderFriendlyForm(container, tool, lang, heading) {
 }
 
 function renderFriendlyField(field, value, lang) {
-  const label = field.label[lang] || field.label.en;
-  const unit = field.unit ? `<span>${escapeHtml(field.unit)}</span>` : "";
+  const baseLabel = field.label[lang] || field.label.en;
+  const label = field.unit ? `${baseLabel} (${field.unit})` : baseLabel;
+  if (field.control === "checkbox") {
+    return `<label class="friendly-field friendly-field-checkbox"><input name="${escapeHtml(field.name)}" type="checkbox" ${value ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`;
+  }
   const control = field.control === "select"
     ? `<select name="${escapeHtml(field.name)}">${field.options.map((option) =>
       `<option value="${escapeHtml(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`
     ).join("")}</select>`
     : `<input name="${escapeHtml(field.name)}" type="number" step="${escapeHtml(field.step || "any")}" value="${escapeHtml(value)}">`;
-  return `<label class="friendly-field"><span>${escapeHtml(label)}</span>${control}${unit}</label>`;
+  return `<label class="friendly-field"><span>${escapeHtml(label)}</span>${control}</label>`;
 }
 
 function syncJsonFromFriendlyForm(toolId, container, input) {
   const values = {};
   container.querySelectorAll("[name]").forEach((control) => {
-    values[control.name] = control.value;
+    values[control.name] = control.type === "checkbox" ? control.checked : control.value;
   });
   const payload = buildPayloadFromFormValues(toolId, values);
   if (payload) input.value = formatJson(payload);
 }
 
 function coerceFieldValue(field, rawValue) {
+  if (field.value_type === "boolean") return rawValue === true || rawValue === "true" || rawValue === "on";
   if (field.value_type !== "number") return String(rawValue);
   if (rawValue === "") return "";
   const value = Number(rawValue);
