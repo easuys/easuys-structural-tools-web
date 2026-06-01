@@ -48,6 +48,27 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
   assert.doesNotMatch(app, /fk = K/i);
 });
 
+test("contact moment joint form metadata preserves fixed screw rows", () => {
+  const payload = buildPayloadFromFormValues("ec5_timber_contact_moment_joint", {
+    wood_grade: "C24",
+    service_class: "1",
+    load_duration: "Permanent",
+    "interface.width_mm": "180",
+    "actions.m_ed_kNm": "5.5",
+    "screws.0.y_mm": "-130",
+    "screws.7.y_mm": "130",
+  });
+
+  assert.equal(payload.wood_grade, "C24");
+  assert.equal(payload.service_class, 1);
+  assert.equal(payload.load_duration, "Permanent");
+  assert.deepEqual(payload.interface, { width_mm: 180, height_mm: 360 });
+  assert.deepEqual(payload.actions, { n_ed_kN: 0, m_ed_kNm: 5.5 });
+  assert.deepEqual(payload.screws[0], { id: "S1", y_mm: -130 });
+  assert.deepEqual(payload.screws[7], { id: "S8", y_mm: 130 });
+  assert.equal(payload.screw_defaults.d, 8);
+});
+
 test("masonry strength form metadata builds the API payload", () => {
   const payload = buildPayloadFromFormValues("ec6_masonry_strength", {
     unit_type: "calcium_silicate",
@@ -248,8 +269,12 @@ test("steel-timber screw form metadata builds nested spacing payload", () => {
   });
 });
 
-test("tools without form metadata keep JSON-only mode", () => {
-  assert.equal(buildPayloadFromFormValues("ec5_timber_contact_moment_joint", {}), null);
+test("all first-wave tools expose form metadata", () => {
+  assert.deepEqual(
+    Object.entries(TOOL_CATALOG).filter(([, tool]) => !tool.form).map(([toolId]) => toolId),
+    []
+  );
+  assert.equal(buildPayloadFromFormValues("unknown_tool", {}), null);
 });
 
 test("formatJson is stable", () => {

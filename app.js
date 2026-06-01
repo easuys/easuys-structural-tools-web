@@ -11,7 +11,7 @@ export const TOOL_CATALOG = {
     sample: {
       wood_grade: "GL24h",
       service_class: 2,
-      load_duration: "Short",
+      load_duration: "Short-term",
       interface: { width_mm: 160, height_mm: 360 },
       contact: {
         member_1_angle_deg: 90,
@@ -41,6 +41,263 @@ export const TOOL_CATALOG = {
         { id: "S6", y_mm: 60 },
         { id: "S7", y_mm: 120 },
         { id: "S8", y_mm: 120 },
+      ],
+    },
+    form: {
+      fields: [
+        {
+          name: "wood_grade",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" },
+          options: ["C24", "C27", "GL24h", "GL28h", "binderholz_bbs", "steico_lvl_r"],
+        },
+        {
+          name: "service_class",
+          value_type: "number",
+          control: "select",
+          label: { nl: "Serviceklasse", en: "Service class", fr: "Classe de service" },
+          options: [1, 2, 3],
+        },
+        {
+          name: "load_duration",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Belastingsduur", en: "Load duration", fr: "Duree de charge" },
+          options: ["Permanent", "Long-term", "Medium-term", "Short-term", "Instantaneous"],
+        },
+        {
+          name: "interface.width_mm",
+          path: ["interface", "width_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Contactbreedte", en: "Interface width", fr: "Largeur interface" },
+          unit: "mm",
+        },
+        {
+          name: "interface.height_mm",
+          path: ["interface", "height_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Contacthoogte", en: "Interface height", fr: "Hauteur interface" },
+          unit: "mm",
+        },
+        {
+          name: "contact.member_1_angle_deg",
+          path: ["contact", "member_1_angle_deg"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Hoek lid 1", en: "Member 1 angle", fr: "Angle element 1" },
+          unit: "deg",
+        },
+        {
+          name: "contact.member_2_angle_deg",
+          path: ["contact", "member_2_angle_deg"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Hoek lid 2", en: "Member 2 angle", fr: "Angle element 2" },
+          unit: "deg",
+        },
+        {
+          name: "contact.kc90_member_1",
+          path: ["contact", "kc90_member_1"],
+          value_type: "number",
+          control: "number",
+          step: "0.05",
+          label: { nl: "kc90 lid 1", en: "kc90 member 1", fr: "kc90 element 1" },
+        },
+        {
+          name: "contact.kc90_member_2",
+          path: ["contact", "kc90_member_2"],
+          value_type: "number",
+          control: "number",
+          step: "0.05",
+          label: { nl: "kc90 lid 2", en: "kc90 member 2", fr: "kc90 element 2" },
+        },
+        {
+          name: "actions.n_ed_kN",
+          path: ["actions", "n_ed_kN"],
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "NEd", en: "NEd", fr: "NEd" },
+          unit: "kN",
+        },
+        {
+          name: "actions.m_ed_kNm",
+          path: ["actions", "m_ed_kNm"],
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "MEd", en: "MEd", fr: "MEd" },
+          unit: "kNm",
+        },
+        {
+          name: "screw_defaults.d",
+          path: ["screw_defaults", "d"],
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "Diameter d", en: "Diameter d", fr: "Diametre d" },
+          unit: "mm",
+        },
+        {
+          name: "screw_defaults.d1",
+          path: ["screw_defaults", "d1"],
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "Kerndiameter d1", en: "Root diameter d1", fr: "Diametre noyau d1" },
+          unit: "mm",
+        },
+        {
+          name: "screw_defaults.dh",
+          path: ["screw_defaults", "dh"],
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "Kopdiameter dh", en: "Head diameter dh", fr: "Diametre tete dh" },
+          unit: "mm",
+        },
+        {
+          name: "screw_defaults.lef",
+          path: ["screw_defaults", "lef"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Effectieve lengte lef", en: "Effective length lef", fr: "Longueur efficace lef" },
+          unit: "mm",
+        },
+        {
+          name: "screw_defaults.alpha_deg",
+          path: ["screw_defaults", "alpha_deg"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Schroefhoek alpha", en: "Screw angle alpha", fr: "Angle de vis alpha" },
+          unit: "deg",
+        },
+        {
+          name: "screw_defaults.rho_a",
+          path: ["screw_defaults", "rho_a"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "rho_a", en: "rho_a", fr: "rho_a" },
+          unit: "kg/m3",
+        },
+        {
+          name: "screw_defaults.f_ax_k",
+          path: ["screw_defaults", "f_ax_k"],
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "fax,k", en: "fax,k", fr: "fax,k" },
+          unit: "N/mm2",
+        },
+        {
+          name: "screw_defaults.f_head_k",
+          path: ["screw_defaults", "f_head_k"],
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "fhead,k", en: "fhead,k", fr: "fhead,k" },
+          unit: "N/mm2",
+        },
+        {
+          name: "screw_defaults.f_tens_k",
+          path: ["screw_defaults", "f_tens_k"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "ftens,k", en: "ftens,k", fr: "ftens,k" },
+          unit: "N",
+        },
+        {
+          name: "screw_defaults.axial_stiffness_n_per_mm",
+          path: ["screw_defaults", "axial_stiffness_n_per_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Axiale stijfheid", en: "Axial stiffness", fr: "Raideur axiale" },
+          unit: "N/mm",
+        },
+        {
+          name: "screws.0.y_mm",
+          path: ["screws", 0, "y_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "S1 y", en: "S1 y", fr: "S1 y" },
+          unit: "mm",
+        },
+        {
+          name: "screws.1.y_mm",
+          path: ["screws", 1, "y_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "S2 y", en: "S2 y", fr: "S2 y" },
+          unit: "mm",
+        },
+        {
+          name: "screws.2.y_mm",
+          path: ["screws", 2, "y_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "S3 y", en: "S3 y", fr: "S3 y" },
+          unit: "mm",
+        },
+        {
+          name: "screws.3.y_mm",
+          path: ["screws", 3, "y_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "S4 y", en: "S4 y", fr: "S4 y" },
+          unit: "mm",
+        },
+        {
+          name: "screws.4.y_mm",
+          path: ["screws", 4, "y_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "S5 y", en: "S5 y", fr: "S5 y" },
+          unit: "mm",
+        },
+        {
+          name: "screws.5.y_mm",
+          path: ["screws", 5, "y_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "S6 y", en: "S6 y", fr: "S6 y" },
+          unit: "mm",
+        },
+        {
+          name: "screws.6.y_mm",
+          path: ["screws", 6, "y_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "S7 y", en: "S7 y", fr: "S7 y" },
+          unit: "mm",
+        },
+        {
+          name: "screws.7.y_mm",
+          path: ["screws", 7, "y_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "S8 y", en: "S8 y", fr: "S8 y" },
+          unit: "mm",
+        },
       ],
     },
   },
@@ -839,7 +1096,7 @@ export function formatJson(value) {
 export function buildPayloadFromFormValues(toolId, values) {
   const tool = TOOL_CATALOG[toolId];
   if (!tool?.form) return null;
-  const payload = {};
+  const payload = cloneJson(tool.sample);
   for (const field of tool.form.fields) {
     const path = field.path || [field.name];
     const rawValue = values[field.name] ?? valueAtPath(tool.sample, path) ?? "";
@@ -998,10 +1255,15 @@ function setValueAtPath(target, path, value) {
   let cursor = target;
   for (let index = 0; index < path.length - 1; index += 1) {
     const key = path[index];
-    cursor[key] = cursor[key] || {};
+    const nextKey = path[index + 1];
+    cursor[key] = cursor[key] || (typeof nextKey === "number" ? [] : {});
     cursor = cursor[key];
   }
   cursor[path[path.length - 1]] = value;
+}
+
+function cloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 if (typeof document !== "undefined") {
