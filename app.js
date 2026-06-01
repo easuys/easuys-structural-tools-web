@@ -126,6 +126,25 @@ export const TOOL_CATALOG = {
       gamma_m: 2,
     },
   },
+  ec6_lateral_wall_resistance: {
+    endpoint: "/calculate/ec6/lateral-wall-resistance",
+    title: {
+      nl: "EC6 metselwerkwand uit het vlak",
+      en: "EC6 lateral masonry wall resistance",
+      fr: "EC6 mur en maconnerie hors plan",
+    },
+    sample: {
+      height_m: 3,
+      length_m: 4,
+      thickness_mm: 140,
+      support_case: "four_sides",
+      material_type: "clay_abs_lt_7",
+      mortar_class: "M6_M4",
+      n_ed_line_kn_per_m: 60,
+      w_ed_kn_per_m2: 1.2,
+      gamma_m: 2,
+    },
+  },
 };
 
 const TEXT = {
