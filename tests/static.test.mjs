@@ -92,6 +92,62 @@ test("beam bearing form metadata builds numeric and boolean API payload", () => 
   });
 });
 
+test("in-plane shear wall form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec6_inplane_shear_wall", {
+    length_mm: "1800",
+    thickness_mm: "190",
+    material_type: "calcium_silicate",
+    fb_mpa: "20",
+    fm_mpa: "12",
+    mortar_class: "M10-M20",
+    mortar_type: "general_purpose",
+    n_ed_kn: "150",
+    v_ed_kn: "45",
+    m_ed_knm: "22.5",
+    gamma_m: "2",
+  });
+
+  assert.deepEqual(payload, {
+    length_mm: 1800,
+    thickness_mm: 190,
+    material_type: "calcium_silicate",
+    fb_mpa: 20,
+    fm_mpa: 12,
+    mortar_class: "M10-M20",
+    mortar_type: "general_purpose",
+    n_ed_kn: 150,
+    v_ed_kn: 45,
+    m_ed_knm: 22.5,
+    gamma_m: 2,
+  });
+});
+
+test("lateral wall resistance form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec6_lateral_wall_resistance", {
+    height_m: "3.2",
+    length_m: "5",
+    thickness_mm: "190",
+    support_case: "top_bottom",
+    material_type: "concrete_aac_fb_ge_5",
+    mortar_class: "M12",
+    n_ed_line_kn_per_m: "75.5",
+    w_ed_kn_per_m2: "1.8",
+    gamma_m: "2.2",
+  });
+
+  assert.deepEqual(payload, {
+    height_m: 3.2,
+    length_m: 5,
+    thickness_mm: 190,
+    support_case: "top_bottom",
+    material_type: "concrete_aac_fb_ge_5",
+    mortar_class: "M12",
+    n_ed_line_kn_per_m: 75.5,
+    w_ed_kn_per_m2: 1.8,
+    gamma_m: 2.2,
+  });
+});
+
 test("steel-timber screw form metadata builds nested spacing payload", () => {
   const payload = buildPayloadFromFormValues("ec5_steel_timber_screw_connection", {
     config_type: "central",
