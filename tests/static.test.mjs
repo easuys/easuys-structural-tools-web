@@ -8,7 +8,7 @@ test("frontend is configured for structural subdomain and private API", async ()
   const cname = await readFile(new URL("../CNAME", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
-  assert.equal(cname.trim(), "structural.easuys.be");
+  assert.equal(cname.trim(), "structural.easuys.com");
   assert.match(html, /EA Suys Structural Tools/);
   assert.match(html, /class="site-header"/);
   assert.match(html, /https:\/\/www\.easuys\.be\/images\/logo\.jpg/);
