@@ -316,7 +316,47 @@ test("masonry result summaries format returned API fields only", () => {
     { label: "Model", value: "two_way" },
     { label: "Warnings", value: "ALPHA2_NEAREST_TABLE_VALUE" },
   ]);
-  assert.deepEqual(buildResultSummaryItems({ calculator_id: "ec5_axial_screw", result: {} }, "en"), []);
+  assert.deepEqual(buildResultSummaryItems({ calculator_id: "unknown", result: {} }, "en"), []);
+});
+
+test("ec5 result summaries format returned API fields only", () => {
+  const axial = buildResultSummaryItems({
+    calculator_id: "ec5_axial_screw",
+    status: "review",
+    result: {
+      design_capacity_n: 4819.942799650245,
+      utilization_ratio: 5.186783544778602,
+      governing_failure_mode: "Head pull-through",
+      check_passed: false,
+    },
+  }, "en");
+
+  assert.deepEqual(axial, [
+    { label: "Status", value: "REVIEW" },
+    { label: "Design capacity", value: "4819.9 N" },
+    { label: "Utilization", value: "5.187" },
+    { label: "Governing mode", value: "Head pull-through" },
+    { label: "Check", value: "FAIL" },
+  ]);
+
+  const steelTimber = buildResultSummaryItems({
+    calculator_id: "ec5_steel_timber_screw_connection",
+    result: {
+      overall_status: "PASS",
+      r_d_kn: 21.529478806244654,
+      utilization_ratio: 0.9289588559012851,
+      governing_mode: "Interpolated",
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(steelTimber, [
+    { label: "Status", value: "PASS" },
+    { label: "Rd", value: "21.529 kN" },
+    { label: "Utilization", value: "0.929" },
+    { label: "Governing mode", value: "Interpolated" },
+    { label: "Warnings", value: "None" },
+  ]);
 });
 
 test("formatJson is stable", () => {

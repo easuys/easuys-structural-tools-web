@@ -1088,6 +1088,26 @@ const TEXT = {
 };
 
 const RESULT_SUMMARY_FIELDS = {
+  ec5_timber_contact_moment_joint: [
+    { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "m_rd_kNm"], label: { nl: "MRd", en: "MRd", fr: "MRd" }, unit: "kNm" },
+    { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+    { path: ["result", "check_passed"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
+  ],
+  ec5_axial_screw: [
+    { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "design_capacity_n"], label: { nl: "Ontwerpcapaciteit", en: "Design capacity", fr: "Capacite de calcul" }, unit: "N" },
+    { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+    { path: ["result", "governing_failure_mode"], label: { nl: "Maatgevend", en: "Governing mode", fr: "Mode determinant" } },
+    { path: ["result", "check_passed"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
+  ],
+  ec5_steel_timber_screw_connection: [
+    { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "r_d_kn"], label: { nl: "Rd", en: "Rd", fr: "Rd" }, unit: "kN" },
+    { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+    { path: ["result", "governing_mode"], label: { nl: "Maatgevend", en: "Governing mode", fr: "Mode determinant" } },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
   ec6_masonry_strength: [
     { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
     { path: ["result", "fk_mpa"], label: { nl: "fk", en: "fk", fr: "fk" }, unit: "MPa" },
