@@ -10,6 +10,8 @@ test("frontend is configured for structural subdomain and private API", async ()
 
   assert.equal(cname.trim(), "structural.easuys.be");
   assert.match(html, /EA Suys Structural Tools/);
+  assert.match(html, /class="site-header"/);
+  assert.match(html, /https:\/\/www\.easuys\.be\/images\/logo\.jpg/);
   assert.equal(
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"
