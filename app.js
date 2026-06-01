@@ -71,6 +71,196 @@ export const TOOL_CATALOG = {
       spacings: { a1: 70, a2: 50, a1_cg: 90, a2_cg: 40 },
     },
   },
+  ec5_steel_timber_screw_connection: {
+    endpoint: "/calculate/ec5/steel-timber-screw-connection",
+    title: {
+      nl: "EC5 staal-hout schroefverbinding",
+      en: "EC5 steel-to-timber screw connection",
+      fr: "EC5 assemblage acier-bois par vis",
+    },
+    sample: {
+      config_type: "single",
+      t_timber_1_mm: 80,
+      t_timber_2_mm: 0,
+      t_plate_mm: 6,
+      n: 4,
+      timber_type: "Softwood",
+      rho_k: 420,
+      service_class: 2,
+      load_duration: "Short-term",
+      d_mm: 8,
+      d_root_mm: 5.6,
+      l_penetration_mm: 80,
+      f_uk_mpa: 600,
+      m_y_rk_nmm: 0,
+      spacings: { a1_mm: 90, a2_mm: 50, a3t_mm: 120, a4t_mm: 75 },
+      alpha_deg: 45,
+      f_d_kn: 20,
+    },
+    form: {
+      fields: [
+        {
+          name: "config_type",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Configuratie", en: "Configuration", fr: "Configuration" },
+          options: ["single", "central"],
+        },
+        {
+          name: "t_timber_1_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Houtdikte t1", en: "Timber thickness t1", fr: "Epaisseur bois t1" },
+          unit: "mm",
+        },
+        {
+          name: "t_timber_2_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Houtdikte t2", en: "Timber thickness t2", fr: "Epaisseur bois t2" },
+          unit: "mm",
+        },
+        {
+          name: "t_plate_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Plaatdikte", en: "Plate thickness", fr: "Epaisseur plaque" },
+          unit: "mm",
+        },
+        {
+          name: "n",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Aantal schroeven", en: "Number of screws", fr: "Nombre de vis" },
+        },
+        {
+          name: "timber_type",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Houttype", en: "Timber type", fr: "Type de bois" },
+          options: ["Softwood", "LVL", "Hardwood"],
+        },
+        {
+          name: "rho_k",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "rho_k", en: "rho_k", fr: "rho_k" },
+          unit: "kg/m3",
+        },
+        {
+          name: "service_class",
+          value_type: "number",
+          control: "select",
+          label: { nl: "Serviceklasse", en: "Service class", fr: "Classe de service" },
+          options: [1, 2, 3],
+        },
+        {
+          name: "load_duration",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Belastingsduur", en: "Load duration", fr: "Duree de charge" },
+          options: ["Permanent", "Long-term", "Medium-term", "Short-term", "Instantaneous"],
+        },
+        {
+          name: "d_mm",
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "Diameter d", en: "Diameter d", fr: "Diametre d" },
+          unit: "mm",
+        },
+        {
+          name: "d_root_mm",
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "Kerndiameter", en: "Root diameter", fr: "Diametre noyau" },
+          unit: "mm",
+        },
+        {
+          name: "l_penetration_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Indringlengte", en: "Penetration length", fr: "Longueur penetree" },
+          unit: "mm",
+        },
+        {
+          name: "f_uk_mpa",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "f_uk", en: "f_uk", fr: "f_uk" },
+          unit: "N/mm2",
+        },
+        {
+          name: "m_y_rk_nmm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "My,Rk", en: "My,Rk", fr: "My,Rk" },
+          unit: "Nmm",
+        },
+        {
+          name: "spacings.a1_mm",
+          path: ["spacings", "a1_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "a1", en: "a1", fr: "a1" },
+          unit: "mm",
+        },
+        {
+          name: "spacings.a2_mm",
+          path: ["spacings", "a2_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "a2", en: "a2", fr: "a2" },
+          unit: "mm",
+        },
+        {
+          name: "spacings.a3t_mm",
+          path: ["spacings", "a3t_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "a3,t", en: "a3,t", fr: "a3,t" },
+          unit: "mm",
+        },
+        {
+          name: "spacings.a4t_mm",
+          path: ["spacings", "a4t_mm"],
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "a4,t", en: "a4,t", fr: "a4,t" },
+          unit: "mm",
+        },
+        {
+          name: "alpha_deg",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Hoek alpha", en: "Angle alpha", fr: "Angle alpha" },
+          unit: "deg",
+        },
+        {
+          name: "f_d_kn",
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "Fd", en: "Fd", fr: "Fd" },
+          unit: "kN",
+        },
+      ],
+    },
+  },
   ec6_masonry_strength: {
     endpoint: "/calculate/ec6/masonry-strength",
     title: {
@@ -312,8 +502,9 @@ export function buildPayloadFromFormValues(toolId, values) {
   if (!tool?.form) return null;
   const payload = {};
   for (const field of tool.form.fields) {
-    const rawValue = values[field.name] ?? tool.sample[field.name] ?? "";
-    payload[field.name] = coerceFieldValue(field, rawValue);
+    const path = field.path || [field.name];
+    const rawValue = values[field.name] ?? valueAtPath(tool.sample, path) ?? "";
+    setValueAtPath(payload, path, coerceFieldValue(field, rawValue));
   }
   return payload;
 }
@@ -424,7 +615,7 @@ function renderFriendlyForm(container, tool, lang, heading) {
   container.innerHTML = [
     `<div class="friendly-form-heading">${escapeHtml(heading)}</div>`,
     `<div class="friendly-fields">${tool.form.fields.map((field) =>
-      renderFriendlyField(field, tool.sample[field.name], lang)
+      renderFriendlyField(field, valueAtPath(tool.sample, field.path || [field.name]), lang)
     ).join("")}</div>`,
   ].join("");
 }
@@ -458,6 +649,20 @@ function coerceFieldValue(field, rawValue) {
   if (rawValue === "") return "";
   const value = Number(rawValue);
   return Number.isFinite(value) ? value : rawValue;
+}
+
+function valueAtPath(source, path) {
+  return path.reduce((value, key) => value?.[key], source);
+}
+
+function setValueAtPath(target, path, value) {
+  let cursor = target;
+  for (let index = 0; index < path.length - 1; index += 1) {
+    const key = path[index];
+    cursor[key] = cursor[key] || {};
+    cursor = cursor[key];
+  }
+  cursor[path[path.length - 1]] = value;
 }
 
 if (typeof document !== "undefined") {

@@ -35,6 +35,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "ec5_axial_screw",
+    "ec5_steel_timber_screw_connection",
     "ec5_timber_contact_moment_joint",
     "ec6_beam_bearing",
     "ec6_inplane_shear_wall",
@@ -88,6 +89,56 @@ test("beam bearing form metadata builds numeric and boolean API payload", () => 
     edge_distance_a1_mm: 90,
     wall_height_below_hc_mm: 450,
     top_of_wall: true,
+  });
+});
+
+test("steel-timber screw form metadata builds nested spacing payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_steel_timber_screw_connection", {
+    config_type: "central",
+    t_timber_1_mm: "50",
+    t_timber_2_mm: "60",
+    t_plate_mm: "6",
+    n: "2",
+    timber_type: "Hardwood",
+    rho_k: "500",
+    service_class: "3",
+    load_duration: "Permanent",
+    d_mm: "8",
+    d_root_mm: "5.6",
+    l_penetration_mm: "60",
+    f_uk_mpa: "400",
+    m_y_rk_nmm: "0",
+    "spacings.a1_mm": "40",
+    "spacings.a2_mm": "30",
+    "spacings.a3t_mm": "60",
+    "spacings.a4t_mm": "30",
+    alpha_deg: "90",
+    f_d_kn: "80",
+  });
+
+  assert.deepEqual(payload, {
+    config_type: "central",
+    t_timber_1_mm: 50,
+    t_timber_2_mm: 60,
+    t_plate_mm: 6,
+    n: 2,
+    timber_type: "Hardwood",
+    rho_k: 500,
+    service_class: 3,
+    load_duration: "Permanent",
+    d_mm: 8,
+    d_root_mm: 5.6,
+    l_penetration_mm: 60,
+    f_uk_mpa: 400,
+    m_y_rk_nmm: 0,
+    spacings: {
+      a1_mm: 40,
+      a2_mm: 30,
+      a3t_mm: 60,
+      a4t_mm: 30,
+    },
+    alpha_deg: 90,
+    f_d_kn: 80,
   });
 });
 
