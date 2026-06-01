@@ -148,6 +148,56 @@ test("lateral wall resistance form metadata builds the API payload", () => {
   });
 });
 
+test("axial screw form metadata builds nested spacing payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_axial_screw", {
+    n: "6",
+    d: "10",
+    d1: "6.5",
+    dh: "14",
+    lef: "100",
+    t_timber: "160",
+    alpha: "30",
+    rho_k: "430",
+    rho_a: "350",
+    f_ax_k: "0",
+    f_head_k: "13",
+    f_tens_k: "22000",
+    f_ed: "30000",
+    service_class: "2",
+    load_duration: "Short-term",
+    material_type: "GluedLaminated",
+    "spacings.a1": "80",
+    "spacings.a2": "55",
+    "spacings.a1_cg": "105",
+    "spacings.a2_cg": "45",
+  });
+
+  assert.deepEqual(payload, {
+    n: 6,
+    d: 10,
+    d1: 6.5,
+    dh: 14,
+    lef: 100,
+    t_timber: 160,
+    alpha: 30,
+    rho_k: 430,
+    rho_a: 350,
+    f_ax_k: 0,
+    f_head_k: 13,
+    f_tens_k: 22000,
+    f_ed: 30000,
+    service_class: 2,
+    load_duration: "Short-term",
+    material_type: "GluedLaminated",
+    spacings: {
+      a1: 80,
+      a2: 55,
+      a1_cg: 105,
+      a2_cg: 45,
+    },
+  });
+});
+
 test("steel-timber screw form metadata builds nested spacing payload", () => {
   const payload = buildPayloadFromFormValues("ec5_steel_timber_screw_connection", {
     config_type: "central",
@@ -199,7 +249,7 @@ test("steel-timber screw form metadata builds nested spacing payload", () => {
 });
 
 test("tools without form metadata keep JSON-only mode", () => {
-  assert.equal(buildPayloadFromFormValues("ec5_axial_screw", {}), null);
+  assert.equal(buildPayloadFromFormValues("ec5_timber_contact_moment_joint", {}), null);
 });
 
 test("formatJson is stable", () => {
