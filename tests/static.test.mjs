@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 
-import { API_BASE_URL, TOOL_CATALOG, formatJson } from "../app.js";
+import {
+  API_BASE_URL,
+  TOOL_CATALOG,
+  buildPayloadFromFormValues,
+  formatJson,
+} from "../app.js";
 
 test("frontend is configured for structural subdomain and private API", async () => {
   const cname = await readFile(new URL("../CNAME", import.meta.url), "utf8");
@@ -15,9 +20,11 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /https:\/\/www\.easuys\.be\/images\/logo\.jpg/);
   assert.match(html, /https:\/\/www\.easuys\.be\/favicon\.ico/);
   assert.match(html, /<a href="#en" data-lang="en" aria-current="page">EN<\/a>/);
+  assert.match(html, /data-friendly-form/);
   assert.match(css, /\.page\s*{\s*max-width: 1140px;/);
   assert.match(css, /\.lang-switch a\s*{/);
   assert.match(css, /\.tool-shell button\s*{/);
+  assert.match(css, /\.friendly-fields\s*{/);
   assert.equal(
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"
@@ -37,6 +44,30 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
   const app = await readFile(new URL("../app.js", import.meta.url), "utf8");
   assert.doesNotMatch(app, /function calculate/i);
   assert.doesNotMatch(app, /fk = K/i);
+});
+
+test("masonry strength form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec6_masonry_strength", {
+    unit_type: "calcium_silicate",
+    unit_group: "group_2",
+    mortar_type: "thin_layer",
+    fb_mpa: "12.5",
+    fm_mpa: "10",
+    gamma_m: "2",
+  });
+
+  assert.deepEqual(payload, {
+    unit_type: "calcium_silicate",
+    unit_group: "group_2",
+    mortar_type: "thin_layer",
+    fb_mpa: 12.5,
+    fm_mpa: 10,
+    gamma_m: 2,
+  });
+});
+
+test("tools without form metadata keep JSON-only mode", () => {
+  assert.equal(buildPayloadFromFormValues("ec5_axial_screw", {}), null);
 });
 
 test("formatJson is stable", () => {

@@ -86,6 +86,65 @@ export const TOOL_CATALOG = {
       fm_mpa: 12,
       gamma_m: 1.7,
     },
+    form: {
+      fields: [
+        {
+          name: "unit_type",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Steentype", en: "Unit type", fr: "Type d'element" },
+          options: [
+            "clay",
+            "calcium_silicate",
+            "aggregate_concrete",
+            "autoclaved_aerated_concrete",
+            "natural_stone",
+          ],
+        },
+        {
+          name: "unit_group",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Groep", en: "Group", fr: "Groupe" },
+          options: ["group_1", "group_2", "group_3", "group_4"],
+        },
+        {
+          name: "mortar_type",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Mortel", en: "Mortar", fr: "Mortier" },
+          options: [
+            "general_purpose",
+            "thin_layer",
+            "lightweight_600_800",
+            "lightweight_800_1300",
+          ],
+        },
+        {
+          name: "fb_mpa",
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "fb", en: "fb", fr: "fb" },
+          unit: "MPa",
+        },
+        {
+          name: "fm_mpa",
+          value_type: "number",
+          control: "number",
+          step: "0.1",
+          label: { nl: "fm", en: "fm", fr: "fm" },
+          unit: "MPa",
+        },
+        {
+          name: "gamma_m",
+          value_type: "number",
+          control: "number",
+          step: "0.05",
+          label: { nl: "gamma_M", en: "gamma_M", fr: "gamma_M" },
+        },
+      ],
+    },
   },
   ec6_beam_bearing: {
     endpoint: "/calculate/ec6/beam-bearing",
@@ -149,6 +208,7 @@ export const TOOL_CATALOG = {
 
 const TEXT = {
   nl: {
+    form: "Invoerformulier",
     input: "Invoer JSON",
     result: "Resultaat",
     calculate: "Bereken",
@@ -157,6 +217,7 @@ const TEXT = {
     status: "Indicatief rekenrecord.",
   },
   en: {
+    form: "Input form",
     input: "Input JSON",
     result: "Result",
     calculate: "Calculate",
@@ -165,6 +226,7 @@ const TEXT = {
     status: "Indicative calculation record.",
   },
   fr: {
+    form: "Formulaire",
     input: "JSON d'entree",
     result: "Resultat",
     calculate: "Calculer",
@@ -180,6 +242,17 @@ export function formatJson(value) {
   return JSON.stringify(value, null, 2);
 }
 
+export function buildPayloadFromFormValues(toolId, values) {
+  const tool = TOOL_CATALOG[toolId];
+  if (!tool?.form) return null;
+  const payload = {};
+  for (const field of tool.form.fields) {
+    const rawValue = values[field.name] ?? tool.sample[field.name] ?? "";
+    payload[field.name] = coerceFieldValue(field, rawValue);
+  }
+  return payload;
+}
+
 export function initApp(documentRef = globalThis.document) {
   if (!documentRef) return;
   const state = { lang: "en", toolId: "ec5_timber_contact_moment_joint" };
@@ -187,6 +260,7 @@ export function initApp(documentRef = globalThis.document) {
   const input = documentRef.querySelector("[data-json-input]");
   const output = documentRef.querySelector("[data-result-output]");
   const form = documentRef.querySelector("[data-calculator-form]");
+  const friendlyForm = documentRef.querySelector("[data-friendly-form]");
 
   function render() {
     const text = TEXT[state.lang];
@@ -201,6 +275,7 @@ export function initApp(documentRef = globalThis.document) {
     documentRef.querySelector("[data-calculate]").textContent = text.calculate;
     documentRef.querySelector("[data-save]").textContent = text.save;
     documentRef.querySelector("[data-load]").textContent = text.load;
+    renderFriendlyForm(friendlyForm, activeTool, state.lang, text.form);
     documentRef.querySelectorAll("[data-lang]").forEach((button) => {
       if (button.dataset.lang === state.lang) {
         button.setAttribute("aria-current", "page");
@@ -224,6 +299,14 @@ export function initApp(documentRef = globalThis.document) {
       state.lang = button.dataset.lang;
       render();
     });
+  });
+
+  friendlyForm.addEventListener("input", () => {
+    syncJsonFromFriendlyForm(state.toolId, friendlyForm, input);
+  });
+
+  friendlyForm.addEventListener("change", () => {
+    syncJsonFromFriendlyForm(state.toolId, friendlyForm, input);
   });
 
   form.addEventListener("submit", async (event) => {
@@ -264,6 +347,48 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function renderFriendlyForm(container, tool, lang, heading) {
+  if (!tool.form) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+  container.hidden = false;
+  container.innerHTML = [
+    `<div class="friendly-form-heading">${escapeHtml(heading)}</div>`,
+    `<div class="friendly-fields">${tool.form.fields.map((field) =>
+      renderFriendlyField(field, tool.sample[field.name], lang)
+    ).join("")}</div>`,
+  ].join("");
+}
+
+function renderFriendlyField(field, value, lang) {
+  const label = field.label[lang] || field.label.en;
+  const unit = field.unit ? `<span>${escapeHtml(field.unit)}</span>` : "";
+  const control = field.control === "select"
+    ? `<select name="${escapeHtml(field.name)}">${field.options.map((option) =>
+      `<option value="${escapeHtml(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`
+    ).join("")}</select>`
+    : `<input name="${escapeHtml(field.name)}" type="number" step="${escapeHtml(field.step || "any")}" value="${escapeHtml(value)}">`;
+  return `<label class="friendly-field"><span>${escapeHtml(label)}</span>${control}${unit}</label>`;
+}
+
+function syncJsonFromFriendlyForm(toolId, container, input) {
+  const values = {};
+  container.querySelectorAll("[name]").forEach((control) => {
+    values[control.name] = control.value;
+  });
+  const payload = buildPayloadFromFormValues(toolId, values);
+  if (payload) input.value = formatJson(payload);
+}
+
+function coerceFieldValue(field, rawValue) {
+  if (field.value_type !== "number") return String(rawValue);
+  if (rawValue === "") return "";
+  const value = Number(rawValue);
+  return Number.isFinite(value) ? value : rawValue;
 }
 
 if (typeof document !== "undefined") {
