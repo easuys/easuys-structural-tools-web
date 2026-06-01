@@ -29,6 +29,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_axial_screw",
     "ec5_timber_contact_moment_joint",
     "ec6_beam_bearing",
+    "ec6_inplane_shear_wall",
     "ec6_masonry_strength",
   ]);
 

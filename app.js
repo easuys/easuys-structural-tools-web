@@ -105,6 +105,27 @@ export const TOOL_CATALOG = {
       top_of_wall: false,
     },
   },
+  ec6_inplane_shear_wall: {
+    endpoint: "/calculate/ec6/inplane-shear-wall",
+    title: {
+      nl: "EC6 metselwerkwand in het vlak",
+      en: "EC6 in-plane masonry shear wall",
+      fr: "EC6 voile en maconnerie dans son plan",
+    },
+    sample: {
+      length_mm: 1200,
+      thickness_mm: 140,
+      material_type: "clay",
+      fb_mpa: 15,
+      fm_mpa: 12,
+      mortar_class: "M10-M20",
+      mortar_type: "general_purpose",
+      n_ed_kn: 120,
+      v_ed_kn: 35,
+      m_ed_knm: 20,
+      gamma_m: 2,
+    },
+  },
 };
 
 const TEXT = {
