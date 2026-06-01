@@ -38,6 +38,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "ec5_axial_screw",
+    "ec5_stabilizing_force",
     "ec5_steel_timber_screw_connection",
     "ec5_timber_contact_moment_joint",
     "ec5_timber_timber_single_shear_connection",
@@ -223,6 +224,28 @@ test("axial screw form metadata builds nested spacing payload", () => {
   });
 });
 
+test("stabilizing force form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_stabilizing_force", {
+    b_mm: "120",
+    h_mm: "360",
+    l_unbraced_mm: "6000",
+    wood_grade: "GL28h",
+    m_d_knm: "40",
+    l_ef_factor: "0.9",
+    n_d_compression_kn: "60",
+  });
+
+  assert.deepEqual(payload, {
+    b_mm: 120,
+    h_mm: 360,
+    l_unbraced_mm: 6000,
+    wood_grade: "GL28h",
+    m_d_knm: 40,
+    l_ef_factor: 0.9,
+    n_d_compression_kn: 60,
+  });
+});
+
 test("steel-timber screw form metadata builds nested spacing payload", () => {
   const payload = buildPayloadFromFormValues("ec5_steel_timber_screw_connection", {
     config_type: "central",
@@ -396,6 +419,25 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Utilization", value: "5.187" },
     { label: "Governing mode", value: "Head pull-through" },
     { label: "Check", value: "FAIL" },
+  ]);
+
+  const stabilizing = buildResultSummaryItems({
+    calculator_id: "ec5_stabilizing_force",
+    status: "ok",
+    result: {
+      f_d_kn: 0.03678971926374336,
+      lambda_rel_m: 0.8156473902861856,
+      k_crit: 0.9482644572853609,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(stabilizing, [
+    { label: "Status", value: "OK" },
+    { label: "Fd", value: "0.037 kN" },
+    { label: "lambda rel,m", value: "0.816" },
+    { label: "kcrit", value: "0.948" },
+    { label: "Warnings", value: "None" },
   ]);
 
   const steelTimber = buildResultSummaryItems({
