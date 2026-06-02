@@ -6,6 +6,7 @@ import {
   API_BASE_URL,
   TOOL_CATALOG,
   buildPayloadFromFormValues,
+  buildReportModel,
   buildResultDownloadText,
   buildResultFilename,
   buildResultSummaryItems,
@@ -25,6 +26,7 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /<a href="#en" data-lang="en" aria-current="page">EN<\/a>/);
   assert.match(html, /data-friendly-form/);
   assert.match(html, /data-result-summary/);
+  assert.match(html, /data-report/);
   assert.match(html, /data-download/);
   assert.match(html, /data-print/);
   assert.match(css, /\.page\s*{\s*max-width: 1140px;/);
@@ -33,6 +35,7 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(css, /\.friendly-fields\s*{/);
   assert.match(css, /\.friendly-field-checkbox\s*{/);
   assert.match(css, /\.result-summary dl\s*{/);
+  assert.match(css, /\.report-view\s*{/);
   assert.match(css, /\.result-actions\s*{/);
   assert.equal(
     API_BASE_URL,
@@ -641,4 +644,39 @@ test("result download helpers create stable JSON artifacts", () => {
     buildResultFilename("", new Date("2026-06-02T05:00:00.000Z")),
     "ea-suys-calculation-20260602T050000Z.json"
   );
+});
+
+test("html report model exposes returned API metadata", () => {
+  const report = buildReportModel({
+    calculator_id: "ec5_osb_composite_vibration",
+    formula_version: "2026-06-02.6",
+    status: "ok",
+    result: {
+      overall_status: "PASS",
+      composite_deflection_mm: 1.0793148880105403,
+      base_deflection_mm: 1.2412121212121212,
+      reduction_percent: 13.043478260869556,
+      warning_codes: ["NARROW_OSB_SCOPE"],
+    },
+    assumptions: ["Point-load vibration helper only."],
+    source_refs: ["Source script composite_osb_analysis.py."],
+  }, "en", new Date("2026-06-02T05:10:00.000Z"));
+
+  assert.equal(report.title, "Calculation record");
+  assert.deepEqual(report.details, [
+    { label: "Generated", value: "2026-06-02T05:10:00.000Z" },
+    { label: "Calculator", value: "ec5_osb_composite_vibration" },
+    { label: "Status", value: "OK" },
+    { label: "Formula version", value: "2026-06-02.6" },
+  ]);
+  assert.deepEqual(report.summaryItems, [
+    { label: "Status", value: "PASS" },
+    { label: "Composite deflection", value: "1.079 mm" },
+    { label: "Without OSB", value: "1.241 mm" },
+    { label: "Reduction", value: "13.043 %" },
+    { label: "Warnings", value: "NARROW_OSB_SCOPE" },
+  ]);
+  assert.deepEqual(report.warnings, ["NARROW_OSB_SCOPE"]);
+  assert.deepEqual(report.assumptions, ["Point-load vibration helper only."]);
+  assert.deepEqual(report.sourceRefs, ["Source script composite_osb_analysis.py."]);
 });

@@ -1630,6 +1630,16 @@ const TEXT = {
     load: "Laad",
     download: "Download JSON",
     print: "Afdrukken",
+    reportTitle: "Rekenrecord",
+    generatedAt: "Gegenereerd",
+    calculator: "Calculator",
+    formulaVersion: "Formuleversie",
+    summary: "Samenvatting",
+    assumptions: "Aannames",
+    sourceRefs: "Bronnen",
+    warnings: "Waarschuwingen",
+    none: "Geen",
+    notProvided: "Niet opgegeven",
     status: "Indicatief rekenrecord.",
   },
   en: {
@@ -1641,6 +1651,16 @@ const TEXT = {
     load: "Load",
     download: "Download JSON",
     print: "Print",
+    reportTitle: "Calculation record",
+    generatedAt: "Generated",
+    calculator: "Calculator",
+    formulaVersion: "Formula version",
+    summary: "Summary",
+    assumptions: "Assumptions",
+    sourceRefs: "Source references",
+    warnings: "Warnings",
+    none: "None",
+    notProvided: "Not provided",
     status: "Indicative calculation record.",
   },
   fr: {
@@ -1652,6 +1672,16 @@ const TEXT = {
     load: "Charger",
     download: "Telecharger JSON",
     print: "Imprimer",
+    reportTitle: "Releve de calcul",
+    generatedAt: "Genere",
+    calculator: "Calculateur",
+    formulaVersion: "Version formule",
+    summary: "Synthese",
+    assumptions: "Hypotheses",
+    sourceRefs: "References",
+    warnings: "Avertissements",
+    none: "Aucun",
+    notProvided: "Non indique",
     status: "Releve de calcul indicatif.",
   },
 };
@@ -1779,6 +1809,36 @@ export function buildResultSummaryItems(response, lang = "en") {
     .filter(Boolean);
 }
 
+export function buildReportModel(response, lang = "en", generatedAt = new Date()) {
+  if (!response) return null;
+  const text = TEXT[lang] || TEXT.en;
+  const status = response.status || response.result?.overall_status || response.result?.check_passed;
+  const warnings = collectWarningCodes(response);
+  const summaryItems = buildResultSummaryItems(response, lang);
+  return {
+    title: text.reportTitle,
+    details: [
+      { label: text.generatedAt, value: generatedAt.toISOString() },
+      { label: text.calculator, value: response.calculator_id || text.notProvided },
+      {
+        label: "Status",
+        value: status === undefined
+          ? text.notProvided
+          : formatSummaryValue(status, { format: typeof status === "boolean" ? "check" : "status" }),
+      },
+      { label: text.formulaVersion, value: response.formula_version || text.notProvided },
+    ],
+    summaryHeading: text.summary,
+    summaryItems: summaryItems.length ? summaryItems : [{ label: text.summary, value: text.none }],
+    warningsHeading: text.warnings,
+    warnings: warnings.length ? warnings : [text.none],
+    assumptionsHeading: text.assumptions,
+    assumptions: normalizeList(response.assumptions, text.none),
+    sourceRefsHeading: text.sourceRefs,
+    sourceRefs: normalizeList(response.source_refs, text.none),
+  };
+}
+
 export function buildPayloadFromFormValues(toolId, values) {
   const tool = TOOL_CATALOG[toolId];
   if (!tool?.form) return null;
@@ -1798,6 +1858,7 @@ export function initApp(documentRef = globalThis.document) {
   const input = documentRef.querySelector("[data-json-input]");
   const output = documentRef.querySelector("[data-result-output]");
   const resultSummary = documentRef.querySelector("[data-result-summary]");
+  const report = documentRef.querySelector("[data-report]");
   const downloadButton = documentRef.querySelector("[data-download]");
   const printButton = documentRef.querySelector("[data-print]");
   const form = documentRef.querySelector("[data-calculator-form]");
@@ -1823,6 +1884,7 @@ export function initApp(documentRef = globalThis.document) {
     printButton.textContent = text.print;
     renderFriendlyForm(friendlyForm, activeTool, state.lang, text.form);
     renderResultSummary(resultSummary, null, state.lang);
+    renderReport(report, null, state.lang);
     documentRef.querySelectorAll("[data-lang]").forEach((button) => {
       if (button.dataset.lang === state.lang) {
         button.setAttribute("aria-current", "page");
@@ -1860,6 +1922,7 @@ export function initApp(documentRef = globalThis.document) {
     event.preventDefault();
     output.textContent = "";
     renderResultSummary(resultSummary, null, state.lang);
+    renderReport(report, null, state.lang);
     lastResponse = null;
     downloadButton.disabled = true;
     try {
@@ -1871,11 +1934,13 @@ export function initApp(documentRef = globalThis.document) {
       });
       const result = await response.json();
       renderResultSummary(resultSummary, result, state.lang);
+      renderReport(report, result, state.lang);
       output.textContent = formatJson(result);
       lastResponse = result;
       downloadButton.disabled = false;
     } catch (error) {
       renderResultSummary(resultSummary, null, state.lang);
+      renderReport(report, null, state.lang);
       output.textContent = formatJson({ error: error.message });
       lastResponse = null;
       downloadButton.disabled = true;
@@ -1966,6 +2031,33 @@ function renderResultSummary(container, response, lang) {
   ).join("")}</dl>`;
 }
 
+function renderReport(container, response, lang) {
+  const report = buildReportModel(response, lang);
+  if (!report) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+  container.hidden = false;
+  container.innerHTML = [
+    `<h3>${escapeHtml(report.title)}</h3>`,
+    `<dl class="report-details">${report.details.map((item) =>
+      `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`
+    ).join("")}</dl>`,
+    renderReportSection(report.summaryHeading, report.summaryItems.map((item) => `${item.label}: ${item.value}`)),
+    renderReportSection(report.warningsHeading, report.warnings),
+    renderReportSection(report.assumptionsHeading, report.assumptions),
+    renderReportSection(report.sourceRefsHeading, report.sourceRefs),
+  ].join("");
+}
+
+function renderReportSection(heading, items) {
+  return [
+    `<section><h4>${escapeHtml(heading)}</h4>`,
+    `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
+  ].join("");
+}
+
 function triggerDownload(documentRef, filename, text) {
   const blob = new Blob([text], { type: "application/json" });
   const url = globalThis.URL.createObjectURL(blob);
@@ -1976,6 +2068,22 @@ function triggerDownload(documentRef, filename, text) {
   link.click();
   link.remove();
   globalThis.URL.revokeObjectURL(url);
+}
+
+function collectWarningCodes(response) {
+  const candidates = [
+    response?.warning_codes,
+    response?.result?.warning_codes,
+  ];
+  return candidates
+    .flatMap((value) => Array.isArray(value) ? value : [])
+    .filter((value, index, values) => value && values.indexOf(value) === index)
+    .map(String);
+}
+
+function normalizeList(value, fallback) {
+  if (!Array.isArray(value) || !value.length) return [fallback];
+  return value.map(String);
 }
 
 function coerceFieldValue(field, rawValue) {
