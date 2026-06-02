@@ -17,6 +17,8 @@ test("frontend is configured for structural subdomain and private API", async ()
   const cname = await readFile(new URL("../CNAME", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
   const css = await readFile(new URL("../styles.css", import.meta.url), "utf8");
+  const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const tsconfig = JSON.parse(await readFile(new URL("../tsconfig.json", import.meta.url), "utf8"));
 
   assert.equal(cname.trim(), "structural.easuys.com");
   assert.match(html, /EA Suys Structural Tools/);
@@ -41,6 +43,10 @@ test("frontend is configured for structural subdomain and private API", async ()
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"
   );
+  assert.equal(packageJson.scripts.build, "tsc");
+  assert.match(packageJson.scripts.test, /npm run build/);
+  assert.match(packageJson.devDependencies.typescript, /^\^6\./);
+  assert.deepEqual(tsconfig.include, ["app.ts"]);
 });
 
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
@@ -60,9 +66,13 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec6_masonry_strength",
   ]);
 
-  const app = await readFile(new URL("../app.js", import.meta.url), "utf8");
-  assert.doesNotMatch(app, /function calculate/i);
-  assert.doesNotMatch(app, /fk = K/i);
+  const appJs = await readFile(new URL("../app.js", import.meta.url), "utf8");
+  const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
+  assert.match(appTs, /as HTMLTextAreaElement/);
+  for (const app of [appJs, appTs]) {
+    assert.doesNotMatch(app, /function calculate/i);
+    assert.doesNotMatch(app, /fk = K/i);
+  }
 });
 
 test("contact moment joint form metadata preserves fixed screw rows", () => {
