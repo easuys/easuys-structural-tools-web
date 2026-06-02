@@ -57,6 +57,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec3_bolt_group_torsion",
     "ec3_bolted_lap_joint",
     "ec3_bolted_moment_connection",
+    "ec3_double_sided_web_connection",
     "ec3_fillet_weld",
     "ec3_plate_tension",
     "ec3_splice_moment_connection",
@@ -233,6 +234,52 @@ test("ec3 splice moment connection form metadata builds the API payload", () => 
   ]);
   assert.deepEqual(payload.loads, { moment_knm: 150, shear_kn: 100, axial_kn: 0 });
   assert.equal(payload.gamma_m2, 1.25);
+});
+
+test("ec3 double-sided web connection form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_double_sided_web_connection", {
+    "primary.steel_grade": "S355",
+    "secondary.steel_grade": "S235",
+    "end_plate.steel_grade": "S235",
+    "primary.height_mm": "240",
+    "primary.width_mm": "120",
+    "primary.web_thickness_mm": "6.2",
+    "primary.flange_thickness_mm": "9.8",
+    "primary.root_radius_mm": "15",
+    "secondary.height_mm": "180",
+    "secondary.width_mm": "70",
+    "secondary.web_thickness_mm": "8",
+    "secondary.flange_thickness_mm": "11",
+    "secondary.root_radius_mm": "11",
+    "end_plate.thickness_mm": "15",
+    "end_plate.width_mm": "120",
+    "end_plate.height_mm": "200",
+    "welds.flange_throat_mm": "5",
+    "welds.web_throat_mm": "4",
+    "bolts.diameter_mm": "16",
+    "bolts.bolt_class": "8.8",
+    "bolts.horizontal_spacing_mm": "70",
+    "bolts.edge_distance_horizontal_mm": "25",
+    "bolts.rows.0.vertical_position_mm": "160",
+    "bolts.rows.1.vertical_position_mm": "40",
+    "loads.moment_knm": "15",
+    "loads.shear_kn": "30",
+    web_bearing_factor: "1",
+  });
+
+  assert.equal(payload.project_name, "Library Integration Test");
+  assert.equal(payload.primary.profile, "IPE240");
+  assert.equal(payload.primary.web_thickness_mm, 6.2);
+  assert.equal(payload.secondary.profile, "UPN180");
+  assert.equal(payload.secondary.flange_thickness_mm, 11);
+  assert.equal(payload.end_plate.thickness_mm, 15);
+  assert.equal(payload.welds.web_throat_mm, 4);
+  assert.deepEqual(payload.bolts.rows, [
+    { row_id: 1, vertical_position_mm: 160, number_of_bolts: 2 },
+    { row_id: 2, vertical_position_mm: 40, number_of_bolts: 2 },
+  ]);
+  assert.deepEqual(payload.loads, { moment_knm: 15, shear_kn: 30, axial_kn: 0 });
+  assert.equal(payload.web_bearing_factor, 1);
 });
 
 test("ec3 fillet weld form metadata builds the API payload", () => {
@@ -920,6 +967,27 @@ test("ec3 result summaries format returned API fields only", () => {
     { label: "Utilization", value: "90 %" },
     { label: "Compression flange governs", value: "PASS" },
     { label: "Warnings", value: "COMPRESSION_FLANGE_GOVERNS" },
+  ]);
+
+  const doubleSided = buildResultSummaryItems({
+    calculator_id: "ec3_double_sided_web_connection",
+    result: {
+      overall_status: "PASS",
+      critical_component: "Moment Resistance",
+      max_utilization: 0.877205,
+      moment_resistance_knm: 17.099775,
+      primary_web_bearing_capacity_kn: 170.236018,
+      warning_codes: ["COMPRESSION_REDUCTION_APPLIED", "SECONDARY_FLANGE_COMPRESSION_GOVERNS"],
+    },
+  }, "en");
+
+  assert.deepEqual(doubleSided, [
+    { label: "Status", value: "PASS" },
+    { label: "Critical", value: "Moment Resistance" },
+    { label: "Max utilization", value: "0.877" },
+    { label: "Moment resistance", value: "17.1 kNm" },
+    { label: "Primary web bearing", value: "170.2 kN" },
+    { label: "Warnings", value: "COMPRESSION_REDUCTION_APPLIED, SECONDARY_FLANGE_COMPRESSION_GOVERNS" },
   ]);
 
   const bolt = buildResultSummaryItems({
