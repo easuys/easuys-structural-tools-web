@@ -93,6 +93,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_steel_timber_five_member_connection",
     "ec5_steel_timber_screw_connection",
     "ec5_timber_beam_check",
+    "ec5_timber_beam_fire_check",
     "ec5_timber_contact_moment_joint",
     "ec5_timber_member_uls_6_component",
     "ec5_timber_timber_double_shear_connection",
@@ -225,6 +226,30 @@ test("embedded profile bearing form metadata builds the API payload", () => {
     gamma_s: 1.15,
     provided_bars: 2,
     sample_points: 41,
+  });
+});
+
+test("timber beam fire form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_timber_beam_fire_check", {
+    span_m: "3.6",
+    spacing_m: "0.6",
+    b_mm: "75",
+    h_mm: "225",
+    wood_grade: "C24",
+    q_permanent_kn_m2: "1",
+    q_variable_kn_m2: "2",
+    fire_duration_min: "30",
+  });
+
+  assert.deepEqual(payload, {
+    span_m: 3.6,
+    spacing_m: 0.6,
+    b_mm: 75,
+    h_mm: 225,
+    wood_grade: "C24",
+    q_permanent_kn_m2: 1,
+    q_variable_kn_m2: 2,
+    fire_duration_min: 30,
   });
 });
 
