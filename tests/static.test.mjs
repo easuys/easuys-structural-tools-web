@@ -61,6 +61,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec3_fillet_weld",
     "ec3_plate_tension",
     "ec3_splice_moment_connection",
+    "ec3_steel_section_check",
     "ec5_axial_screw",
     "ec5_joist_spacing_optimizer",
     "ec5_osb_composite_vibration",
@@ -148,6 +149,66 @@ test("ec3 plate tension form metadata builds the API payload", () => {
     steel_grade: "S355",
     hole_diameter_mm: 22,
     n_holes: 2,
+  });
+});
+
+test("ec3 steel section check form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_steel_section_check", {
+    profile_name: "IPE 240",
+    steel_grade: "S355",
+    profile_count: "1",
+    "section.h_mm": "240",
+    "section.b_mm": "120",
+    "section.tw_mm": "6.2",
+    "section.tf_mm": "9.8",
+    "section.r_mm": "15",
+    "section.area_mm2": "3910",
+    "section.iy_mm4": "38920000",
+    "section.iz_mm4": "2836000",
+    "section.wy_el_mm3": "324300",
+    "section.wz_el_mm3": "47300",
+    "section.wy_pl_mm3": "366600",
+    "section.wz_pl_mm3": "73900",
+    "loads.n_ed_kn": "80",
+    "loads.my_ed_knm": "80",
+    "loads.mz_ed_knm": "8",
+    "loads.vy_ed_kn": "100",
+    "loads.vz_ed_kn": "50",
+    "loads.m_sls_knm": "60",
+    "loads.span_m": "5",
+    gamma_m0: "1",
+    deflection_limit_ratio: "250",
+  });
+
+  assert.deepEqual(payload, {
+    profile_name: "IPE 240",
+    steel_grade: "S355",
+    profile_count: 1,
+    section: {
+      h_mm: 240,
+      b_mm: 120,
+      tw_mm: 6.2,
+      tf_mm: 9.8,
+      r_mm: 15,
+      area_mm2: 3910,
+      iy_mm4: 38920000,
+      iz_mm4: 2836000,
+      wy_el_mm3: 324300,
+      wz_el_mm3: 47300,
+      wy_pl_mm3: 366600,
+      wz_pl_mm3: 73900,
+    },
+    loads: {
+      n_ed_kn: 80,
+      my_ed_knm: 80,
+      mz_ed_knm: 8,
+      vy_ed_kn: 100,
+      vz_ed_kn: 50,
+      m_sls_knm: 60,
+      span_m: 5,
+    },
+    gamma_m0: 1,
+    deflection_limit_ratio: 250,
   });
 });
 
@@ -1070,6 +1131,31 @@ test("ec3 result summaries format returned API fields only", () => {
     { label: "Utilization", value: "151.3 %" },
     { label: "Governing", value: "net_section" },
     { label: "Warnings", value: "NET_SECTION_GOVERNS, NET_SECTION_FAILED" },
+  ]);
+
+  const section = buildResultSummaryItems({
+    calculator_id: "ec3_steel_section_check",
+    result: {
+      overall_status: "PASS",
+      section_class: 1,
+      critical_check: "Deflection",
+      utilization_percent: 95.6,
+      resistances: {
+        m_y_rd_knm: 130.143,
+        v_y_rd_kn: 801.391041,
+      },
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(section, [
+    { label: "Status", value: "PASS" },
+    { label: "Section class", value: "1" },
+    { label: "Critical", value: "Deflection" },
+    { label: "Utilization", value: "95.6 %" },
+    { label: "My,Rd", value: "130.1 kNm" },
+    { label: "Vy,Rd", value: "801.4 kN" },
+    { label: "Warnings", value: "None" },
   ]);
 });
 
