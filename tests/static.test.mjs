@@ -137,6 +137,25 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
   }
 });
 
+test("frontend does not expose internal utilities or Code_Aster parser workflows", async () => {
+  const appJs = await readFile(new URL("../app.js", import.meta.url), "utf8");
+  const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
+  const payload = JSON.stringify({
+    toolCatalogKeys: Object.keys(TOOL_CATALOG),
+    appJs,
+    appTs,
+  });
+
+  for (const pattern of [
+    /codeaster_parser/i,
+    /compile_latex\.py/i,
+    /gemini_process\.py/i,
+    /parse_eml\.py/i,
+  ]) {
+    assert.doesNotMatch(payload, pattern);
+  }
+});
+
 test("EC1 roof loads form metadata builds the API payload", () => {
   const payload = buildPayloadFromFormValues("ec1_roof_loads", {
     roof_angle_degrees: "40",
