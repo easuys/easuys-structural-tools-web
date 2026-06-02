@@ -39,6 +39,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "ec5_axial_screw",
     "ec5_joist_spacing_optimizer",
+    "ec5_osb_composite_vibration",
     "ec5_stabilizing_force",
     "ec5_steel_timber_screw_connection",
     "ec5_timber_beam_check",
@@ -300,6 +301,28 @@ test("joist spacing optimizer form metadata builds the API payload", () => {
   });
 });
 
+test("osb composite vibration form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_osb_composite_vibration", {
+    span_m: "3.6",
+    b_mm: "63",
+    h_mm: "175",
+    wood_grade: "C18",
+    composite_factor: "1.15",
+    load_n: "1000",
+    limit_mm: "1.5",
+  });
+
+  assert.deepEqual(payload, {
+    span_m: 3.6,
+    b_mm: 63,
+    h_mm: 175,
+    wood_grade: "C18",
+    composite_factor: 1.15,
+    load_n: 1000,
+    limit_mm: 1.5,
+  });
+});
+
 test("steel-timber screw form metadata builds nested spacing payload", () => {
   const payload = buildPayloadFromFormValues("ec5_steel_timber_screw_connection", {
     config_type: "central",
@@ -531,6 +554,25 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Recommended spacing", value: "80 cm" },
     { label: "Passing spacings", value: "31" },
     { label: "Source first OK", value: "0.2 m" },
+    { label: "Warnings", value: "None" },
+  ]);
+
+  const osbComposite = buildResultSummaryItems({
+    calculator_id: "ec5_osb_composite_vibration",
+    result: {
+      overall_status: "PASS",
+      composite_deflection_mm: 1.0793148880105403,
+      base_deflection_mm: 1.2412121212121212,
+      reduction_percent: 13.043478260869556,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(osbComposite, [
+    { label: "Status", value: "PASS" },
+    { label: "Composite deflection", value: "1.079 mm" },
+    { label: "Without OSB", value: "1.241 mm" },
+    { label: "Reduction", value: "13.043 %" },
     { label: "Warnings", value: "None" },
   ]);
 
