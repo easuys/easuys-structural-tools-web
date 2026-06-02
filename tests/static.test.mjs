@@ -85,6 +85,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_osb_composite_vibration",
     "ec5_stabilizing_force",
     "ec5_steel_timber_double_shear_connection",
+    "ec5_steel_timber_five_member_connection",
     "ec5_steel_timber_screw_connection",
     "ec5_timber_beam_check",
     "ec5_timber_contact_moment_joint",
@@ -1005,6 +1006,48 @@ test("steel-timber double-shear form metadata builds nested spacing payload", ()
   });
 });
 
+test("steel-timber five-member form metadata builds nested spacing payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_steel_timber_five_member_connection", {
+    t_w1_mm: "80",
+    t_w2_mm: "100",
+    t_plate_mm: "8",
+    n: "4",
+    timber_type: "Softwood",
+    rho_k: "350",
+    service_class: "1",
+    load_duration: "Medium-term",
+    d_mm: "12",
+    f_uk_mpa: "400",
+    "spacings.a1_mm": "80",
+    "spacings.a2_mm": "60",
+    "spacings.a3t_mm": "100",
+    "spacings.a4t_mm": "40",
+    alpha_deg: "0",
+    f_d_kn: "70",
+  });
+
+  assert.deepEqual(payload, {
+    t_w1_mm: 80,
+    t_w2_mm: 100,
+    t_plate_mm: 8,
+    n: 4,
+    timber_type: "Softwood",
+    rho_k: 350,
+    service_class: 1,
+    load_duration: "Medium-term",
+    d_mm: 12,
+    f_uk_mpa: 400,
+    spacings: {
+      a1_mm: 80,
+      a2_mm: 60,
+      a3t_mm: 100,
+      a4t_mm: 40,
+    },
+    alpha_deg: 0,
+    f_d_kn: 70,
+  });
+});
+
 test("timber-timber single-shear form metadata builds nested spacing payload", () => {
   const payload = buildPayloadFromFormValues("ec5_timber_timber_single_shear_connection", {
     t1_mm: "90",
@@ -1693,6 +1736,27 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Rd", value: "43.946 kN" },
     { label: "Utilization", value: "0.796" },
     { label: "Fv,Rk plane", value: "8.927 kN" },
+    { label: "Governing mode", value: "Interpolated (Mode k/Mode m)" },
+    { label: "Warnings", value: "INTERMEDIATE_PLATE_INTERPOLATION" },
+  ]);
+
+  const steelTimberFive = buildResultSummaryItems({
+    calculator_id: "ec5_steel_timber_five_member_connection",
+    result: {
+      overall_status: "PASS",
+      r_d_kn: 87.89173433494227,
+      utilization_ratio: 0.796434392035552,
+      r_k_per_fastener_kn: 35.7060170735703,
+      governing_mode: "Interpolated (Mode k/Mode m)",
+      warning_codes: ["INTERMEDIATE_PLATE_INTERPOLATION"],
+    },
+  }, "en");
+
+  assert.deepEqual(steelTimberFive, [
+    { label: "Status", value: "PASS" },
+    { label: "Rd", value: "87.892 kN" },
+    { label: "Utilization", value: "0.796" },
+    { label: "Rk per bolt", value: "35.706 kN" },
     { label: "Governing mode", value: "Interpolated (Mode k/Mode m)" },
     { label: "Warnings", value: "INTERMEDIATE_PLATE_INTERPOLATION" },
   ]);
