@@ -38,6 +38,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "ec5_axial_screw",
+    "ec5_joist_spacing_optimizer",
     "ec5_stabilizing_force",
     "ec5_steel_timber_screw_connection",
     "ec5_timber_beam_check",
@@ -271,6 +272,34 @@ test("timber beam check form metadata builds the API payload", () => {
   });
 });
 
+test("joist spacing optimizer form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_joist_spacing_optimizer", {
+    span_m: "4.2",
+    b_mm: "63",
+    h_mm: "175",
+    wood_grade: "C18",
+    climate_class: "1",
+    q_permanent_kn_m2: "1",
+    q_variable_kn_m2: "2",
+    min_spacing_m: "0.2",
+    max_spacing_m: "0.8",
+    spacing_step_m: "0.02",
+  });
+
+  assert.deepEqual(payload, {
+    span_m: 4.2,
+    b_mm: 63,
+    h_mm: 175,
+    wood_grade: "C18",
+    climate_class: 1,
+    q_permanent_kn_m2: 1,
+    q_variable_kn_m2: 2,
+    min_spacing_m: 0.2,
+    max_spacing_m: 0.8,
+    spacing_step_m: 0.02,
+  });
+});
+
 test("steel-timber screw form metadata builds nested spacing payload", () => {
   const payload = buildPayloadFromFormValues("ec5_steel_timber_screw_connection", {
     config_type: "central",
@@ -483,6 +512,25 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Shear UC", value: "0.175" },
     { label: "Final deflection", value: "7.463 mm" },
     { label: "Frequency f1", value: "12.983 Hz" },
+    { label: "Warnings", value: "None" },
+  ]);
+
+  const joistOptimizer = buildResultSummaryItems({
+    calculator_id: "ec5_joist_spacing_optimizer",
+    result: {
+      overall_status: "PASS",
+      recommended_spacing_cm: 80,
+      adequate_spacing_count: 31,
+      source_first_adequate_spacing_m: 0.2,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(joistOptimizer, [
+    { label: "Status", value: "PASS" },
+    { label: "Recommended spacing", value: "80 cm" },
+    { label: "Passing spacings", value: "31" },
+    { label: "Source first OK", value: "0.2 m" },
     { label: "Warnings", value: "None" },
   ]);
 
