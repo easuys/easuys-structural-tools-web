@@ -2142,4 +2142,102 @@ test("html report model exposes returned API metadata", () => {
   assert.deepEqual(report.warnings, ["NARROW_OSB_SCOPE"]);
   assert.deepEqual(report.assumptions, ["Point-load vibration helper only."]);
   assert.deepEqual(report.sourceRefs, ["Source script composite_osb_analysis.py."]);
+  assert.deepEqual(report.sections, []);
+});
+
+test("timber member report model exposes calculator-specific detail sections", () => {
+  const report = buildReportModel({
+    calculator_id: "ec5_timber_member_uls_6_component",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.30",
+    status: "ok",
+    result: {
+      overall_status: "PASS",
+      b_mm: 120,
+      h_mm: 360,
+      l_ef_mm: 5000,
+      wood_grade: "GL24h",
+      k_mod: 0.8,
+      f_m_d_mpa: 15.36,
+      f_c_0_d_mpa: 17.28,
+      f_v_d_mpa: 2.24,
+      n_ed_kn: 20,
+      vy_ed_kn: 10,
+      vz_ed_kn: 2,
+      mt_ed_knm: 1,
+      my_ed_knm: 18,
+      mz_ed_knm: 2,
+      lateral_restraint_type: "discrete",
+      load_position: "centroid",
+      k_crit: 1,
+      kc_y: 1,
+      kc_z: 1,
+      lambda_rel_m: 0.6859511805128977,
+      max_utilization: 0.5952811535493826,
+      critical_check: "Tension Bending",
+      uc_biaxial_bending: 0.483,
+      uc_tension_bending: 0.5952811535493826,
+      uc_compression_bending: 0,
+      uc_shear_torsion: 0.032,
+      warning_codes: ["DISCRETE_LATERAL_RESTRAINT", "ROLLING_SHEAR_CHECK_INCLUDED"],
+    },
+    assumptions: ["Six-component ULS helper only."],
+    source_refs: ["Source script main_beam_analyzer.py."],
+  }, "en", new Date("2026-06-02T18:00:00.000Z"));
+
+  assert.deepEqual(report.sections.map((section) => section.heading), [
+    "Geometry and material",
+    "Applied forces",
+    "Stability and utilization",
+  ]);
+  assert.deepEqual(report.sections[0].items.slice(0, 4), [
+    { label: "Width b", value: "120 mm" },
+    { label: "Height h", value: "360 mm" },
+    { label: "Effective length", value: "5000 mm" },
+    { label: "Wood grade", value: "GL24h" },
+  ]);
+  assert.deepEqual(report.sections[2].items.slice(0, 4), [
+    { label: "kcrit", value: "1" },
+    { label: "kc,y", value: "1" },
+    { label: "kc,z", value: "1" },
+    { label: "lambda rel,m", value: "0.686" },
+  ]);
+});
+
+test("timber report helpers include detailed sections in standalone HTML output", () => {
+  const response = {
+    calculator_id: "ec5_timber_beam_check",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.30",
+    result: {
+      overall_status: "PASS",
+      span_m: 3.6,
+      spacing_m: 0.6,
+      b_mm: 75,
+      h_mm: 225,
+      wood_grade: "C24",
+      q_permanent_kn_m2: 1,
+      q_variable_kn_m2: 2,
+      self_weight_kn_m: 0.123,
+      q_uls_kn_m: 2.5,
+      uc_bending: 0.466,
+      uc_shear: 0.175,
+      w_inst_mm: 5.189,
+      limit_inst_mm: 12,
+      w_fin_mm: 7.463,
+      limit_fin_mm: 14.4,
+      w_1kn_mm: 1.241,
+      f1_hz: 12.983,
+      governing_criteria: ["All criteria OK"],
+      warning_codes: [],
+    },
+    assumptions: ["Beam check helper only."],
+    source_refs: ["Source script spacing_optimizer.py."],
+    status: "ok",
+  };
+
+  const html = buildReportHtml(response, "en", new Date("2026-06-02T18:05:00.000Z"));
+  assert.match(html, /Geometry and loads/);
+  assert.match(html, /Checks/);
+  assert.match(html, /Self weight/);
+  assert.match(html, /1 kN deflection/);
+  assert.match(html, /All criteria OK/);
 });

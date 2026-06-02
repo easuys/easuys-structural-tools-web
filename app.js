@@ -4952,6 +4952,131 @@ const RESULT_SUMMARY_FIELDS = {
         { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
     ],
 };
+const REPORT_SECTION_FIELDS = {
+    ec5_timber_beam_check: [
+        {
+            heading: { nl: "Geometrie en belastingen", en: "Geometry and loads", fr: "Geometrie et charges" },
+            fields: [
+                { path: ["result", "span_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { path: ["result", "spacing_m"], label: { nl: "Hart-op-hart afstand", en: "Spacing", fr: "Entraxe" }, unit: "m" },
+                { path: ["result", "b_mm"], label: { nl: "Breedte b", en: "Width b", fr: "Largeur b" }, unit: "mm" },
+                { path: ["result", "h_mm"], label: { nl: "Hoogte h", en: "Height h", fr: "Hauteur h" }, unit: "mm" },
+                { path: ["result", "wood_grade"], label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" } },
+                { path: ["result", "q_permanent_kn_m2"], label: { nl: "Permanente last", en: "Permanent load", fr: "Charge permanente" }, unit: "kN/m2" },
+                { path: ["result", "q_variable_kn_m2"], label: { nl: "Veranderlijke last", en: "Variable load", fr: "Charge variable" }, unit: "kN/m2" },
+                { path: ["result", "self_weight_kn_m"], label: { nl: "Eigengewicht", en: "Self weight", fr: "Poids propre" }, unit: "kN/m" },
+                { path: ["result", "q_uls_kn_m"], label: { nl: "q ULS", en: "q ULS", fr: "q ELU" }, unit: "kN/m" },
+            ],
+        },
+        {
+            heading: { nl: "Controles", en: "Checks", fr: "Verifications" },
+            fields: [
+                { path: ["result", "uc_bending"], label: { nl: "Buiging UC", en: "Bending UC", fr: "Taux flexion" } },
+                { path: ["result", "uc_shear"], label: { nl: "Schuif UC", en: "Shear UC", fr: "Taux cisaillement" } },
+                { path: ["result", "w_inst_mm"], label: { nl: "Initiele doorbuiging", en: "Initial deflection", fr: "Fleche initiale" }, unit: "mm" },
+                { path: ["result", "limit_inst_mm"], label: { nl: "Limiet initieel", en: "Initial limit", fr: "Limite initiale" }, unit: "mm" },
+                { path: ["result", "w_fin_mm"], label: { nl: "Einddoorbuiging", en: "Final deflection", fr: "Fleche finale" }, unit: "mm" },
+                { path: ["result", "limit_fin_mm"], label: { nl: "Limiet finaal", en: "Final limit", fr: "Limite finale" }, unit: "mm" },
+                { path: ["result", "w_1kn_mm"], label: { nl: "1 kN doorbuiging", en: "1 kN deflection", fr: "Fleche 1 kN" }, unit: "mm" },
+                { path: ["result", "f1_hz"], label: { nl: "Eigenfrequentie", en: "Frequency f1", fr: "Frequence f1" }, unit: "Hz" },
+                { path: ["result", "governing_criteria"], label: { nl: "Maatgevend", en: "Governing criteria", fr: "Criteres determinants" }, format: "warnings" },
+            ],
+        },
+    ],
+    ec5_timber_floor_vibration: [
+        {
+            heading: { nl: "Geometrie en massa", en: "Geometry and mass", fr: "Geometrie et masse" },
+            fields: [
+                { path: ["result", "span_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { path: ["result", "spacing_m"], label: { nl: "Hart-op-hart afstand", en: "Spacing", fr: "Entraxe" }, unit: "m" },
+                { path: ["result", "b_mm"], label: { nl: "Breedte b", en: "Width b", fr: "Largeur b" }, unit: "mm" },
+                { path: ["result", "h_mm"], label: { nl: "Hoogte h", en: "Height h", fr: "Hauteur h" }, unit: "mm" },
+                { path: ["result", "wood_grade"], label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" } },
+                { path: ["result", "q_permanent_kn_m2"], label: { nl: "Permanente last", en: "Permanent load", fr: "Charge permanente" }, unit: "kN/m2" },
+                { path: ["result", "mass_beam_kg_m"], label: { nl: "Balkmassa", en: "Beam mass", fr: "Masse poutre" }, unit: "kg/m" },
+                { path: ["result", "mass_floor_kg_m"], label: { nl: "Vloermassa", en: "Floor mass", fr: "Masse plancher" }, unit: "kg/m" },
+                { path: ["result", "mass_linear_kg_m"], label: { nl: "Lineaire massa", en: "Linear mass", fr: "Masse lineaire" }, unit: "kg/m" },
+            ],
+        },
+        {
+            heading: { nl: "Trillingscontrole", en: "Vibration check", fr: "Verification vibration" },
+            fields: [
+                { path: ["result", "point_load_n"], label: { nl: "Puntlast", en: "Point load", fr: "Charge ponctuelle" }, unit: "N" },
+                { path: ["result", "w_point_load_mm"], label: { nl: "Puntlastdoorbuiging", en: "Point-load deflection", fr: "Fleche charge ponctuelle" }, unit: "mm" },
+                { path: ["result", "deflection_limit_mm"], label: { nl: "Doorbuigingslimiet", en: "Deflection limit", fr: "Limite fleche" }, unit: "mm" },
+                { path: ["result", "f1_hz"], label: { nl: "Eigenfrequentie", en: "Frequency f1", fr: "Frequence f1" }, unit: "Hz" },
+                { path: ["result", "frequency_limit_hz"], label: { nl: "Frequentielimiet", en: "Frequency limit", fr: "Limite frequence" }, unit: "Hz" },
+            ],
+        },
+    ],
+    ec5_timber_beam_fire_check: [
+        {
+            heading: { nl: "Geometrie en brandlast", en: "Geometry and fire load", fr: "Geometrie et charge feu" },
+            fields: [
+                { path: ["result", "span_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { path: ["result", "spacing_m"], label: { nl: "Hart-op-hart afstand", en: "Spacing", fr: "Entraxe" }, unit: "m" },
+                { path: ["result", "b_mm"], label: { nl: "Breedte b", en: "Width b", fr: "Largeur b" }, unit: "mm" },
+                { path: ["result", "h_mm"], label: { nl: "Hoogte h", en: "Height h", fr: "Hauteur h" }, unit: "mm" },
+                { path: ["result", "wood_grade"], label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" } },
+                { path: ["result", "fire_duration_min"], label: { nl: "Brandduur", en: "Fire duration", fr: "Duree feu" }, unit: "min" },
+                { path: ["result", "q_fire_kn_m"], label: { nl: "q fire", en: "q fire", fr: "q feu" }, unit: "kN/m" },
+            ],
+        },
+        {
+            heading: { nl: "Restsectie en controle", en: "Residual section and check", fr: "Section residuelle et verification" },
+            fields: [
+                { path: ["result", "b_fi_mm"], label: { nl: "Restbreedte", en: "Residual width", fr: "Largeur residuelle" }, unit: "mm" },
+                { path: ["result", "h_fi_mm"], label: { nl: "Resthoogte", en: "Residual height", fr: "Hauteur residuelle" }, unit: "mm" },
+                { path: ["result", "uc_bending_fire"], label: { nl: "Brand buiging UC", en: "Fire bending UC", fr: "Taux flexion feu" } },
+                { path: ["result", "uc_shear_fire"], label: { nl: "Brand schuif UC", en: "Fire shear UC", fr: "Taux cisaillement feu" } },
+                { path: ["result", "residual_section_ok"], label: { nl: "Restsectie OK", en: "Residual section OK", fr: "Section residuelle OK" }, format: "check" },
+            ],
+        },
+    ],
+    ec5_timber_member_uls_6_component: [
+        {
+            heading: { nl: "Geometrie en materiaal", en: "Geometry and material", fr: "Geometrie et materiau" },
+            fields: [
+                { path: ["result", "b_mm"], label: { nl: "Breedte b", en: "Width b", fr: "Largeur b" }, unit: "mm" },
+                { path: ["result", "h_mm"], label: { nl: "Hoogte h", en: "Height h", fr: "Hauteur h" }, unit: "mm" },
+                { path: ["result", "l_ef_mm"], label: { nl: "Effectieve lengte", en: "Effective length", fr: "Longueur efficace" }, unit: "mm" },
+                { path: ["result", "wood_grade"], label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" } },
+                { path: ["result", "k_mod"], label: { nl: "kmod", en: "kmod", fr: "kmod" } },
+                { path: ["result", "f_m_d_mpa"], label: { nl: "fmd", en: "fmd", fr: "fmd" }, unit: "MPa" },
+                { path: ["result", "f_c_0_d_mpa"], label: { nl: "fc0d", en: "fc0d", fr: "fc0d" }, unit: "MPa" },
+                { path: ["result", "f_v_d_mpa"], label: { nl: "fvd", en: "fvd", fr: "fvd" }, unit: "MPa" },
+            ],
+        },
+        {
+            heading: { nl: "Belastingen", en: "Applied forces", fr: "Efforts appliques" },
+            fields: [
+                { path: ["result", "n_ed_kn"], label: { nl: "NEd", en: "NEd", fr: "NEd" }, unit: "kN" },
+                { path: ["result", "vy_ed_kn"], label: { nl: "Vy,Ed", en: "Vy,Ed", fr: "Vy,Ed" }, unit: "kN" },
+                { path: ["result", "vz_ed_kn"], label: { nl: "Vz,Ed", en: "Vz,Ed", fr: "Vz,Ed" }, unit: "kN" },
+                { path: ["result", "mt_ed_knm"], label: { nl: "Mt,Ed", en: "Mt,Ed", fr: "Mt,Ed" }, unit: "kNm" },
+                { path: ["result", "my_ed_knm"], label: { nl: "My,Ed", en: "My,Ed", fr: "My,Ed" }, unit: "kNm" },
+                { path: ["result", "mz_ed_knm"], label: { nl: "Mz,Ed", en: "Mz,Ed", fr: "Mz,Ed" }, unit: "kNm" },
+                { path: ["result", "lateral_restraint_type"], label: { nl: "Zijdelingse steun", en: "Lateral restraint", fr: "Maintien lateral" } },
+                { path: ["result", "load_position"], label: { nl: "Lastpositie", en: "Load position", fr: "Position charge" } },
+            ],
+        },
+        {
+            heading: { nl: "Stabiliteit en benutting", en: "Stability and utilization", fr: "Stabilite et utilisation" },
+            fields: [
+                { path: ["result", "k_crit"], label: { nl: "kcrit", en: "kcrit", fr: "kcrit" } },
+                { path: ["result", "kc_y"], label: { nl: "kc,y", en: "kc,y", fr: "kc,y" } },
+                { path: ["result", "kc_z"], label: { nl: "kc,z", en: "kc,z", fr: "kc,z" } },
+                { path: ["result", "lambda_rel_m"], label: { nl: "lambda rel,m", en: "lambda rel,m", fr: "lambda rel,m" } },
+                { path: ["result", "max_utilization"], label: { nl: "Max benutting", en: "Max utilization", fr: "Utilisation max" } },
+                { path: ["result", "critical_check"], label: { nl: "Maatgevend", en: "Critical check", fr: "Verification critique" } },
+                { path: ["result", "uc_biaxial_bending"], label: { nl: "Biaxiale buiging", en: "Biaxial bending", fr: "Flexion biaxiale" } },
+                { path: ["result", "uc_tension_bending"], label: { nl: "Trek plus buiging", en: "Tension bending", fr: "Traction flexion" } },
+                { path: ["result", "uc_compression_bending"], label: { nl: "Druk plus buiging", en: "Compression bending", fr: "Compression flexion" } },
+                { path: ["result", "uc_shear_torsion"], label: { nl: "Schuif plus torsie", en: "Shear torsion", fr: "Cisaillement torsion" } },
+            ],
+        },
+    ],
+};
 const STORAGE_KEY = "ea-suys-structural-tools-input";
 export function formatJson(value) {
     return JSON.stringify(value, null, 2);
@@ -4987,6 +5112,30 @@ export function buildResultSummaryItems(response, lang = "en") {
     })
         .filter(Boolean);
 }
+function buildReportSections(response, lang = "en") {
+    const sections = REPORT_SECTION_FIELDS[response?.calculator_id] || [];
+    return sections
+        .map((section) => {
+        const items = section.fields
+            .map((field) => {
+            const value = valueAtPath(response, field.path);
+            if (value === undefined || value === null)
+                return null;
+            return {
+                label: field.label[lang] || field.label.en,
+                value: formatSummaryValue(value, field),
+            };
+        })
+            .filter(Boolean);
+        if (!items.length)
+            return null;
+        return {
+            heading: section.heading[lang] || section.heading.en,
+            items,
+        };
+    })
+        .filter(Boolean);
+}
 export function buildReportModel(response, lang = "en", generatedAt = new Date()) {
     if (!response)
         return null;
@@ -4994,6 +5143,7 @@ export function buildReportModel(response, lang = "en", generatedAt = new Date()
     const status = response.status || response.result?.overall_status || response.result?.check_passed;
     const warnings = collectWarningCodes(response);
     const summaryItems = buildResultSummaryItems(response, lang);
+    const sections = buildReportSections(response, lang);
     return {
         title: text.reportTitle,
         details: [
@@ -5009,6 +5159,7 @@ export function buildReportModel(response, lang = "en", generatedAt = new Date()
         ],
         summaryHeading: text.summary,
         summaryItems: summaryItems.length ? summaryItems : [{ label: text.summary, value: text.none }],
+        sections,
         warningsHeading: text.warnings,
         warnings: warnings.length ? warnings : [text.none],
         assumptionsHeading: text.assumptions,
@@ -5038,12 +5189,14 @@ export function buildReportHtml(response, lang = "en", generatedAt = new Date())
         "    ul { margin: 8px 0 0; padding-left: 18px; }",
         "    li { margin-top: 4px; overflow-wrap: anywhere; }",
         "    .summary { border-top: 1px solid #d8d3c5; margin-top: 20px; padding-top: 16px; }",
+        "    .detail-section { border-top: 1px solid #d8d3c5; margin-top: 18px; padding-top: 14px; }",
         "  </style>",
         "</head>",
         "<body>",
         `  <h1>${escapeHtml(report.title)}</h1>`,
         `  <dl>${report.details.map((item) => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`).join("")}</dl>`,
         `  <section class="summary"><h2>${escapeHtml(report.summaryHeading)}</h2><ul>${report.summaryItems.map((item) => `<li>${escapeHtml(`${item.label}: ${item.value}`)}</li>`).join("")}</ul></section>`,
+        ...report.sections.map((section) => buildStandaloneReportDetailSection(section)),
         `  <section><h2>${escapeHtml(report.warningsHeading)}</h2><ul>${report.warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
         `  <section><h2>${escapeHtml(report.assumptionsHeading)}</h2><ul>${report.assumptions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
         `  <section><h2>${escapeHtml(report.sourceRefsHeading)}</h2><ul>${report.sourceRefs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
@@ -5251,6 +5404,7 @@ function renderReport(container, response, lang) {
         `<h3>${escapeHtml(report.title)}</h3>`,
         `<dl class="report-details">${report.details.map((item) => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`).join("")}</dl>`,
         renderReportSection(report.summaryHeading, report.summaryItems.map((item) => `${item.label}: ${item.value}`)),
+        ...report.sections.map((section) => renderReportDetailSection(section)),
         renderReportSection(report.warningsHeading, report.warnings),
         renderReportSection(report.assumptionsHeading, report.assumptions),
         renderReportSection(report.sourceRefsHeading, report.sourceRefs),
@@ -5261,6 +5415,18 @@ function renderReportSection(heading, items) {
         `<section><h4>${escapeHtml(heading)}</h4>`,
         `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
     ].join("");
+}
+function renderReportDetailSection(section) {
+    return [
+        `<section class="detail-section"><h4>${escapeHtml(section.heading)}</h4>`,
+        `<dl class="report-details">${section.items.map((item) => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`).join("")}</dl></section>`,
+    ].join("");
+}
+function buildStandaloneReportDetailSection(section) {
+    return [
+        `  <section class="detail-section"><h2>${escapeHtml(section.heading)}</h2>`,
+        `    <dl>${section.items.map((item) => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`).join("")}</dl></section>`,
+    ].join("\n");
 }
 function triggerDownload(documentRef, filename, text, mimeType = "application/json") {
     const blob = new Blob([text], { type: mimeType });
