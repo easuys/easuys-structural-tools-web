@@ -88,6 +88,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_timber_beam_check",
     "ec5_timber_contact_moment_joint",
     "ec5_timber_timber_single_shear_connection",
+    "ec5_toothed_plate_connection",
     "ec6_beam_bearing",
     "ec6_inplane_shear_wall",
     "ec6_lateral_wall_resistance",
@@ -1020,6 +1021,62 @@ test("timber-timber single-shear form metadata builds nested spacing payload", (
   });
 });
 
+test("toothed-plate connection form metadata builds nested spacing payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_toothed_plate_connection", {
+    t1_mm: "80",
+    t2_mm: "80",
+    n: "4",
+    timber_type_1: "Softwood",
+    timber_type_2: "Softwood",
+    rho_k_1: "350",
+    rho_k_2: "350",
+    service_class_1: "1",
+    service_class_2: "1",
+    load_duration: "Medium-term",
+    connector_type: "C1-C9",
+    dc_mm: "75",
+    he_mm: "17",
+    d_mm: "12",
+    f_uk_mpa: "500",
+    "spacings.a1_mm": "140",
+    "spacings.a2_mm": "95",
+    "spacings.a3t_mm": "120",
+    "spacings.a3c_mm": "95",
+    "spacings.a4t_mm": "50",
+    "spacings.a4c_mm": "50",
+    alpha_deg: "0",
+    f_v_ed_kn: "40",
+  });
+
+  assert.deepEqual(payload, {
+    t1_mm: 80,
+    t2_mm: 80,
+    n: 4,
+    timber_type_1: "Softwood",
+    timber_type_2: "Softwood",
+    rho_k_1: 350,
+    rho_k_2: 350,
+    service_class_1: 1,
+    service_class_2: 1,
+    load_duration: "Medium-term",
+    connector_type: "C1-C9",
+    dc_mm: 75,
+    he_mm: 17,
+    d_mm: 12,
+    f_uk_mpa: 500,
+    spacings: {
+      a1_mm: 140,
+      a2_mm: 95,
+      a3t_mm: 120,
+      a3c_mm: 95,
+      a4t_mm: 50,
+      a4c_mm: 50,
+    },
+    alpha_deg: 0,
+    f_v_ed_kn: 40,
+  });
+});
+
 test("all first-wave tools expose form metadata", () => {
   assert.deepEqual(
     Object.entries(TOOL_CATALOG).filter(([, tool]) => !tool.form).map(([toolId]) => toolId),
@@ -1538,6 +1595,29 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Effective n", value: "4" },
     { label: "Governing mode", value: "Mode f (Two plastic hinges)" },
     { label: "Warnings", value: "ROPE_EFFECT_INCLUDED" },
+  ]);
+
+  const toothedPlate = buildResultSummaryItems({
+    calculator_id: "ec5_toothed_plate_connection",
+    result: {
+      overall_status: "PASS",
+      r_d_kn: 44.93623302115343,
+      r_d_plate_kn: 28.778690341144426,
+      r_d_bolt_kn: 16.157542680008998,
+      utilization_ratio: 0.8901502709666445,
+      governing_bolt_mode: "Mode c (Complex embedment)",
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(toothedPlate, [
+    { label: "Status", value: "PASS" },
+    { label: "Total Rd", value: "44.936 kN" },
+    { label: "Plate Rd", value: "28.779 kN" },
+    { label: "Bolt Rd", value: "16.158 kN" },
+    { label: "Utilization", value: "0.89" },
+    { label: "Bolt mode", value: "Mode c (Complex embedment)" },
+    { label: "Warnings", value: "None" },
   ]);
 });
 
