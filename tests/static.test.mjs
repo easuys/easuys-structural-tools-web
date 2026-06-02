@@ -69,6 +69,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "beam_composite_shear_stress",
     "beam_simple_diagrams",
+    "composite_embedded_profile_bearing",
     "ec1_roof_loads",
     "ec3_bolt_group_torsion",
     "ec3_bolted_lap_joint",
@@ -190,6 +191,36 @@ test("simple beam diagrams form metadata builds load array payload", () => {
       { label: "midspan_point", permanent_kn: 0, variable_kn: 25, position_m: 2.5 },
     ],
     sample_points: 21,
+  });
+});
+
+test("embedded profile bearing form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("composite_embedded_profile_bearing", {
+    embedment_height_m: "0.4",
+    profile_width_m: "0.2",
+    v_ed_kn: "3",
+    m_ed_knm: "15.2",
+    fck_mpa: "30",
+    gamma_c: "1.5",
+    bar_diameter_mm: "12",
+    bar_fyk_mpa: "500",
+    gamma_s: "1.15",
+    provided_bars: "2",
+    sample_points: "41",
+  });
+
+  assert.deepEqual(payload, {
+    embedment_height_m: 0.4,
+    profile_width_m: 0.2,
+    v_ed_kn: 3,
+    m_ed_knm: 15.2,
+    fck_mpa: 30,
+    gamma_c: 1.5,
+    bar_diameter_mm: 12,
+    bar_fyk_mpa: 500,
+    gamma_s: 1.15,
+    provided_bars: 2,
+    sample_points: 41,
   });
 });
 

@@ -71,6 +71,42 @@ export const TOOL_CATALOG = {
             ],
         },
     },
+    composite_embedded_profile_bearing: {
+        endpoint: "/calculate/composite/embedded-profile-bearing",
+        title: {
+            nl: "Ingestort profiel draagvlak",
+            en: "Embedded profile bearing",
+            fr: "Appui profil encastre",
+        },
+        sample: {
+            embedment_height_m: 0.4,
+            profile_width_m: 0.2,
+            v_ed_kn: 3,
+            m_ed_knm: 15.2,
+            fck_mpa: 30,
+            gamma_c: 1.5,
+            bar_diameter_mm: 12,
+            bar_fyk_mpa: 500,
+            gamma_s: 1.15,
+            provided_bars: 2,
+            sample_points: 41,
+        },
+        form: {
+            fields: [
+                { name: "embedment_height_m", value_type: "number", control: "number", step: "0.01", label: { nl: "Ingestorte hoogte", en: "Embedment height", fr: "Hauteur encastree" }, unit: "m" },
+                { name: "profile_width_m", value_type: "number", control: "number", step: "0.01", label: { nl: "Profielbreedte", en: "Profile width", fr: "Largeur profil" }, unit: "m" },
+                { name: "v_ed_kn", value_type: "number", control: "number", step: "0.1", label: { nl: "VEd", en: "VEd", fr: "VEd" }, unit: "kN" },
+                { name: "m_ed_knm", value_type: "number", control: "number", step: "0.1", label: { nl: "MEd", en: "MEd", fr: "MEd" }, unit: "kNm" },
+                { name: "fck_mpa", value_type: "number", control: "number", step: "0.1", label: { nl: "fck", en: "fck", fr: "fck" }, unit: "MPa" },
+                { name: "gamma_c", value_type: "number", control: "number", step: "0.01", label: { nl: "gamma c", en: "gamma c", fr: "gamma c" } },
+                { name: "bar_diameter_mm", value_type: "number", control: "number", step: "1", label: { nl: "Staafdiameter", en: "Bar diameter", fr: "Diametre barre" }, unit: "mm" },
+                { name: "bar_fyk_mpa", value_type: "number", control: "number", step: "1", label: { nl: "fyk staaf", en: "Bar fyk", fr: "fyk barre" }, unit: "MPa" },
+                { name: "gamma_s", value_type: "number", control: "number", step: "0.01", label: { nl: "gamma s", en: "gamma s", fr: "gamma s" } },
+                { name: "provided_bars", value_type: "number", control: "number", step: "1", label: { nl: "Voorziene staven", en: "Provided bars", fr: "Barres prevues" } },
+                { name: "sample_points", value_type: "number", control: "number", step: "1", label: { nl: "Diagram punten", en: "Diagram points", fr: "Points diagramme" } },
+            ],
+        },
+    },
     ec1_roof_loads: {
         endpoint: "/calculate/ec1/roof-loads",
         title: {
@@ -4381,6 +4417,14 @@ const RESULT_SUMMARY_FIELDS = {
         { path: ["result", "cases", "sls", "v_max_kn"], label: { nl: "SLS Vmax", en: "SLS Vmax", fr: "ELS Vmax" }, unit: "kN" },
         { path: ["result", "cases", "uls", "reactions", "left_kn"], label: { nl: "ULS R links", en: "ULS R left", fr: "ELU R gauche" }, unit: "kN" },
         { path: ["result", "cases", "uls", "reactions", "right_kn"], label: { nl: "ULS R rechts", en: "ULS R right", fr: "ELU R droite" }, unit: "kN" },
+        { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+    ],
+    composite_embedded_profile_bearing: [
+        { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+        { path: ["result", "sigma_c_max_kpa"], label: { nl: "Sigma c max", en: "Sigma c max", fr: "Sigma c max" }, unit: "kPa" },
+        { path: ["result", "concrete_design_pressure_kpa"], label: { nl: "Toelaatbaar", en: "Design limit", fr: "Limite calcul" }, unit: "kPa" },
+        { path: ["result", "max_hanging_force_kn"], label: { nl: "Ophangkracht", en: "Hanging force", fr: "Effort suspendu" }, unit: "kN" },
+        { path: ["result", "required_bars"], label: { nl: "Vereiste staven", en: "Required bars", fr: "Barres requises" } },
         { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
     ],
     ec1_roof_loads: [
