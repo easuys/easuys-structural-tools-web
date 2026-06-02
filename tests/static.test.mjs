@@ -72,6 +72,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "beam_composite_shear_stress",
+    "beam_continuous_strip",
     "beam_simple_diagrams",
     "beam_support_fixity_bracketing",
     "composite_embedded_profile_bearing",
@@ -222,6 +223,26 @@ test("EC2 rectangular section form metadata builds the API payload", () => {
     kt: 0.4,
     wmax_mm: 0.3,
     applied_moment_knm: 210,
+  });
+});
+
+test("beam continuous strip form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("beam_continuous_strip", {
+    "span_lengths_m.0": "4.64",
+    "span_lengths_m.1": "2.18",
+    "span_lengths_m.2": "4.64",
+    e_modulus_gpa: "33",
+    inertia_m4: "0.00028125",
+    uniform_load_kn_per_m: "-4.48",
+    sample_points: "301",
+  });
+
+  assert.deepEqual(payload, {
+    span_lengths_m: [4.64, 2.18, 4.64],
+    e_modulus_gpa: 33,
+    inertia_m4: 0.00028125,
+    uniform_load_kn_per_m: -4.48,
+    sample_points: 301,
   });
 });
 
@@ -1499,6 +1520,29 @@ test("supporting tool result summaries format returned API fields only", () => {
     { label: "Warnings", value: "None" },
   ]);
 
+  const continuousStrip = buildResultSummaryItems({
+    calculator_id: "beam_continuous_strip",
+    status: "ok",
+    result: {
+      response: {
+        max_moment_knm: { absolute_value: 8.469483 },
+        max_shear_kn: { absolute_value: 11.953366 },
+        max_deflection_mm: { absolute_value: 1.796414 },
+        reactions: [{ ry_kn: 8.711306 }, { ry_kn: 16.959094 }],
+      },
+      warning_codes: ["UNIFORM_LOAD_FULL_LENGTH_ONLY"],
+    },
+  }, "en");
+
+  assert.deepEqual(continuousStrip, [
+    { label: "Status", value: "OK" },
+    { label: "Max |M|", value: "8.469 kNm" },
+    { label: "Max |V|", value: "11.953 kN" },
+    { label: "Max deflection", value: "1.796 mm" },
+    { label: "Inner-left reaction", value: "16.959 kN" },
+    { label: "Warnings", value: "UNIFORM_LOAD_FULL_LENGTH_ONLY" },
+  ]);
+
   const simpleBeam = buildResultSummaryItems({
     calculator_id: "beam_simple_diagrams",
     result: {
@@ -2346,4 +2390,37 @@ test("beam support-fixity report helpers include bracket sections in standalone 
   assert.match(html, /Pinned-left case/);
   assert.match(html, /Average bracket response/);
   assert.match(html, /Distributed loads/);
+});
+
+test("beam continuous strip report helpers include strip sections in standalone HTML output", () => {
+  const response = {
+    calculator_id: "beam_continuous_strip",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.32",
+    result: {
+      span_lengths_m: [4.64, 2.18, 4.64],
+      total_length_m: 11.46,
+      uniform_load_kn_per_m: -4.48,
+      response: {
+        reactions: [
+          { ry_kn: 8.711306 },
+          { ry_kn: 16.959094 },
+          { ry_kn: 16.959094 },
+          { ry_kn: 8.711306 },
+        ],
+        max_shear_kn: { signed_value: 11.953366 },
+        max_moment_knm: { signed_value: 8.469483 },
+        max_deflection_mm: { signed_value: -1.796414 },
+      },
+      warning_codes: ["FOUR_SUPPORT_PATTERN_ONLY"],
+    },
+    assumptions: ["Continuous strip helper only."],
+    source_refs: ["Source script example_wrappers.py."],
+    status: "ok",
+  };
+
+  const html = buildReportHtml(response, "en", new Date("2026-06-02T18:55:00.000Z"));
+  assert.match(html, /Model and load/);
+  assert.match(html, /Reactions/);
+  assert.match(html, /Governing response/);
+  assert.match(html, /Uniform line load/);
 });

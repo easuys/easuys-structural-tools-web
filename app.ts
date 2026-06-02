@@ -41,6 +41,32 @@ export const TOOL_CATALOG = {
       ],
     },
   },
+  beam_continuous_strip: {
+    endpoint: "/calculate/beam/continuous-strip",
+    title: {
+      nl: "Doorlopende strook op vier steunpunten",
+      en: "Continuous strip on four supports",
+      fr: "Bande continue sur quatre appuis",
+    },
+    sample: {
+      span_lengths_m: [4.64, 2.18, 4.64],
+      e_modulus_gpa: 33,
+      inertia_m4: 0.00028125,
+      uniform_load_kn_per_m: -4.48,
+      sample_points: 401,
+    },
+    form: {
+      fields: [
+        { name: "span_lengths_m.0", path: ["span_lengths_m", 0], value_type: "number", control: "number", step: "0.01", label: { nl: "Overspanning 1", en: "Span 1", fr: "Portee 1" }, unit: "m" },
+        { name: "span_lengths_m.1", path: ["span_lengths_m", 1], value_type: "number", control: "number", step: "0.01", label: { nl: "Overspanning 2", en: "Span 2", fr: "Portee 2" }, unit: "m" },
+        { name: "span_lengths_m.2", path: ["span_lengths_m", 2], value_type: "number", control: "number", step: "0.01", label: { nl: "Overspanning 3", en: "Span 3", fr: "Portee 3" }, unit: "m" },
+        { name: "e_modulus_gpa", value_type: "number", control: "number", step: "0.1", label: { nl: "E-modulus", en: "E modulus", fr: "Module E" }, unit: "GPa" },
+        { name: "inertia_m4", value_type: "number", control: "number", step: "0.000001", label: { nl: "Traagheidsmoment I", en: "Inertia I", fr: "Inertie I" }, unit: "m4" },
+        { name: "uniform_load_kn_per_m", value_type: "number", control: "number", step: "0.01", label: { nl: "Uniforme lijnlast", en: "Uniform line load", fr: "Charge lineaire uniforme" }, unit: "kN/m" },
+        { name: "sample_points", value_type: "number", control: "number", step: "1", label: { nl: "Diagram punten", en: "Diagram points", fr: "Points diagramme" } },
+      ],
+    },
+  },
   beam_simple_diagrams: {
     endpoint: "/calculate/beam/simple-diagrams",
     title: {
@@ -4725,6 +4751,14 @@ const RESULT_SUMMARY_FIELDS = {
     { path: ["result", "actual_width_at_target_mm"], label: { nl: "Breedte", en: "Width", fr: "Largeur" }, unit: "mm" },
     { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
   ],
+  beam_continuous_strip: [
+    { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "response", "max_moment_knm", "absolute_value"], label: { nl: "Max |M|", en: "Max |M|", fr: "Max |M|" }, unit: "kNm" },
+    { path: ["result", "response", "max_shear_kn", "absolute_value"], label: { nl: "Max |V|", en: "Max |V|", fr: "Max |V|" }, unit: "kN" },
+    { path: ["result", "response", "max_deflection_mm", "absolute_value"], label: { nl: "Max doorbuiging", en: "Max deflection", fr: "Fleche max" }, unit: "mm" },
+    { path: ["result", "response", "reactions", 1, "ry_kn"], label: { nl: "Binnensteun links", en: "Inner-left reaction", fr: "Reaction appui interieur gauche" }, unit: "kN" },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
   beam_simple_diagrams: [
     { path: ["result", "cases", "uls", "m_max_knm"], label: { nl: "ULS Mmax", en: "ULS Mmax", fr: "ELU Mmax" }, unit: "kNm" },
     { path: ["result", "cases", "uls", "v_max_kn"], label: { nl: "ULS Vmax", en: "ULS Vmax", fr: "ELU Vmax" }, unit: "kN" },
@@ -5007,6 +5041,35 @@ const RESULT_SUMMARY_FIELDS = {
 };
 
 const REPORT_SECTION_FIELDS = {
+  beam_continuous_strip: [
+    {
+      heading: { nl: "Model en belasting", en: "Model and load", fr: "Modele et charge" },
+      fields: [
+        { path: ["result", "span_lengths_m", 0], label: { nl: "Overspanning 1", en: "Span 1", fr: "Portee 1" }, unit: "m" },
+        { path: ["result", "span_lengths_m", 1], label: { nl: "Overspanning 2", en: "Span 2", fr: "Portee 2" }, unit: "m" },
+        { path: ["result", "span_lengths_m", 2], label: { nl: "Overspanning 3", en: "Span 3", fr: "Portee 3" }, unit: "m" },
+        { path: ["result", "total_length_m"], label: { nl: "Totale lengte", en: "Total length", fr: "Longueur totale" }, unit: "m" },
+        { path: ["result", "uniform_load_kn_per_m"], label: { nl: "Uniforme lijnlast", en: "Uniform line load", fr: "Charge lineaire uniforme" }, unit: "kN/m" },
+      ],
+    },
+    {
+      heading: { nl: "Reacties", en: "Reactions", fr: "Reactions" },
+      fields: [
+        { path: ["result", "response", "reactions", 0, "ry_kn"], label: { nl: "Links", en: "Left", fr: "Gauche" }, unit: "kN" },
+        { path: ["result", "response", "reactions", 1, "ry_kn"], label: { nl: "Binnen links", en: "Inner left", fr: "Interieur gauche" }, unit: "kN" },
+        { path: ["result", "response", "reactions", 2, "ry_kn"], label: { nl: "Binnen rechts", en: "Inner right", fr: "Interieur droite" }, unit: "kN" },
+        { path: ["result", "response", "reactions", 3, "ry_kn"], label: { nl: "Rechts", en: "Right", fr: "Droite" }, unit: "kN" },
+      ],
+    },
+    {
+      heading: { nl: "Maatgevende respons", en: "Governing response", fr: "Reponse determinante" },
+      fields: [
+        { path: ["result", "response", "max_shear_kn", "signed_value"], label: { nl: "Vmax", en: "Vmax", fr: "Vmax" }, unit: "kN" },
+        { path: ["result", "response", "max_moment_knm", "signed_value"], label: { nl: "Mmax", en: "Mmax", fr: "Mmax" }, unit: "kNm" },
+        { path: ["result", "response", "max_deflection_mm", "signed_value"], label: { nl: "wmax", en: "wmax", fr: "wmax" }, unit: "mm" },
+      ],
+    },
+  ],
   beam_support_fixity_bracketing: [
     {
       heading: { nl: "Model en belastingen", en: "Model and loads", fr: "Modele et charges" },
