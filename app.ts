@@ -1707,6 +1707,48 @@ export const TOOL_CATALOG = {
       ],
     },
   },
+  ec3_lateral_torsional_buckling: {
+    endpoint: "/calculate/ec3/lateral-torsional-buckling",
+    title: {
+      nl: "EC3 kipcontrole",
+      en: "EC3 lateral-torsional buckling",
+      fr: "EC3 deversement",
+    },
+    sample: {
+      profile_name: "IPE 240",
+      steel_grade: "S355",
+      section: {
+        h_mm: 240,
+        b_mm: 120,
+        iz_mm4: 2836000,
+        wy_pl_mm3: 366600,
+        it_mm4: 130000,
+        iw_mm6: 37400000,
+      },
+      m_ed_knm: 40,
+      unbraced_length_m: 3,
+      loading_type: "uniform",
+      load_position: "top_flange",
+      destabilizing: true,
+    },
+    form: {
+      fields: [
+        { name: "profile_name", value_type: "string", control: "text", label: { nl: "Profiel", en: "Profile", fr: "Profil" } },
+        { name: "steel_grade", value_type: "string", control: "select", label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" }, options: ["S235", "S275", "S355", "S420", "S450", "S460"] },
+        { name: "section.h_mm", value_type: "number", control: "number", step: "0.1", label: { nl: "Hoogte h", en: "Height h", fr: "Hauteur h" }, unit: "mm" },
+        { name: "section.b_mm", value_type: "number", control: "number", step: "0.1", label: { nl: "Breedte b", en: "Width b", fr: "Largeur b" }, unit: "mm" },
+        { name: "section.iz_mm4", value_type: "number", control: "number", step: "1000", label: { nl: "Iz", en: "Iz", fr: "Iz" }, unit: "mm4" },
+        { name: "section.wy_pl_mm3", value_type: "number", control: "number", step: "100", label: { nl: "Wpl,y", en: "Wpl,y", fr: "Wpl,y" }, unit: "mm3" },
+        { name: "section.it_mm4", value_type: "number", control: "number", step: "1000", label: { nl: "It", en: "It", fr: "It" }, unit: "mm4" },
+        { name: "section.iw_mm6", value_type: "number", control: "number", step: "100000", label: { nl: "Iw", en: "Iw", fr: "Iw" }, unit: "mm6" },
+        { name: "m_ed_knm", value_type: "number", control: "number", step: "1", label: { nl: "My,Ed", en: "My,Ed", fr: "My,Ed" }, unit: "kNm" },
+        { name: "unbraced_length_m", value_type: "number", control: "number", step: "0.1", label: { nl: "Kiplengte", en: "Unbraced length", fr: "Longueur non maintenue" }, unit: "m" },
+        { name: "loading_type", value_type: "string", control: "select", label: { nl: "Belasting", en: "Loading", fr: "Chargement" }, options: ["uniform", "point_load", "end_moments", "linear"] },
+        { name: "load_position", value_type: "string", control: "select", label: { nl: "Aangrijpingspunt", en: "Load position", fr: "Position charge" }, options: ["top_flange", "shear_center", "bottom_flange"] },
+        { name: "destabilizing", value_type: "boolean", control: "checkbox", label: { nl: "Destabiliserend", en: "Destabilizing", fr: "Destabilisant" } },
+      ],
+    },
+  },
   ec3_profile_optimizer: {
     endpoint: "/calculate/ec3/profile-optimizer",
     title: {
@@ -3756,6 +3798,14 @@ const RESULT_SUMMARY_FIELDS = {
     { path: ["result", "utilization_percent"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" }, unit: "%" },
     { path: ["result", "resistances", "m_y_rd_knm"], label: { nl: "My,Rd", en: "My,Rd", fr: "My,Rd" }, unit: "kNm" },
     { path: ["result", "resistances", "v_y_rd_kn"], label: { nl: "Vy,Rd", en: "Vy,Rd", fr: "Vy,Rd" }, unit: "kN" },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
+  ec3_lateral_torsional_buckling: [
+    { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "mb_rd_knm"], label: { nl: "Mb,Rd", en: "Mb,Rd", fr: "Mb,Rd" }, unit: "kNm" },
+    { path: ["result", "utilization_percent"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" }, unit: "%" },
+    { path: ["result", "lambda_lt"], label: { nl: "Lambda LT", en: "Lambda LT", fr: "Lambda LT" } },
+    { path: ["result", "ltb_required"], label: { nl: "Kipcontrole nodig", en: "LTB required", fr: "Deversement requis" } },
     { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
   ],
   ec3_profile_optimizer: [

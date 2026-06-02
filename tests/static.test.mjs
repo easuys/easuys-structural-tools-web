@@ -59,6 +59,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec3_bolted_moment_connection",
     "ec3_double_sided_web_connection",
     "ec3_fillet_weld",
+    "ec3_lateral_torsional_buckling",
     "ec3_plate_tension",
     "ec3_profile_optimizer",
     "ec3_splice_moment_connection",
@@ -243,6 +244,42 @@ test("ec3 profile optimizer form metadata builds candidate array payload", () =>
   assert.equal(payload.candidates[1].weight_kg_per_m, 30.7);
   assert.equal(payload.candidates[1].section.h_mm, 240);
   assert.equal(payload.candidates[1].section.wy_pl_mm3, 366600);
+});
+
+test("ec3 lateral-torsional buckling form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_lateral_torsional_buckling", {
+    profile_name: "IPE 240",
+    steel_grade: "S355",
+    "section.h_mm": "240",
+    "section.b_mm": "120",
+    "section.iz_mm4": "2836000",
+    "section.wy_pl_mm3": "366600",
+    "section.it_mm4": "130000",
+    "section.iw_mm6": "37400000",
+    m_ed_knm: "40",
+    unbraced_length_m: "3",
+    loading_type: "uniform",
+    load_position: "top_flange",
+    destabilizing: "true",
+  });
+
+  assert.deepEqual(payload, {
+    profile_name: "IPE 240",
+    steel_grade: "S355",
+    section: {
+      h_mm: 240,
+      b_mm: 120,
+      iz_mm4: 2836000,
+      wy_pl_mm3: 366600,
+      it_mm4: 130000,
+      iw_mm6: 37400000,
+    },
+    m_ed_knm: 40,
+    unbraced_length_m: 3,
+    loading_type: "uniform",
+    load_position: "top_flange",
+    destabilizing: true,
+  });
 });
 
 test("ec3 bolt group torsion form metadata builds the API payload", () => {
@@ -1188,6 +1225,27 @@ test("ec3 result summaries format returned API fields only", () => {
     { label: "Utilization", value: "95.6 %" },
     { label: "My,Rd", value: "130.1 kNm" },
     { label: "Vy,Rd", value: "801.4 kN" },
+    { label: "Warnings", value: "None" },
+  ]);
+
+  const ltb = buildResultSummaryItems({
+    calculator_id: "ec3_lateral_torsional_buckling",
+    result: {
+      overall_status: "PASS",
+      mb_rd_knm: 46.987879,
+      utilization_percent: 85.1283,
+      lambda_lt: 1.454546,
+      ltb_required: true,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(ltb, [
+    { label: "Status", value: "PASS" },
+    { label: "Mb,Rd", value: "46.988 kNm" },
+    { label: "Utilization", value: "85.128 %" },
+    { label: "Lambda LT", value: "1.455" },
+    { label: "LTB required", value: "true" },
     { label: "Warnings", value: "None" },
   ]);
 
