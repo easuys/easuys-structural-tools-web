@@ -1,6 +1,72 @@
 export const API_BASE_URL = "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev";
 
 export const TOOL_CATALOG = {
+  ec3_plate_tension: {
+    endpoint: "/calculate/ec3/plate-tension",
+    title: {
+      nl: "EC3 stalen plaat op trek",
+      en: "EC3 steel plate tension",
+      fr: "EC3 plaque acier en traction",
+    },
+    sample: {
+      width_mm: 120,
+      thickness_mm: 10,
+      n_ed_kn: 180,
+      steel_grade: "S235",
+      hole_diameter_mm: 0,
+      n_holes: 0,
+    },
+    form: {
+      fields: [
+        {
+          name: "width_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Plaatbreedte", en: "Plate width", fr: "Largeur plaque" },
+          unit: "mm",
+        },
+        {
+          name: "thickness_mm",
+          value_type: "number",
+          control: "number",
+          step: "0.5",
+          label: { nl: "Plaatdikte", en: "Plate thickness", fr: "Epaisseur plaque" },
+          unit: "mm",
+        },
+        {
+          name: "n_ed_kn",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "NEd", en: "NEd", fr: "NEd" },
+          unit: "kN",
+        },
+        {
+          name: "steel_grade",
+          value_type: "string",
+          control: "select",
+          label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" },
+          options: ["S235", "S275", "S355", "S450"],
+        },
+        {
+          name: "hole_diameter_mm",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Gatdiameter", en: "Hole diameter", fr: "Diametre trou" },
+          unit: "mm",
+        },
+        {
+          name: "n_holes",
+          value_type: "number",
+          control: "number",
+          step: "1",
+          label: { nl: "Aantal gaten", en: "Number of holes", fr: "Nombre de trous" },
+        },
+      ],
+    },
+  },
   ec5_timber_contact_moment_joint: {
     endpoint: "/calculate/ec5/timber-contact-moment-joint",
     title: {
@@ -1794,6 +1860,13 @@ const TEXT = {
 };
 
 const RESULT_SUMMARY_FIELDS = {
+  ec3_plate_tension: [
+    { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "n_rd_kn"], label: { nl: "NRd", en: "NRd", fr: "NRd" }, unit: "kN" },
+    { path: ["result", "utilization_percent"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" }, unit: "%" },
+    { path: ["result", "governing_criterion"], label: { nl: "Maatgevend", en: "Governing", fr: "Determinant" } },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
   ec5_timber_contact_moment_joint: [
     { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
     { path: ["result", "m_rd_kNm"], label: { nl: "MRd", en: "MRd", fr: "MRd" }, unit: "kNm" },

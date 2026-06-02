@@ -51,6 +51,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
+    "ec3_plate_tension",
     "ec5_axial_screw",
     "ec5_joist_spacing_optimizer",
     "ec5_osb_composite_vibration",
@@ -94,6 +95,26 @@ test("contact moment joint form metadata preserves fixed screw rows", () => {
   assert.deepEqual(payload.screws[0], { id: "S1", y_mm: -130 });
   assert.deepEqual(payload.screws[7], { id: "S8", y_mm: 130 });
   assert.equal(payload.screw_defaults.d, 8);
+});
+
+test("ec3 plate tension form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_plate_tension", {
+    width_mm: "80",
+    thickness_mm: "8",
+    n_ed_kn: "160",
+    steel_grade: "S355",
+    hole_diameter_mm: "22",
+    n_holes: "2",
+  });
+
+  assert.deepEqual(payload, {
+    width_mm: 80,
+    thickness_mm: 8,
+    n_ed_kn: 160,
+    steel_grade: "S355",
+    hole_diameter_mm: 22,
+    n_holes: 2,
+  });
 });
 
 test("masonry strength form metadata builds the API payload", () => {
@@ -542,6 +563,27 @@ test("masonry result summaries format returned API fields only", () => {
     { label: "Warnings", value: "NO_AXIAL_LOAD_QUICK_CHECK" },
   ]);
   assert.deepEqual(buildResultSummaryItems({ calculator_id: "unknown", result: {} }, "en"), []);
+});
+
+test("ec3 result summaries format returned API fields only", () => {
+  const plate = buildResultSummaryItems({
+    calculator_id: "ec3_plate_tension",
+    result: {
+      overall_status: "FAIL",
+      n_rd_kn: 105.75,
+      utilization_percent: 151.3,
+      governing_criterion: "net_section",
+      warning_codes: ["NET_SECTION_GOVERNS", "NET_SECTION_FAILED"],
+    },
+  }, "en");
+
+  assert.deepEqual(plate, [
+    { label: "Status", value: "FAIL" },
+    { label: "NRd", value: "105.8 kN" },
+    { label: "Utilization", value: "151.3 %" },
+    { label: "Governing", value: "net_section" },
+    { label: "Warnings", value: "NET_SECTION_GOVERNS, NET_SECTION_FAILED" },
+  ]);
 });
 
 test("ec5 result summaries format returned API fields only", () => {
