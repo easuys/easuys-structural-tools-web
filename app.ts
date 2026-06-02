@@ -4705,11 +4705,299 @@ export const TOOL_CATALOG = {
   },
 };
 
+const CONTACT_ENDPOINT = "/lead/study-request";
+const TURNSTILE_SITE_KEY = "0x4AAAAAADYeVJCZgqihubKs";
+const TURNSTILE_SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+export const TOOL_GROUP_ORDER = ["beam", "ec1", "ec2", "ec3", "ec5", "ec6", "composite"] as const;
+
+const TOOL_GROUP_TEXT = {
+  beam: {
+    label: {
+      nl: "Balkmechanica",
+      en: "Beam mechanics",
+      fr: "Mecanique des poutres",
+    },
+    summary: {
+      nl: "Lineair-elastische balkhulpen voor diagrammen, continue stroken, steunbrackets, veren en samengestelde schuifspanningen.",
+      en: "Linear-elastic beam helpers for diagrams, continuous strips, support bracketing, springs, and composite shear stress.",
+      fr: "Aides lineaires-elastiques pour diagrammes, bandes continues, brackets d'appuis, ressorts et cisaillement composite.",
+    },
+    limitations: {
+      nl: "Geen volledige FEM-, niet-lineaire of materiaalontwerpworkflow.",
+      en: "Not a full FEM, nonlinear, or material-design workflow.",
+      fr: "Ce n'est pas un flux complet FEM, non lineaire ou de dimensionnement materiau.",
+    },
+  },
+  ec1: {
+    label: { nl: "EC1 belastingen", en: "EC1 loads", fr: "EC1 charges" },
+    summary: {
+      nl: "Snelle variabele daklastcontrole met Belgische aannames zichtbaar in de invoer.",
+      en: "Quick variable roof-load screening with Belgian assumptions exposed in the input.",
+      fr: "Verification rapide des charges variables de toiture avec hypotheses belges visibles en entree.",
+    },
+    limitations: {
+      nl: "Geen volledige EN 1990 combinaties of windmodule.",
+      en: "No full EN 1990 combination engine or wind module.",
+      fr: "Pas de moteur complet EN 1990 ni de module vent.",
+    },
+  },
+  ec2: {
+    label: { nl: "EC2 beton", en: "EC2 concrete", fr: "EC2 beton" },
+    summary: {
+      nl: "Beperkte rechthoekige doorsnedecapaciteit met ULS en SLS momentcontrole.",
+      en: "Bounded rectangular section capacity with ULS and SLS moment checks.",
+      fr: "Capacite bornee de section rectangulaire avec controles ELU et ELS.",
+    },
+    limitations: {
+      nl: "Geen volledige gewapend-beton detailcontrole of meerassige doorsnede-engine.",
+      en: "No full reinforced-concrete detailing or multiaxial section engine.",
+      fr: "Pas de detail complet beton arme ni de moteur multiaxial.",
+    },
+  },
+  ec3: {
+    label: { nl: "EC3 staal", en: "EC3 steel", fr: "EC3 acier" },
+    summary: {
+      nl: "Gerichte staal- en verbindingschecks met expliciete geometrie en duidelijke maatgevende componenten.",
+      en: "Focused steel and connection checks with explicit geometry and clear governing components.",
+      fr: "Verifications acier et assemblages ciblees avec geometrie explicite et composant determinant clair.",
+    },
+    limitations: {
+      nl: "Geen databankgestuurde algemene staalapplicatie over alle profielen en verbindingstypes.",
+      en: "Not a full database-driven steel application across all profiles and connection types.",
+      fr: "Ce n'est pas une application acier generale pour tous les profils et assemblages.",
+    },
+  },
+  ec5: {
+    label: { nl: "EC5 hout", en: "EC5 timber", fr: "EC5 bois" },
+    summary: {
+      nl: "Timber-, schroef-, connector- en trillingshelpers voor vroege haalbaarheidscontroles.",
+      en: "Timber, screw, connector, and vibration helpers for early feasibility checks.",
+      fr: "Aides bois, vis, connecteurs et vibrations pour controles de faisabilite initiaux.",
+    },
+    limitations: {
+      nl: "Geen volledige detailengineering, uitvoeringsvoorschriften of fabrikantmodules.",
+      en: "No full detailing, execution detailing, or manufacturer-specific modules.",
+      fr: "Pas de detail complet, prescriptions d'execution ou modules fabricants.",
+    },
+  },
+  ec6: {
+    label: { nl: "EC6 metselwerk", en: "EC6 masonry", fr: "EC6 maconnerie" },
+    summary: {
+      nl: "Ongewapende metselwerkhulpen voor druk, opleg, in-plane en uit-vlak snelle controles.",
+      en: "Unreinforced masonry helpers for compression, bearing, in-plane, and out-of-plane quick checks.",
+      fr: "Aides maconnerie non armee pour compression, appui, en plan et hors plan.",
+    },
+    limitations: {
+      nl: "Geen openingen, wapening, verankering of projectspecifieke detaillering.",
+      en: "No openings, reinforcement, anchorage, or project-specific detailing.",
+      fr: "Pas d'ouvertures, d'armatures, d'ancrages ou de details specifiques au projet.",
+    },
+  },
+  composite: {
+    label: { nl: "Composiet", en: "Composite", fr: "Composite" },
+    summary: {
+      nl: "Gespecialiseerde samengestelde doorsnede- en opleghulpen buiten de klassieke Eurocode calculatorfamilies.",
+      en: "Specialized composite section and bearing helpers outside the standard Eurocode calculator families.",
+      fr: "Aides specialisees de sections et appuis composites hors familles classiques de calculateurs Eurocode.",
+    },
+    limitations: {
+      nl: "Geen volledige EC4- of samengestelde detailengineering.",
+      en: "No full EC4 or composite detailing workflow.",
+      fr: "Pas de flux complet EC4 ou de details composites.",
+    },
+  },
+} as const;
+
+const TOOL_CONTEXT_OVERRIDES = {
+  beam_simple_diagrams: {
+    summary: {
+      nl: "Eenvoudige opgelegde balk met ULS- en SLS-diagrammen uit gecombineerde lijn- en puntlasten.",
+      en: "Simple supported beam with ULS and SLS diagrams from combined line and point loads.",
+      fr: "Poutre simplement appuyee avec diagrammes ELU et ELS issus de charges lineaires et ponctuelles.",
+    },
+  },
+  ec2_rectangular_section_capacity: {
+    summary: {
+      nl: "Rechthoekige betonsectie met maximaal zes wapeningslagen en optionele momentbenutting.",
+      en: "Rectangular concrete section with up to six reinforcement layers and optional moment utilization.",
+      fr: "Section beton rectangulaire avec jusqu'a six nappes d'armatures et utilisation de moment optionnelle.",
+    },
+  },
+  ec3_bolt_group_torsion: {
+    summary: {
+      nl: "Rechthoekige boutgroep onder dwarskracht en in-vlak torsie, met kritische boutidentificatie.",
+      en: "Rectangular bolt group under shear and in-plane torsion, with critical-bolt identification.",
+      fr: "Groupe de boulons rectangulaire sous cisaillement et torsion dans le plan, avec identification du boulon critique.",
+    },
+  },
+  ec5_timber_beam_check: {
+    summary: {
+      nl: "Beperkte rechthoekige vloerbalkcontrole voor buiging, schuif, doorbuiging en trilling.",
+      en: "Bounded rectangular floor-beam check for bending, shear, deflection, and vibration.",
+      fr: "Verification bornee de poutre de plancher rectangulaire pour flexion, cisaillement, fleche et vibration.",
+    },
+  },
+  ec6_masonry_contact_pressure: {
+    summary: {
+      nl: "Conservatieve contactdrukquickcheck met beta = 1.0 voor profielopleggingen op metselwerk.",
+      en: "Conservative contact-pressure quick check with beta = 1.0 for profile bearings on masonry.",
+      fr: "Verification rapide conservative de pression de contact avec beta = 1.0 pour appuis de profils sur maconnerie.",
+    },
+  },
+} as const;
+
+const TOOL_REFERENCE_ASSETS = {
+  ec5_axial_screw: [
+    {
+      src: "images/calculators/ec5-spacing-requirements.png",
+      alt: "EC5 spacing requirement reference",
+      caption: {
+        nl: "Referentiebeeld voor minimale afstanden en randafstanden bij schroefcontroles.",
+        en: "Reference image for minimum spacing and edge-distance checks in screw verifications.",
+        fr: "Image de reference pour les entraxes minimaux et distances aux bords dans les verifications de vis.",
+      },
+    },
+  ],
+  ec5_steel_timber_screw_connection: [
+    {
+      src: "images/calculators/ec5-spacing-requirements.png",
+      alt: "EC5 spacing requirement reference",
+      caption: {
+        nl: "Gebruik dit detailbeeld samen met de gerapporteerde geometriewaarschuwingen.",
+        en: "Use this detailing image together with the reported geometry warnings.",
+        fr: "Utiliser ce detail avec les avertissements de geometrie rapportes.",
+      },
+    },
+  ],
+  ec5_timber_timber_single_shear_connection: [
+    {
+      src: "images/calculators/ec5-group-effect-bolts.png",
+      alt: "Timber fastener group effect reference",
+      caption: {
+        nl: "Groepseffectreferentie voor houten verbindingen met bouten of schroeven.",
+        en: "Group-effect reference for timber fastener connections.",
+        fr: "Reference d'effet de groupe pour assemblages bois avec fixations.",
+      },
+    },
+  ],
+  ec5_timber_timber_double_shear_connection: [
+    {
+      src: "images/calculators/ec5-group-effect-bolts.png",
+      alt: "Timber fastener group effect reference",
+      caption: {
+        nl: "Groepseffectreferentie voor dubbele schuifverbindingen in hout.",
+        en: "Group-effect reference for double-shear timber fastener connections.",
+        fr: "Reference d'effet de groupe pour assemblages bois en double cisaillement.",
+      },
+    },
+  ],
+  ec5_steel_timber_double_shear_connection: [
+    {
+      src: "images/calculators/ec5-group-effect-bolts.png",
+      alt: "Steel-timber fastener group effect reference",
+      caption: {
+        nl: "Groepseffectreferentie voor staal-houtverbindingen met meerdere bevestigers.",
+        en: "Group-effect reference for steel-to-timber connections with multiple fasteners.",
+        fr: "Reference d'effet de groupe pour assemblages acier-bois avec fixations multiples.",
+      },
+    },
+  ],
+  ec5_steel_timber_five_member_connection: [
+    {
+      src: "images/calculators/ec5-group-effect-bolts.png",
+      alt: "Steel-timber fastener group effect reference",
+      caption: {
+        nl: "Groepseffectreferentie voor vijfdelige staal-houtverbindingen.",
+        en: "Group-effect reference for five-member steel-to-timber connections.",
+        fr: "Reference d'effet de groupe pour assemblages acier-bois a cinq elements.",
+      },
+    },
+  ],
+  ec5_toothed_plate_connection: [
+    {
+      src: "images/calculators/ec5-group-effect-connectors.png",
+      alt: "Toothed-plate connector group effect reference",
+      caption: {
+        nl: "Connectorreferentie voor groepseffect en dichtheid van tandringverbindingen.",
+        en: "Connector reference for group effect and connector density in toothed-plate joints.",
+        fr: "Reference connecteur pour l'effet de groupe et la densite des plaques a dents.",
+      },
+    },
+  ],
+} as const;
+
+const FRIENDLY_FIELD_HELP_OVERRIDES = {
+  ec3_bolted_lap_joint: {
+    e1_mm: {
+      en: "Loaded end distance parallel to the force direction.",
+      nl: "Belaste randafstand evenwijdig met de kracht.",
+      fr: "Distance au bord chargee parallele a l'effort.",
+    },
+    e2_mm: {
+      en: "Side edge distance perpendicular to the force direction.",
+      nl: "Zijdelingse randafstand loodrecht op de kracht.",
+      fr: "Distance au bord laterale perpendiculaire a l'effort.",
+    },
+    p1_mm: {
+      en: "Pitch parallel to the force direction between bolt rows.",
+      nl: "Steek evenwijdig met de kracht tussen boutrijen.",
+      fr: "Pas parallele a l'effort entre rangees de boulons.",
+    },
+    p2_mm: {
+      en: "Gauge perpendicular to the force direction between bolt lines.",
+      nl: "Hartenmaat loodrecht op de kracht tussen boutlijnen.",
+      fr: "Entraxe perpendiculaire a l'effort entre lignes de boulons.",
+    },
+  },
+  ec5_timber_contact_moment_joint: {
+    "actions.n_ed_kN": {
+      en: "Compression is positive. Tension remains outside this bounded joint helper.",
+      nl: "Druk is positief. Trek blijft buiten deze begrensde voeghelper.",
+      fr: "La compression est positive. La traction reste hors du domaine de cet outil.",
+    },
+    "actions.m_ed_kNm": {
+      en: "Applied major-axis design moment for the contact-plus-screws joint model.",
+      nl: "Aangelegd ontwerpbuigend moment voor het contact-plus-schroeven voegmodel.",
+      fr: "Moment de calcul applique pour le modele de joint contact-plus-vis.",
+    },
+  },
+  ec5_timber_member_uls_6_component: {
+    lateral_restraint_spacing_mm: {
+      en: "Only used for the discrete-restraint case; leave the default for full restraint.",
+      nl: "Alleen gebruikt bij discrete zijdelingse fixatie; laat de standaardwaarde staan bij volledige fixatie.",
+      fr: "Utilise uniquement pour le cas d'appuis lateraux discrets; laisser la valeur par defaut en cas de maintien complet.",
+    },
+  },
+} as const;
+
+type ToolGroupId = typeof TOOL_GROUP_ORDER[number];
+
 const TEXT = {
   nl: {
     form: "Invoerformulier",
     input: "Invoer JSON",
     result: "Resultaat",
+    findCalculator: "Zoek calculator",
+    calculatorCount: "calculators",
+    scope: "Scope",
+    limitations: "Beperkingen",
+    route: "Route",
+    contactTitle: "Projectspecifieke controle nodig?",
+    contactIntro: "Gebruik dit resultaat als vertrekpunt en open een voorgemailde projectvraag voor een beoordeelde studie of gerichte engineeringvraag.",
+    contactProject: "Projectnaam",
+    contactEmail: "E-mail",
+    contactMessage: "Vraag of context",
+    contactConsent: "Ik mag gecontacteerd worden over deze aanvraag.",
+    contactSummary: "Samenvatting resultaat",
+    contactSubmit: "Vraag voorbereiden",
+    contactFallback: "Open e-mail direct",
+    contactStatusIdle: "De aanvraag opent een e-mailconcept met tool- en resultatensamenvatting.",
+    contactStatusSubmitted: "E-mailconcept wordt geopend.",
+    contactStatusVerification: "Menselijke verificatie wordt geladen indien beschikbaar.",
+    contactVerificationUnavailable: "Menselijke verificatie niet beschikbaar; e-mailfallback blijft bruikbaar.",
+    noSearchResults: "Geen calculators gevonden voor deze zoekterm.",
+    visuals: "Visuele output",
     calculate: "Bereken",
     save: "Bewaar",
     load: "Laad",
@@ -4727,11 +5015,33 @@ const TEXT = {
     none: "Geen",
     notProvided: "Niet opgegeven",
     status: "Indicatief rekenrecord.",
+    requiredLabel: "Verplicht",
+    defaultLabel: "Standaard",
   },
   en: {
     form: "Input form",
     input: "Input JSON",
     result: "Result",
+    findCalculator: "Find calculator",
+    calculatorCount: "calculators",
+    scope: "Scope",
+    limitations: "Limitations",
+    route: "Route",
+    contactTitle: "Need a project-specific review?",
+    contactIntro: "Use this result as a starting point and open a prefilled project enquiry for a reviewed study or targeted engineering question.",
+    contactProject: "Project name",
+    contactEmail: "Email",
+    contactMessage: "Question or context",
+    contactConsent: "EA Suys may contact me about this enquiry.",
+    contactSummary: "Result summary",
+    contactSubmit: "Prepare enquiry",
+    contactFallback: "Open email directly",
+    contactStatusIdle: "This opens an email draft with the tool and result summary.",
+    contactStatusSubmitted: "Opening email draft.",
+    contactStatusVerification: "Human verification is loading when available.",
+    contactVerificationUnavailable: "Human verification is unavailable; the email fallback still works.",
+    noSearchResults: "No calculators match this search.",
+    visuals: "Visual output",
     calculate: "Calculate",
     save: "Save",
     load: "Load",
@@ -4749,11 +5059,33 @@ const TEXT = {
     none: "None",
     notProvided: "Not provided",
     status: "Indicative calculation record.",
+    requiredLabel: "Required",
+    defaultLabel: "Default",
   },
   fr: {
     form: "Formulaire",
     input: "JSON d'entree",
     result: "Resultat",
+    findCalculator: "Trouver un calculateur",
+    calculatorCount: "calculateurs",
+    scope: "Portee",
+    limitations: "Limites",
+    route: "Route",
+    contactTitle: "Besoin d'une revue specifique au projet ?",
+    contactIntro: "Utilisez ce resultat comme point de depart et ouvrez une demande de projet pre-remplie pour une etude revue ou une question d'ingenierie ciblee.",
+    contactProject: "Nom du projet",
+    contactEmail: "E-mail",
+    contactMessage: "Question ou contexte",
+    contactConsent: "EA Suys peut me contacter au sujet de cette demande.",
+    contactSummary: "Synthese du resultat",
+    contactSubmit: "Preparer la demande",
+    contactFallback: "Ouvrir l'e-mail directement",
+    contactStatusIdle: "Cela ouvre un brouillon d'e-mail avec le calculateur et la synthese du resultat.",
+    contactStatusSubmitted: "Ouverture du brouillon d'e-mail.",
+    contactStatusVerification: "La verification humaine se charge si disponible.",
+    contactVerificationUnavailable: "Verification humaine indisponible ; la solution e-mail reste disponible.",
+    noSearchResults: "Aucun calculateur ne correspond a cette recherche.",
+    visuals: "Sortie visuelle",
     calculate: "Calculer",
     save: "Enregistrer",
     load: "Charger",
@@ -4771,6 +5103,8 @@ const TEXT = {
     none: "Aucun",
     notProvided: "Non indique",
     status: "Releve de calcul indicatif.",
+    requiredLabel: "Requis",
+    defaultLabel: "Defaut",
   },
 };
 
@@ -6162,6 +6496,1002 @@ const REPORT_SECTION_FIELDS = {
 };
 
 const STORAGE_KEY = "ea-suys-structural-tools-input";
+const APP_STATE_STORAGE_KEY = "ea-suys-structural-tools-contact";
+
+let turnstileScriptPromise: Promise<any> | null = null;
+let schemaMetadataPromise: Promise<any> | null = null;
+let schemaMetadataCache: any = null;
+
+function toolGroupId(toolId: string): ToolGroupId {
+  if (toolId.startsWith("beam_")) return "beam";
+  if (toolId.startsWith("ec1_")) return "ec1";
+  if (toolId.startsWith("ec2_")) return "ec2";
+  if (toolId.startsWith("ec3_")) return "ec3";
+  if (toolId.startsWith("ec5_")) return "ec5";
+  if (toolId.startsWith("ec6_")) return "ec6";
+  return "composite";
+}
+
+function groupLabel(groupId: ToolGroupId, lang: keyof typeof TEXT) {
+  return TOOL_GROUP_TEXT[groupId].label[lang] || TOOL_GROUP_TEXT[groupId].label.en;
+}
+
+function activeText(toolId: string, lang: keyof typeof TEXT) {
+  const tool = TOOL_CATALOG[toolId];
+  return tool?.title?.[lang] || tool?.title?.en || toolId;
+}
+
+function toolSearchText(toolId: string) {
+  const tool = TOOL_CATALOG[toolId];
+  const groupId = toolGroupId(toolId);
+  const group = TOOL_GROUP_TEXT[groupId];
+  return [
+    toolId,
+    tool.endpoint,
+    tool.title.nl,
+    tool.title.en,
+    tool.title.fr,
+    group.label.nl,
+    group.label.en,
+    group.label.fr,
+    group.summary.en,
+  ].join(" ").toLowerCase();
+}
+
+export function buildFilteredToolGroups(query = "", lang: keyof typeof TEXT = "en") {
+  const normalizedQuery = query.trim().toLowerCase();
+  const entries = Object.entries(TOOL_CATALOG).filter(([toolId]) =>
+    !normalizedQuery || toolSearchText(toolId).includes(normalizedQuery)
+  );
+
+  return TOOL_GROUP_ORDER.map((groupId) => {
+    const items = entries
+      .filter(([toolId]) => toolGroupId(toolId) === groupId)
+      .map(([toolId, tool]) => ({
+        toolId,
+        title: tool.title[lang] || tool.title.en,
+      }));
+    return {
+      groupId,
+      label: groupLabel(groupId, lang),
+      summary: TOOL_GROUP_TEXT[groupId].summary[lang] || TOOL_GROUP_TEXT[groupId].summary.en,
+      items,
+    };
+  }).filter((group) => group.items.length > 0);
+}
+
+function buildToolOverviewHtml(query: string, lang: keyof typeof TEXT) {
+  const groups = buildFilteredToolGroups(query, lang);
+  const total = groups.reduce((sum, group) => sum + group.items.length, 0);
+  return [
+    `<div class="tool-overview-summary"><strong>${total}</strong> ${escapeHtml(TEXT[lang].calculatorCount)}</div>`,
+    `<div class="tool-overview-groups">${groups.map((group) => (
+      `<article class="tool-overview-card">
+        <h3>${escapeHtml(group.label)}</h3>
+        <p>${escapeHtml(group.summary)}</p>
+        <button type="button" data-group-jump="${group.groupId}">${escapeHtml(group.items[0]?.title || group.label)}</button>
+      </article>`
+    )).join("")}</div>`,
+  ].join("");
+}
+
+function renderToolTabs(toolId: string, query: string, lang: keyof typeof TEXT) {
+  const groups = buildFilteredToolGroups(query, lang);
+  if (!groups.length) {
+    return `<div class="tool-nav-empty">${escapeHtml(TEXT[lang].noSearchResults)}</div>`;
+  }
+  return `<div class="tool-nav-groups">${groups.map((group) => (
+    `<section class="tool-nav-group">
+      <div class="tool-nav-group-title">${escapeHtml(group.label)}</div>
+      ${group.items.map((item) => (
+        `<button type="button" data-tool-id="${item.toolId}" ${item.toolId === toolId ? 'aria-current="true"' : ""}>${escapeHtml(item.title)}</button>`
+      )).join("")}
+    </section>`
+  )).join("")}</div>`;
+}
+
+export function buildToolContextModel(toolId: string, lang: keyof typeof TEXT = "en") {
+  const groupId = toolGroupId(toolId);
+  const group = TOOL_GROUP_TEXT[groupId];
+  const override = TOOL_CONTEXT_OVERRIDES[toolId as keyof typeof TOOL_CONTEXT_OVERRIDES] as any;
+  const assets = (TOOL_REFERENCE_ASSETS[toolId as keyof typeof TOOL_REFERENCE_ASSETS] || []).map((asset) => ({
+    src: asset.src,
+    alt: asset.alt,
+    caption: asset.caption[lang] || asset.caption.en,
+  }));
+  return {
+    title: activeText(toolId, lang),
+    groupLabel: groupLabel(groupId, lang),
+    route: TOOL_CATALOG[toolId].endpoint,
+    summary: override?.summary?.[lang] || override?.summary?.en || group.summary[lang] || group.summary.en,
+    limitations: override?.limitations?.[lang] || override?.limitations?.en || group.limitations[lang] || group.limitations.en,
+    assets,
+  };
+}
+
+function renderToolContext(container: HTMLElement, toolId: string, lang: keyof typeof TEXT) {
+  const context = buildToolContextModel(toolId, lang);
+  container.innerHTML = [
+    `<div class="tool-context-header">`,
+    `<h3>${escapeHtml(context.title)}</h3>`,
+    `<span class="tool-context-chip">${escapeHtml(context.groupLabel)}</span>`,
+    `</div>`,
+    `<div class="tool-context-grid">`,
+    `<section><h4>${escapeHtml(TEXT[lang].scope)}</h4><p>${escapeHtml(context.summary)}</p></section>`,
+    `<section><h4>${escapeHtml(TEXT[lang].limitations)}</h4><p>${escapeHtml(context.limitations)}</p></section>`,
+    `</div>`,
+    context.assets.length ? `<div class="tool-asset-gallery">${context.assets.map((asset: any) => (
+      `<figure class="tool-asset-card">
+        <img src="${escapeHtml(asset.src)}" alt="${escapeHtml(asset.alt)}" loading="lazy">
+        <figcaption>${escapeHtml(asset.caption)}</figcaption>
+      </figure>`
+    )).join("")}</div>` : "",
+    `<div class="tool-overview-summary"><strong>${escapeHtml(TEXT[lang].route)}:</strong> ${escapeHtml(context.route)}</div>`,
+  ].join("");
+}
+
+function readUrlState() {
+  const params = new URLSearchParams(globalThis.location?.search || "");
+  return {
+    toolId: params.get("tool") || "",
+    lang: params.get("lang") || "",
+    query: params.get("q") || "",
+  };
+}
+
+function writeUrlState(state: { toolId: string; lang: string; query: string }) {
+  if (!globalThis.history?.replaceState || !globalThis.location) return;
+  const params = new URLSearchParams(globalThis.location.search);
+  params.set("tool", state.toolId);
+  params.set("lang", state.lang);
+  if (state.query.trim()) {
+    params.set("q", state.query.trim());
+  } else {
+    params.delete("q");
+  }
+  const url = `${globalThis.location.pathname}?${params.toString()}`;
+  globalThis.history.replaceState({}, "", url);
+}
+
+type ContactState = {
+  projectName: string;
+  email: string;
+  message: string;
+  consent: boolean;
+};
+
+function readStoredContactState(): ContactState {
+  try {
+    const value = JSON.parse(localStorage.getItem(APP_STATE_STORAGE_KEY) || "null");
+    if (!value || typeof value !== "object") throw new Error("missing");
+    return {
+      projectName: typeof value.projectName === "string" ? value.projectName : "",
+      email: typeof value.email === "string" ? value.email : "",
+      message: typeof value.message === "string" ? value.message : "",
+      consent: value.consent === true,
+    };
+  } catch {
+    return {
+      projectName: "",
+      email: "",
+      message: "",
+      consent: false,
+    };
+  }
+}
+
+function persistContactState(state: ContactState) {
+  localStorage.setItem(APP_STATE_STORAGE_KEY, JSON.stringify(state));
+}
+
+function buildContactSummaryLines(response: any, lang: keyof typeof TEXT) {
+  return buildResultSummaryItems(response, lang)
+    .slice(0, 6)
+    .map((item) => `${item.label}: ${item.value}`);
+}
+
+export function buildDirectMailto(toolId: string, lang: keyof typeof TEXT, contact: ContactState, response: any = null) {
+  const toolLabel = activeText(toolId, lang);
+  const projectName = contact.projectName.trim() || toolLabel;
+  const summary = buildContactSummaryLines(response, lang);
+  const body = [
+    "Structural tools enquiry",
+    "",
+    `Project: ${projectName}`,
+    `Tool: ${toolLabel}`,
+    "",
+    "Question / context:",
+    contact.message.trim() || "Please review this result.",
+    "",
+    "Result summary:",
+    ...(summary.length ? summary.map((line) => `- ${line}`) : ["- No result summary captured"]),
+  ].join("\n");
+  return `mailto:info@easuys.be?subject=${encodeURIComponent(`EA Suys Structural Tools - ${projectName}`)}&body=${encodeURIComponent(body)}`;
+}
+
+function loadSchemaMetadata() {
+  if (schemaMetadataCache) return Promise.resolve(schemaMetadataCache);
+  if (schemaMetadataPromise) return schemaMetadataPromise;
+  schemaMetadataPromise = fetch(`${API_BASE_URL}/schema`)
+    .then((response) => {
+      if (!response.ok) throw new Error("Schema metadata unavailable.");
+      return response.json();
+    })
+    .then((payload) => {
+      schemaMetadataCache = payload;
+      return payload;
+    })
+    .catch(() => null);
+  return schemaMetadataPromise;
+}
+
+function rootFieldName(field: any) {
+  const path = Array.isArray(field.path) && field.path.length ? field.path : String(field.name || "").split(".");
+  return String(path[0] ?? "");
+}
+
+export function buildFriendlyFieldHelp(toolId: string, tool: any, field: any, lang: keyof typeof TEXT = "en", schemaMetadata: any = schemaMetadataCache) {
+  const override = (FRIENDLY_FIELD_HELP_OVERRIDES as any)?.[toolId]?.[field.name];
+  const overrideText = override?.[lang] || override?.en || "";
+  const rootName = rootFieldName(field);
+  const schemaField = schemaMetadata?.schemas?.[tool.endpoint]?.fields?.[rootName];
+  const parts = [];
+  if (overrideText) {
+    parts.push(overrideText);
+  } else if (schemaField?.description) {
+    parts.push(schemaField.description);
+  }
+  if (schemaField?.required) {
+    parts.push(TEXT[lang].requiredLabel);
+  }
+  const schemaDefault = schemaField?.default;
+  if (schemaDefault !== undefined && schemaDefault !== null && schemaDefault !== "") {
+    const defaultValue = typeof schemaDefault === "number" ? formatSummaryNumber(schemaDefault) : String(schemaDefault);
+    const unitSuffix = schemaField?.unit ? ` ${schemaField.unit}` : "";
+    parts.push(`${TEXT[lang].defaultLabel}: ${defaultValue}${unitSuffix}`);
+  }
+  return parts.join(" ");
+}
+
+function loadTurnstileScript(documentRef = globalThis.document) {
+  if ((globalThis as any).turnstile) {
+    return Promise.resolve((globalThis as any).turnstile);
+  }
+  if (turnstileScriptPromise) return turnstileScriptPromise;
+  turnstileScriptPromise = new Promise((resolve, reject) => {
+    if (!documentRef) {
+      reject(new Error("No document"));
+      return;
+    }
+    const existing = documentRef.querySelector(`script[src="${TURNSTILE_SCRIPT_URL}"]`) as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => resolve((globalThis as any).turnstile), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Turnstile failed to load")), { once: true });
+      return;
+    }
+    const script = documentRef.createElement("script");
+    script.src = TURNSTILE_SCRIPT_URL;
+    script.async = true;
+    script.defer = true;
+    script.addEventListener("load", () => resolve((globalThis as any).turnstile), { once: true });
+    script.addEventListener("error", () => reject(new Error("Turnstile failed to load")), { once: true });
+    documentRef.head.appendChild(script);
+  });
+  return turnstileScriptPromise;
+}
+
+export function buildVisualizationHtml(response: any, lang: keyof typeof TEXT) {
+  if (!response?.calculator_id || !response?.result) return "";
+  const cards = [];
+  const beamCard = buildBeamVisualizationCard(response, lang);
+  if (beamCard) cards.push(beamCard);
+  const ec2Card = buildEc2VisualizationCard(response, lang);
+  if (ec2Card) cards.push(ec2Card);
+  const ec3Card = buildEc3VisualizationCard(response, lang);
+  if (ec3Card) cards.push(ec3Card);
+  const ec5Card = buildEc5VisualizationCard(response, lang);
+  if (ec5Card) cards.push(ec5Card);
+  const ec6Card = buildEc6VisualizationCard(response, lang);
+  if (ec6Card) cards.push(ec6Card);
+  if (!cards.length) return "";
+  return [
+    `<div class="visual-card"><h3>${escapeHtml(TEXT[lang].visuals)}</h3><div class="visual-grid">${cards.join("")}</div></div>`,
+  ].join("");
+}
+
+function buildBeamVisualizationCard(response: any, lang: keyof typeof TEXT) {
+  const toolId = response.calculator_id;
+  const title = activeText(toolId, lang);
+  if (toolId === "beam_simple_diagrams") {
+    const span = numberOrNull(response.result.span_m) || numberOrNull(response.input?.span_m) || 1;
+    const x = response.result.cases?.uls?.diagrams?.x_m;
+    const shear = response.result.cases?.uls?.diagrams?.shear_kn;
+    const moment = response.result.cases?.uls?.diagrams?.moment_knm;
+    if (!Array.isArray(x) || !Array.isArray(shear) || !Array.isArray(moment)) return "";
+    return `<article class="visual-card">${buildBeamSketchSvg(span, response.input)}${buildLineChartSvg(x, shear, "VEd", "kN")}${buildLineChartSvg(x, moment, "MEd", "kNm")}<p>${escapeHtml(title)}</p></article>`;
+  }
+  if (toolId === "beam_continuous_strip" || toolId === "beam_spring_calibration" || toolId === "beam_support_fixity_bracketing") {
+    const supportPositions =
+      response.result.support_positions_m
+      || response.result.fixed_case?.reactions?.map((_: any, index: number) => index * ((numberOrNull(response.result.length_m) || 1) / Math.max((response.result.fixed_case?.reactions?.length || 2) - 1, 1)));
+    const sample = response.result.sampled_response || response.result.average_response?.diagrams;
+    if (!sample?.x_m || !sample?.moment_knm) return "";
+    return `<article class="visual-card">${buildBeamSketchSvg(numberOrNull(response.result.total_length_m) || numberOrNull(response.result.span_m) || numberOrNull(response.result.length_m) || 1, response.input, Array.isArray(supportPositions) ? supportPositions : undefined)}${buildLineChartSvg(sample.x_m, sample.shear_kn, "Shear", "kN")}${buildLineChartSvg(sample.x_m, sample.moment_knm, "Moment", "kNm")}${sample.deflection_mm ? buildLineChartSvg(sample.x_m, sample.deflection_mm, "Deflection", "mm") : ""}</article>`;
+  }
+  return "";
+}
+
+function buildEc2VisualizationCard(response: any, lang: keyof typeof TEXT) {
+  if (response.calculator_id !== "ec2_rectangular_section_capacity") return "";
+  const width = numberOrNull(response.result.section_width_mm) || 1;
+  const height = numberOrNull(response.result.section_height_mm) || 1;
+  const layers = Array.isArray(response.result.reinforcement_layers) ? response.result.reinforcement_layers : [];
+  const bars = layers.flatMap((layer: any) => distributeLayerBars(layer.n_bars, layer.depth_mm, width, layer.phi_mm));
+  const svg = buildEc2SectionSvg(width, height, bars);
+  const metrics = buildMetricBars([
+    { label: "ULS", value: ratioPercent(response.result.applied_moment_knm, response.result.uls_capacity_knm), display: formatVisualizationRatio(response.result.ultimate_utilization) },
+    { label: "SLS char.", value: ratioPercent(response.result.applied_moment_knm, response.result.sls_characteristic_capacity_knm), display: formatVisualizationRatio(response.result.sls_characteristic_utilization) },
+    { label: "SLS freq.", value: ratioPercent(response.result.applied_moment_knm, response.result.sls_frequent_capacity_knm), display: formatVisualizationRatio(response.result.sls_frequent_utilization) },
+  ]);
+  return `<article class="visual-card">${svg}${metrics}</article>`;
+}
+
+function buildEc3VisualizationCard(response: any, lang: keyof typeof TEXT) {
+  const toolId = response.calculator_id;
+  if (toolId === "ec3_bolt_group_torsion") {
+    const bolts = Array.isArray(response.result.bolts) ? response.result.bolts : [];
+    if (!bolts.length) return "";
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(response.result.utilization_ratio), display: formatVisualizationRatio(response.result.utilization_ratio) },
+      { label: "Critical bolt", value: ratioPercent(response.result.critical_bolt_force_kn, response.result.bolt_shear_resistance_kn), display: response.result.critical_bolt_id || "n/a" },
+    ]);
+    return `<article class="visual-card">${buildBoltGroupSvg(bolts, response.result.critical_bolt_id)}${metrics}</article>`;
+  }
+  if (toolId === "ec3_bolted_lap_joint") {
+    const svg = buildBoltGridSvg(
+      numberOrNull(response.input?.plate_width_mm) || 140,
+      180,
+      numberOrNull(response.input?.num_cols) || 2,
+      numberOrNull(response.input?.num_rows) || 2
+    );
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(response.result.utilization_ratio), display: formatVisualizationRatio(response.result.utilization_ratio) },
+      { label: "Resistance", value: ratioPercent(response.input?.force_uls_kn, response.result.governing_resistance_kn), display: response.result.governing_mode || "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (toolId === "ec3_bolted_moment_connection" || toolId === "ec3_splice_moment_connection" || toolId === "ec3_double_sided_web_connection") {
+    const svg = buildConnectionRowsSvg(
+      Array.isArray(response.input?.bolts?.rows) ? response.input.bolts.rows : [],
+      numberOrNull(response.input?.end_plate?.width_mm) || 220,
+      numberOrNull(response.input?.end_plate?.height_mm) || numberOrNull(response.input?.primary?.height_mm) || 360,
+      numberOrNull(response.input?.bolts?.horizontal_spacing_mm) || 100
+    );
+    const momentResistance =
+      response.result.mj_rd_knm
+      ?? response.result.moment_resistance_knm
+      ?? response.result.moment_resistance_knm
+      ?? null;
+    const utilization =
+      response.result.overall_utilization
+      ?? response.result.max_utilization
+      ?? response.result.utilization_ratio;
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(utilization), display: formatVisualizationRatio(utilization) },
+      {
+        label: "Moment",
+        value: ratioPercent(response.input?.loads?.moment_knm, momentResistance),
+        display: momentResistance !== null ? `${formatSummaryNumber(momentResistance)} kNm` : (response.result.critical_component || "n/a"),
+      },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (toolId === "ec3_fillet_weld") {
+    const svg = buildWeldStripSvg(numberOrNull(response.input?.effective_length_leff_mm) || 120, numberOrNull(response.input?.throat_thickness_a_mm) || 5);
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(response.result.utilization_ratio), display: formatVisualizationRatio(response.result.utilization_ratio) },
+      { label: "Method", value: response.result.verification_method === "directional" ? 100 : 70, display: response.result.verification_method || "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (toolId === "ec3_lateral_torsional_buckling") {
+    const svg = buildISectionSvg(response.input?.section || {});
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(response.result.utilization_ratio), display: formatVisualizationRatio(response.result.utilization_ratio) },
+      { label: "Chi LT", value: utilizationPercent(response.result.chi_lt_modified ?? response.result.chi_lt), display: response.result.chi_lt_modified !== undefined ? formatSummaryNumber(response.result.chi_lt_modified) : formatSummaryNumber(response.result.chi_lt) },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (toolId === "ec3_steel_section_check" || toolId === "ec3_profile_optimizer") {
+    const section = response.result.optimized_profile?.section || response.input?.section || {};
+    const deflection = response.result.deflection_check?.deflection_mm || response.result.optimized_profile?.deflection_check?.deflection_mm;
+    const deflectionLimit = response.result.deflection_check?.limit_mm || response.result.optimized_profile?.deflection_check?.limit_mm;
+    const utilization = response.result.max_utilization ?? response.result.optimized_profile?.max_utilization;
+    const critical = response.result.critical_check ?? response.result.optimized_profile?.critical_check ?? "n/a";
+    const svg = buildISectionSvg(section);
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(utilization), display: formatVisualizationRatio(utilization) },
+      { label: "Deflection", value: ratioPercent(deflection, deflectionLimit), display: deflection !== undefined ? `${formatSummaryNumber(deflection)} mm` : critical },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (toolId === "ec3_plate_tension") {
+    const svg = buildPlateSectionSvg(numberOrNull(response.input?.width_mm) || 120, numberOrNull(response.input?.thickness_mm) || 10);
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: response.result.utilization_percent || ratioPercent(response.input?.n_ed_kn, response.result.n_rd_kn), display: `${formatSummaryNumber(response.result.utilization_percent || 0)}%` },
+      { label: "Resistance", value: ratioPercent(response.input?.n_ed_kn, response.result.n_rd_kn), display: response.result.governing_criterion || "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  return "";
+}
+
+function buildEc5VisualizationCard(response: any, lang: keyof typeof TEXT) {
+  if (response.calculator_id === "ec5_timber_beam_check") {
+    const svg = buildRectSectionSvg(numberOrNull(response.input?.b_mm) || 1, numberOrNull(response.input?.h_mm) || 1, "#d6a85a");
+    const metrics = buildMetricBars([
+      { label: "Bending", value: utilizationPercent(response.result.uc_bending), display: formatVisualizationRatio(response.result.uc_bending) },
+      { label: "Shear", value: utilizationPercent(response.result.uc_shear), display: formatVisualizationRatio(response.result.uc_shear) },
+      { label: "Final defl.", value: ratioPercent(response.result.w_fin_mm, response.result.w_fin_lim_mm), display: response.result.w_fin_mm !== undefined ? `${formatSummaryNumber(response.result.w_fin_mm)} mm` : "n/a" },
+      { label: "Frequency", value: inverseLimitPercent(response.result.f1_hz, 8), display: response.result.f1_hz !== undefined ? `${formatSummaryNumber(response.result.f1_hz)} Hz` : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_axial_screw") {
+    const svg = buildFastenerArraySvg(numberOrNull(response.input?.n) || 4, numberOrNull(response.input?.t_timber) || 140, 160, "screw");
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(response.result.utilization_ratio), display: formatVisualizationRatio(response.result.utilization_ratio) },
+      { label: "n eff.", value: ratioPercent(response.result.n_effective, response.input?.n), display: response.result.governing_failure_mode || "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_steel_timber_screw_connection"
+    || response.calculator_id === "ec5_steel_timber_double_shear_connection"
+    || response.calculator_id === "ec5_steel_timber_five_member_connection"
+    || response.calculator_id === "ec5_timber_timber_single_shear_connection"
+    || response.calculator_id === "ec5_timber_timber_double_shear_connection"
+    || response.calculator_id === "ec5_toothed_plate_connection") {
+    const svg = buildFastenerArraySvg(numberOrNull(response.input?.n) || 4, 180, 170, "bolt");
+    const applied =
+      response.input?.f_d_kn
+      ?? response.input?.f_v_ed_kn
+      ?? null;
+    const resistance =
+      response.result.r_d_kn
+      ?? response.result.r_k_kn
+      ?? null;
+    const utilization = response.result.utilization_ratio;
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(utilization), display: formatVisualizationRatio(utilization) },
+      { label: "Resistance", value: ratioPercent(applied, resistance), display: response.result.governing_mode || response.result.overall_status || "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_stabilizing_force") {
+    const svg = buildRectSectionSvg(numberOrNull(response.input?.b_mm) || 75, numberOrNull(response.input?.h_mm) || 225, "#d6a85a");
+    const metrics = buildMetricBars([
+      { label: "kcrit", value: utilizationPercent(response.result.k_crit), display: response.result.k_crit !== undefined ? formatSummaryNumber(response.result.k_crit) : "n/a" },
+      { label: "Force", value: ratioPercent(response.result.f_d_kn, 1), display: response.result.stabilizing_force_required ? `${formatSummaryNumber(response.result.f_d_kn)} kN` : "Not required" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_joist_spacing_optimizer") {
+    const recommended = response.result.recommended_result || {};
+    const svg = buildRectSectionSvg(numberOrNull(response.input?.b_mm) || 75, numberOrNull(response.input?.h_mm) || 225, "#d6a85a");
+    const metrics = buildMetricBars([
+      { label: "Spacing", value: ratioPercent(response.result.recommended_spacing_m, response.result.max_adequate_spacing_m), display: response.result.recommended_spacing_cm !== undefined ? `${formatSummaryNumber(response.result.recommended_spacing_cm)} cm` : "n/a" },
+      { label: "Frequency", value: inverseLimitPercent(recommended.f1_hz, 8), display: recommended.f1_hz !== undefined ? `${formatSummaryNumber(recommended.f1_hz)} Hz` : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_osb_composite_vibration") {
+    const svg = buildRectSectionSvg(numberOrNull(response.input?.b_mm) || 75, numberOrNull(response.input?.h_mm) || 225, "#d6a85a");
+    const metrics = buildMetricBars([
+      { label: "Base defl.", value: ratioPercent(response.result.base_deflection_mm, response.input?.limit_mm), display: response.result.base_deflection_mm !== undefined ? `${formatSummaryNumber(response.result.base_deflection_mm)} mm` : "n/a" },
+      { label: "Composite defl.", value: ratioPercent(response.result.composite_deflection_mm, response.input?.limit_mm), display: response.result.composite_deflection_mm !== undefined ? `${formatSummaryNumber(response.result.composite_deflection_mm)} mm` : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_timber_floor_vibration") {
+    const svg = buildRectSectionSvg(numberOrNull(response.input?.b_mm) || 1, numberOrNull(response.input?.h_mm) || 1, "#d6a85a");
+    const metrics = buildMetricBars([
+      { label: "Point load", value: ratioPercent(response.result.w_point_load_mm, response.result.deflection_limit_mm), display: response.result.w_point_load_mm !== undefined ? `${formatSummaryNumber(response.result.w_point_load_mm)} mm` : "n/a" },
+      { label: "Frequency", value: inverseLimitPercent(response.result.f1_hz, response.result.frequency_limit_hz), display: response.result.f1_hz !== undefined ? `${formatSummaryNumber(response.result.f1_hz)} Hz` : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_timber_beam_fire_check") {
+    const originalWidth = numberOrNull(response.input?.b_mm) || 1;
+    const originalHeight = numberOrNull(response.input?.h_mm) || 1;
+    const residualWidth = numberOrNull(response.result.b_fi_mm) || 1;
+    const residualHeight = numberOrNull(response.result.h_fi_mm) || 1;
+    const svg = buildResidualSectionSvg(originalWidth, originalHeight, residualWidth, residualHeight);
+    const metrics = buildMetricBars([
+      { label: "Fire bending", value: utilizationPercent(response.result.uc_bending_fire), display: formatVisualizationRatio(response.result.uc_bending_fire) },
+      { label: "Fire shear", value: utilizationPercent(response.result.uc_shear_fire), display: formatVisualizationRatio(response.result.uc_shear_fire) },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_timber_contact_moment_joint") {
+    const svg = buildJointSectionSvg(
+      numberOrNull(response.input?.interface?.width_mm) || 160,
+      numberOrNull(response.input?.interface?.height_mm) || 360,
+      Array.isArray(response.input?.screws) ? response.input.screws : []
+    );
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(response.result.utilization_ratio), display: formatVisualizationRatio(response.result.utilization_ratio) },
+      { label: "Compression", value: ratioPercent(response.result.compression_depth_mm, response.input?.interface?.height_mm), display: response.result.compression_depth_mm !== undefined ? `${formatSummaryNumber(response.result.compression_depth_mm)} mm` : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec5_timber_member_uls_6_component") {
+    const svg = buildRectSectionSvg(numberOrNull(response.input?.b_mm) || 120, numberOrNull(response.input?.h_mm) || 360, "#d6a85a");
+    const metrics = buildMetricBars([
+      { label: "Utilization", value: utilizationPercent(response.result.max_utilization), display: formatVisualizationRatio(response.result.max_utilization) },
+      { label: "kcrit", value: utilizationPercent(response.result.k_crit), display: response.result.critical_check || "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  return "";
+}
+
+function buildEc6VisualizationCard(response: any, lang: keyof typeof TEXT) {
+  if (response.calculator_id === "ec6_masonry_contact_pressure") {
+    const svg = buildMasonryBearingSvg(
+      numberOrNull(response.result.beam_width_mm) || 1,
+      numberOrNull(response.result.support_length_mm) || 1,
+      numberOrNull(response.result.required_length_mm) || 1
+    );
+    const metrics = buildMetricBars([
+      { label: "Contact pressure", value: ratioPercent(response.result.sigma_d_mpa, response.result.f_rdc_mpa), display: response.result.sigma_d_mpa !== undefined ? `${formatSummaryNumber(response.result.sigma_d_mpa)} MPa` : "n/a" },
+      { label: "Support length", value: ratioPercent(response.result.required_length_mm, response.result.support_length_mm), display: response.result.required_length_mm !== undefined ? `${formatSummaryNumber(response.result.required_length_mm)} mm req.` : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec6_beam_bearing") {
+    const svg = buildMasonryBearingSvg(
+      numberOrNull(response.input?.bearing_width_mm) || 1,
+      numberOrNull(response.input?.bearing_length_mm) || 1,
+      numberOrNull(response.result.effective_length_mm) || 1
+    );
+    const metrics = buildMetricBars([
+      { label: "Bearing stress", value: ratioPercent(response.result.contact_pressure_mpa, response.result.design_bearing_resistance_mpa), display: response.result.contact_pressure_mpa !== undefined ? `${formatSummaryNumber(response.result.contact_pressure_mpa)} MPa` : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec6_masonry_strength") {
+    const svg = buildWallPanelSvg(180, 120);
+    const metrics = buildMetricBars([
+      { label: "fd / fk", value: ratioPercent(response.result.fd_mpa, response.result.fk_mpa), display: response.result.fd_mpa !== undefined ? `${formatSummaryNumber(response.result.fd_mpa)} MPa` : "n/a" },
+      { label: "k factor", value: utilizationPercent(response.result.k_factor), display: response.result.k_factor !== undefined ? formatSummaryNumber(response.result.k_factor) : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec6_inplane_shear_wall") {
+    const svg = buildWallPanelSvg(numberOrNull(response.input?.length_mm) || 1200, 220, numberOrNull(response.result.compressed_length_lc_mm) || numberOrNull(response.input?.length_mm) || 1200);
+    const metrics = buildMetricBars([
+      { label: "Bending", value: utilizationPercent(response.result.bending_utilization_ratio), display: formatVisualizationRatio(response.result.bending_utilization_ratio) },
+      { label: "Shear", value: utilizationPercent(response.result.shear_utilization_ratio), display: formatVisualizationRatio(response.result.shear_utilization_ratio) },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec6_lateral_wall_resistance") {
+    const svg = buildWallPanelSvg((numberOrNull(response.input?.length_m) || 4) * 1000, (numberOrNull(response.input?.height_m) || 3) * 1000);
+    const metrics = buildMetricBars([
+      { label: "Axis 1", value: utilizationPercent(response.result.axis_1_utilization_ratio), display: formatVisualizationRatio(response.result.axis_1_utilization_ratio) },
+      { label: "Axis 2", value: utilizationPercent(response.result.axis_2_utilization_ratio), display: formatVisualizationRatio(response.result.axis_2_utilization_ratio) },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  if (response.calculator_id === "ec6_masonry_horizontal_capacity") {
+    const svg = buildWallPanelSvg(numberOrNull(response.input?.length_mm) || 660, numberOrNull(response.input?.height_mm) || 1450, numberOrNull(response.result.effective_compressed_length_mm) || numberOrNull(response.input?.length_mm) || 660);
+    const metrics = buildMetricBars([
+      { label: "Bending cap.", value: ratioPercent(response.result.bending_capacity_per_wall_kn, response.result.shear_capacity_per_wall_kn), display: response.result.governing_mode || "n/a" },
+      { label: "Combined cap.", value: ratioPercent(response.result.combined_capacity_kn, response.result.combined_capacity_kn), display: response.result.combined_capacity_kn !== undefined ? `${formatSummaryNumber(response.result.combined_capacity_kn)} kN` : "n/a" },
+    ]);
+    return `<article class="visual-card">${svg}${metrics}</article>`;
+  }
+  return "";
+}
+
+function buildMetricBars(metrics: Array<{ label: string; value: number; display: string }>) {
+  return `<div class="visual-metrics">${metrics.map((metric) => {
+    const normalized = Math.max(0, Math.min(metric.value, 150));
+    return `<div class="visual-metric">
+      <div class="visual-metric-label">${escapeHtml(metric.label)}</div>
+      <div class="visual-metric-track"><div class="visual-metric-fill ${normalized > 100 ? "is-danger" : ""}" style="width:${normalized}%"></div></div>
+      <div class="visual-metric-value">${escapeHtml(metric.display)}</div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function buildLineChartSvg(xValues: any[], yValues: any[], title: string, unit: string) {
+  if (!Array.isArray(xValues) || !Array.isArray(yValues) || !xValues.length || xValues.length !== yValues.length) return "";
+  const width = 280;
+  const height = 120;
+  const padding = 16;
+  const minX = Math.min(...xValues.map(Number));
+  const maxX = Math.max(...xValues.map(Number));
+  const minY = Math.min(...yValues.map(Number));
+  const maxY = Math.max(...yValues.map(Number));
+  const xSpan = maxX - minX || 1;
+  const ySpan = maxY - minY || 1;
+  const points = xValues.map((x, index) => {
+    const px = padding + ((Number(x) - minX) / xSpan) * (width - 2 * padding);
+    const py = height - padding - ((Number(yValues[index]) - minY) / ySpan) * (height - 2 * padding);
+    return `${roundVisual(px, 2)},${roundVisual(py, 2)}`;
+  }).join(" ");
+  const zeroY = height - padding - ((0 - minY) / ySpan) * (height - 2 * padding);
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#b9c3cb" stroke-width="1"></line>
+      <line x1="${padding}" y1="${Math.max(padding, Math.min(height - padding, zeroY))}" x2="${width - padding}" y2="${Math.max(padding, Math.min(height - padding, zeroY))}" stroke="#e1cba8" stroke-width="1" stroke-dasharray="3 3"></line>
+      <polyline fill="none" stroke="#2b4c65" stroke-width="2" points="${points}"></polyline>
+      <text x="${padding}" y="14" font-size="11" fill="#5a6772">${escapeHtml(title)} (${escapeHtml(unit)})</text>
+    </svg>`;
+}
+
+function buildBeamSketchSvg(span: number, input: any, supportPositions?: number[]) {
+  const width = 280;
+  const height = 90;
+  const padding = 20;
+  const supports = supportPositions?.length
+    ? supportPositions
+    : [0, span];
+  const loads = [
+    ...(Array.isArray(input?.point_loads) ? input.point_loads.map((load: any) => ({ position: Number(load.position_m), type: "point" })) : []),
+    ...(Array.isArray(input?.distributed_loads) ? input.distributed_loads.map((load: any) => ({ position: Number(load.start_m), type: "distributed" })) : []),
+    ...(Array.isArray(input?.uniform_loads) && input.uniform_loads.length ? [{ position: span / 2, type: "uniform" }] : []),
+    ...(typeof input?.uniform_load_kn_per_m === "number" ? [{ position: span / 2, type: "uniform" }] : []),
+  ];
+  const lineY = 35;
+  const supportSvg = supports.map((position) => {
+    const x = padding + (position / span) * (width - 2 * padding);
+    return `<g><line x1="${x}" y1="${lineY}" x2="${x}" y2="${lineY + 20}" stroke="#1a232b" stroke-width="1.5"></line><polygon points="${x - 8},${lineY + 28} ${x + 8},${lineY + 28} ${x},${lineY + 20}" fill="#2b4c65"></polygon></g>`;
+  }).join("");
+  const loadSvg = loads.slice(0, 6).map((load) => {
+    const x = padding + (Math.max(0, Math.min(span, load.position)) / span) * (width - 2 * padding);
+    return `<g><line x1="${x}" y1="${8}" x2="${x}" y2="${24}" stroke="#a5513d" stroke-width="1.5"></line><polygon points="${x - 4},24 ${x + 4},24 ${x},31" fill="#a5513d"></polygon></g>`;
+  }).join("");
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Beam sketch">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <line x1="${padding}" y1="${lineY}" x2="${width - padding}" y2="${lineY}" stroke="#1a232b" stroke-width="3"></line>
+      ${supportSvg}
+      ${loadSvg}
+      <text x="${padding}" y="${height - 10}" font-size="11" fill="#5a6772">Span ${formatSummaryNumber(span)} m</text>
+    </svg>`;
+}
+
+function buildRectSectionSvg(widthMm: number, heightMm: number, fill = "#d6a85a") {
+  const width = 220;
+  const height = 220;
+  const pad = 24;
+  const scale = Math.min((width - 2 * pad) / widthMm, (height - 2 * pad) / heightMm);
+  const rectW = widthMm * scale;
+  const rectH = heightMm * scale;
+  const x = (width - rectW) / 2;
+  const y = (height - rectH) / 2;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Section sketch">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${x}" y="${y}" width="${rectW}" height="${rectH}" fill="${fill}" fill-opacity="0.35" stroke="#8b5e00" stroke-width="2"></rect>
+      <text x="${width / 2}" y="${y - 8}" text-anchor="middle" font-size="11" fill="#5a6772">b = ${formatSummaryNumber(widthMm)} mm</text>
+      <text x="${x + rectW + 8}" y="${height / 2}" font-size="11" fill="#5a6772">h = ${formatSummaryNumber(heightMm)} mm</text>
+    </svg>`;
+}
+
+function buildResidualSectionSvg(widthMm: number, heightMm: number, residualWidthMm: number, residualHeightMm: number) {
+  const width = 220;
+  const height = 220;
+  const pad = 24;
+  const scale = Math.min((width - 2 * pad) / widthMm, (height - 2 * pad) / heightMm);
+  const outerW = widthMm * scale;
+  const outerH = heightMm * scale;
+  const innerW = residualWidthMm * scale;
+  const innerH = residualHeightMm * scale;
+  const x = (width - outerW) / 2;
+  const y = (height - outerH) / 2;
+  const innerX = (width - innerW) / 2;
+  const innerY = (height - innerH) / 2;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Residual section">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${x}" y="${y}" width="${outerW}" height="${outerH}" fill="#f2e1cf" stroke="#bf7b4a" stroke-dasharray="4 3" stroke-width="2"></rect>
+      <rect x="${innerX}" y="${innerY}" width="${innerW}" height="${innerH}" fill="#d6a85a" fill-opacity="0.45" stroke="#8b5e00" stroke-width="2"></rect>
+    </svg>`;
+}
+
+function distributeLayerBars(count: number, depthMm: number, widthMm: number, phiMm: number) {
+  if (!count || count <= 0) return [];
+  if (count === 1) {
+    return [{ x: widthMm / 2, y: depthMm, r: Math.max(4, phiMm / 2) }];
+  }
+  return Array.from({ length: count }, (_, index) => ({
+    x: (widthMm * 0.15) + (index * (widthMm * 0.7) / (count - 1)),
+    y: depthMm,
+    r: Math.max(4, phiMm / 2),
+  }));
+}
+
+function buildEc2SectionSvg(widthMm: number, heightMm: number, bars: Array<{ x: number; y: number; r: number }>) {
+  const width = 220;
+  const height = 220;
+  const pad = 24;
+  const scale = Math.min((width - 2 * pad) / widthMm, (height - 2 * pad) / heightMm);
+  const rectW = widthMm * scale;
+  const rectH = heightMm * scale;
+  const x = (width - rectW) / 2;
+  const y = (height - rectH) / 2;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="EC2 section">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${x}" y="${y}" width="${rectW}" height="${rectH}" fill="#e4d9cb" stroke="#7b6448" stroke-width="2"></rect>
+      ${bars.map((bar) => {
+        const cx = x + bar.x * scale;
+        const cy = y + (heightMm - bar.y) * scale;
+        return `<circle cx="${cx}" cy="${cy}" r="${Math.max(4, bar.r * scale * 0.5)}" fill="#a5513d"></circle>`;
+      }).join("")}
+    </svg>`;
+}
+
+function buildBoltGroupSvg(bolts: any[], criticalBoltId: string) {
+  const width = 220;
+  const height = 220;
+  const pad = 26;
+  const xs = bolts.map((bolt) => Number(bolt.x_mm));
+  const zs = bolts.map((bolt) => Number(bolt.z_mm));
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minZ = Math.min(...zs);
+  const maxZ = Math.max(...zs);
+  const spanX = maxX - minX || 1;
+  const spanZ = maxZ - minZ || 1;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Bolt group">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${pad}" y="${pad}" width="${width - 2 * pad}" height="${height - 2 * pad}" fill="#f8f5ee" stroke="#d6d1c6"></rect>
+      ${bolts.map((bolt) => {
+        const cx = pad + ((Number(bolt.x_mm) - minX) / spanX) * (width - 2 * pad);
+        const cy = height - pad - ((Number(bolt.z_mm) - minZ) / spanZ) * (height - 2 * pad);
+        const critical = bolt.id === criticalBoltId;
+        return `<g>
+          <circle cx="${cx}" cy="${cy}" r="${critical ? 10 : 8}" fill="${critical ? "#a5513d" : "#2b4c65"}" fill-opacity="0.85"></circle>
+          <text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="8" fill="#ffffff">${escapeHtml(String(bolt.id || ""))}</text>
+        </g>`;
+      }).join("")}
+    </svg>`;
+}
+
+function buildBoltGridSvg(widthMm: number, heightMm: number, cols: number, rows: number) {
+  const bolts = [];
+  const safeCols = Math.max(1, Math.round(cols));
+  const safeRows = Math.max(1, Math.round(rows));
+  for (let row = 0; row < safeRows; row += 1) {
+    for (let col = 0; col < safeCols; col += 1) {
+      bolts.push({
+        id: `${row + 1}-${col + 1}`,
+        x_mm: safeCols === 1 ? widthMm / 2 : (widthMm * 0.18) + (col * (widthMm * 0.64) / (safeCols - 1)),
+        z_mm: safeRows === 1 ? heightMm / 2 : (heightMm * 0.18) + (row * (heightMm * 0.64) / (safeRows - 1)),
+      });
+    }
+  }
+  return buildBoltGroupSvg(bolts, "");
+}
+
+function buildConnectionRowsSvg(rows: any[], plateWidthMm: number, plateHeightMm: number, horizontalSpacingMm: number) {
+  const width = 220;
+  const height = 240;
+  const pad = 24;
+  const safePlateWidth = Math.max(plateWidthMm, 1);
+  const safePlateHeight = Math.max(plateHeightMm, 1);
+  const rowPositions = rows.map((row) => Number(row.vertical_position_mm)).filter(Number.isFinite);
+  const minRow = Math.min(...rowPositions, 0);
+  const maxRow = Math.max(...rowPositions, safePlateHeight);
+  const rowSpan = maxRow - minRow || 1;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Connection bolt rows">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${pad}" y="${pad}" width="${width - 2 * pad}" height="${height - 2 * pad}" fill="#f8f5ee" stroke="#d6d1c6"></rect>
+      ${rows.map((row) => {
+        const count = Math.max(1, Number(row.number_of_bolts) || 2);
+        const y = height - pad - ((Number(row.vertical_position_mm || 0) - minRow) / rowSpan) * (height - 2 * pad);
+        return Array.from({ length: count }, (_, index) => {
+          const x = count === 1
+            ? width / 2
+            : (width / 2) - ((horizontalSpacingMm / safePlateWidth) * (width - 2 * pad) / 2) + (index * ((horizontalSpacingMm / safePlateWidth) * (width - 2 * pad))) / (count - 1);
+          return `<circle cx="${roundVisual(x, 2)}" cy="${roundVisual(y, 2)}" r="8" fill="#2b4c65"></circle>`;
+        }).join("");
+      }).join("")}
+    </svg>`;
+}
+
+function buildWeldStripSvg(lengthMm: number, throatMm: number) {
+  const width = 240;
+  const height = 120;
+  const pad = 20;
+  const weldWidth = Math.max(60, Math.min(width - 2 * pad, lengthMm * 0.8));
+  const weldHeight = Math.max(14, Math.min(40, throatMm * 3));
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Weld strip">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${(width - weldWidth) / 2}" y="${(height - weldHeight) / 2}" width="${weldWidth}" height="${weldHeight}" fill="#a5513d" fill-opacity="0.72"></rect>
+      <text x="${width / 2}" y="${height - 16}" text-anchor="middle" font-size="11" fill="#5a6772">leff = ${formatSummaryNumber(lengthMm)} mm, a = ${formatSummaryNumber(throatMm)} mm</text>
+    </svg>`;
+}
+
+function buildISectionSvg(section: any) {
+  const h = Math.max(1, numberOrNull(section?.h_mm) || 240);
+  const b = Math.max(1, numberOrNull(section?.b_mm) || 120);
+  const tw = Math.max(1, numberOrNull(section?.tw_mm) || 6);
+  const tf = Math.max(1, numberOrNull(section?.tf_mm) || 10);
+  const width = 220;
+  const height = 240;
+  const pad = 22;
+  const scale = Math.min((width - 2 * pad) / b, (height - 2 * pad) / h);
+  const flangeW = b * scale;
+  const flangeT = tf * scale;
+  const webT = tw * scale;
+  const webH = Math.max(10, (h - 2 * tf) * scale);
+  const x = (width - flangeW) / 2;
+  const y = (height - (2 * flangeT + webH)) / 2;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Steel I-section">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${x}" y="${y}" width="${flangeW}" height="${flangeT}" fill="#8c9dad" stroke="#2b4c65"></rect>
+      <rect x="${(width - webT) / 2}" y="${y + flangeT}" width="${webT}" height="${webH}" fill="#8c9dad" stroke="#2b4c65"></rect>
+      <rect x="${x}" y="${y + flangeT + webH}" width="${flangeW}" height="${flangeT}" fill="#8c9dad" stroke="#2b4c65"></rect>
+    </svg>`;
+}
+
+function buildPlateSectionSvg(widthMm: number, thicknessMm: number) {
+  const width = 220;
+  const height = 180;
+  const pad = 24;
+  const safeWidth = Math.max(widthMm, 1);
+  const safeThickness = Math.max(thicknessMm, 1);
+  const scale = Math.min((width - 2 * pad) / safeWidth, (height - 2 * pad) / Math.max(safeThickness * 8, 30));
+  const rectW = safeWidth * scale;
+  const rectH = Math.max(20, safeThickness * scale * 6);
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Steel plate">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${(width - rectW) / 2}" y="${(height - rectH) / 2}" width="${rectW}" height="${rectH}" fill="#d8dde2" stroke="#2b4c65" stroke-width="2"></rect>
+      <text x="${width / 2}" y="${height - 14}" text-anchor="middle" font-size="11" fill="#5a6772">${formatSummaryNumber(widthMm)} x ${formatSummaryNumber(thicknessMm)} mm</text>
+    </svg>`;
+}
+
+function buildFastenerArraySvg(count: number, widthMm: number, heightMm: number, kind = "bolt") {
+  const safeCount = Math.max(1, Math.round(count));
+  const cols = Math.ceil(Math.sqrt(safeCount));
+  const rows = Math.ceil(safeCount / cols);
+  const width = 220;
+  const height = 180;
+  const pad = 24;
+  const color = kind === "screw" ? "#a5513d" : "#2b4c65";
+  const bolts = [];
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      if (bolts.length >= safeCount) break;
+      bolts.push({
+        id: bolts.length + 1,
+        x_mm: cols === 1 ? widthMm / 2 : (widthMm * 0.18) + (col * (widthMm * 0.64) / (cols - 1)),
+        z_mm: rows === 1 ? heightMm / 2 : (heightMm * 0.18) + (row * (heightMm * 0.64) / (rows - 1)),
+      });
+    }
+  }
+  const xs = bolts.map((bolt) => bolt.x_mm);
+  const zs = bolts.map((bolt) => bolt.z_mm);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minZ = Math.min(...zs);
+  const maxZ = Math.max(...zs);
+  const spanX = maxX - minX || 1;
+  const spanZ = maxZ - minZ || 1;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Fastener layout">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${pad}" y="${pad}" width="${width - 2 * pad}" height="${height - 2 * pad}" fill="#f8f5ee" stroke="#d6d1c6"></rect>
+      ${bolts.map((bolt) => {
+        const cx = pad + ((bolt.x_mm - minX) / spanX) * (width - 2 * pad);
+        const cy = height - pad - ((bolt.z_mm - minZ) / spanZ) * (height - 2 * pad);
+        return `<circle cx="${roundVisual(cx, 2)}" cy="${roundVisual(cy, 2)}" r="8" fill="${color}" fill-opacity="0.85"></circle>`;
+      }).join("")}
+    </svg>`;
+}
+
+function buildJointSectionSvg(widthMm: number, heightMm: number, screws: any[]) {
+  const width = 220;
+  const height = 240;
+  const pad = 22;
+  const scale = Math.min((width - 2 * pad) / Math.max(widthMm, 1), (height - 2 * pad) / Math.max(heightMm, 1));
+  const rectW = widthMm * scale;
+  const rectH = heightMm * scale;
+  const x = (width - rectW) / 2;
+  const y = (height - rectH) / 2;
+  const maxAbsY = Math.max(...screws.map((screw) => Math.abs(Number(screw.y_mm) || 0)), 1);
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Timber joint section">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${x}" y="${y}" width="${rectW}" height="${rectH}" fill="#f2e1cf" stroke="#8b5e00" stroke-width="2"></rect>
+      ${screws.map((screw, index) => {
+        const offsetY = ((Number(screw.y_mm) || 0) / maxAbsY) * (rectH * 0.36);
+        return `<circle cx="${width / 2 + (index % 2 === 0 ? -rectW * 0.18 : rectW * 0.18)}" cy="${height / 2 - offsetY}" r="5.5" fill="#a5513d"></circle>`;
+      }).join("")}
+    </svg>`;
+}
+
+function buildMasonryBearingSvg(widthMm: number, supportLengthMm: number, requiredLengthMm: number) {
+  const width = 240;
+  const height = 140;
+  const pad = 18;
+  const scale = Math.min((width - 2 * pad) / Math.max(widthMm, requiredLengthMm, 1), 0.7);
+  const beamW = widthMm * scale;
+  const supportW = supportLengthMm * scale;
+  const requiredW = requiredLengthMm * scale;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Masonry bearing">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${(width - supportW) / 2}" y="78" width="${supportW}" height="26" fill="#d7c4ae" stroke="#7b6448"></rect>
+      <rect x="${(width - beamW) / 2}" y="40" width="${beamW}" height="22" fill="#8c9dad" stroke="#2b4c65"></rect>
+      <line x1="${(width - requiredW) / 2}" y1="112" x2="${(width + requiredW) / 2}" y2="112" stroke="#a5513d" stroke-width="3"></line>
+      <text x="${width / 2}" y="128" text-anchor="middle" font-size="11" fill="#5a6772">required ${formatSummaryNumber(requiredLengthMm)} mm</text>
+    </svg>`;
+}
+
+function buildWallPanelSvg(widthMm: number, heightMm: number, compressedWidthMm?: number) {
+  const width = 240;
+  const height = 180;
+  const pad = 18;
+  const safeWidth = Math.max(widthMm, 1);
+  const safeHeight = Math.max(heightMm, 1);
+  const scale = Math.min((width - 2 * pad) / safeWidth, (height - 2 * pad) / safeHeight);
+  const panelW = safeWidth * scale;
+  const panelH = safeHeight * scale;
+  const x = (width - panelW) / 2;
+  const y = (height - panelH) / 2;
+  const compressionW = compressedWidthMm ? Math.max(8, Math.min(panelW, compressedWidthMm * scale)) : 0;
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Wall panel">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${x}" y="${y}" width="${panelW}" height="${panelH}" fill="#d7c4ae" stroke="#7b6448" stroke-width="2"></rect>
+      ${compressionW ? `<rect x="${x}" y="${y}" width="${compressionW}" height="${panelH}" fill="#a5513d" fill-opacity="0.2"></rect>` : ""}
+    </svg>`;
+}
+
+function ratioPercent(actual: any, limit: any) {
+  const numerator = numberOrNull(actual);
+  const denominator = numberOrNull(limit);
+  if (numerator === null || denominator === null || Math.abs(denominator) < 1e-9) return 0;
+  return (numerator / denominator) * 100;
+}
+
+function inverseLimitPercent(actual: any, limit: any) {
+  const numerator = numberOrNull(actual);
+  const denominator = numberOrNull(limit);
+  if (numerator === null || denominator === null || Math.abs(numerator) < 1e-9) return 0;
+  return (denominator / numerator) * 100;
+}
+
+function utilizationPercent(value: any) {
+  const numeric = numberOrNull(value);
+  return numeric === null ? 0 : numeric * 100;
+}
+
+function formatVisualizationRatio(value: any) {
+  const numeric = numberOrNull(value);
+  return numeric === null ? "n/a" : `${formatSummaryNumber(numeric)} (${formatSummaryNumber(numeric * 100)}%)`;
+}
+
+function numberOrNull(value: any) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function roundVisual(value: number, decimals = 2) {
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
 
 export function formatJson(value) {
   return JSON.stringify(value, null, 2);
@@ -6259,6 +7589,7 @@ export function buildReportModel(response, lang = "en", generatedAt = new Date()
 export function buildReportHtml(response, lang = "en", generatedAt = new Date()) {
   const report = buildReportModel(response, lang, generatedAt);
   if (!report) return "";
+  const visuals = buildVisualizationHtml(response, lang as keyof typeof TEXT);
   return [
     "<!DOCTYPE html>",
     `<html lang="${escapeHtml(lang)}">`,
@@ -6277,12 +7608,22 @@ export function buildReportHtml(response, lang = "en", generatedAt = new Date())
     "    li { margin-top: 4px; overflow-wrap: anywhere; }",
     "    .summary { border-top: 1px solid #d8d3c5; margin-top: 20px; padding-top: 16px; }",
     "    .detail-section { border-top: 1px solid #d8d3c5; margin-top: 18px; padding-top: 14px; }",
+    "    .visual-card { border: 1px solid #d8d3c5; border-radius: 10px; padding: 12px; margin-top: 12px; }",
+    "    .visual-grid { display: grid; gap: 12px; }",
+    "    .visual-svg { display: block; width: 100%; height: auto; }",
+    "    .visual-metrics { display: grid; gap: 8px; margin-top: 10px; }",
+    "    .visual-metric-label { color: #6b7280; font-size: 0.85rem; font-weight: 700; }",
+    "    .visual-metric-track { background: rgba(43,76,101,0.12); border-radius: 999px; height: 10px; overflow: hidden; }",
+    "    .visual-metric-fill { background: #2b4c65; height: 100%; }",
+    "    .visual-metric-fill.is-danger { background: #a5513d; }",
+    "    .visual-metric-value { font-weight: 700; margin-top: 3px; }",
     "  </style>",
     "</head>",
     "<body>",
     `  <h1>${escapeHtml(report.title)}</h1>`,
     `  <dl>${report.details.map((item) => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`).join("")}</dl>`,
     `  <section class="summary"><h2>${escapeHtml(report.summaryHeading)}</h2><ul>${report.summaryItems.map((item) => `<li>${escapeHtml(`${item.label}: ${item.value}`)}</li>`).join("")}</ul></section>`,
+    visuals ? `  <section class="detail-section"><h2>${escapeHtml(TEXT[lang]?.visuals || TEXT.en.visuals)}</h2>${visuals}</section>` : "",
     ...report.sections.map((section) => buildStandaloneReportDetailSection(section)),
     `  <section><h2>${escapeHtml(report.warningsHeading)}</h2><ul>${report.warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
     `  <section><h2>${escapeHtml(report.assumptionsHeading)}</h2><ul>${report.assumptions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
@@ -6306,12 +7647,27 @@ export function buildPayloadFromFormValues(toolId, values) {
 
 export function initApp(documentRef = globalThis.document) {
   if (!documentRef) return;
-  const state = { lang: "en", toolId: "ec5_timber_contact_moment_joint" };
+  const urlState = readUrlState();
+  const storedContactState = readStoredContactState();
+  const state = {
+    lang: (urlState.lang && urlState.lang in TEXT ? urlState.lang : "en") as keyof typeof TEXT,
+    toolId: TOOL_CATALOG[urlState.toolId] ? urlState.toolId : "ec5_timber_contact_moment_joint",
+    query: urlState.query || "",
+    contact: storedContactState,
+    turnstileToken: "",
+  };
+  const overview = documentRef.querySelector("[data-tool-overview]") as HTMLElement;
   const tabs = documentRef.querySelector("[data-tool-tabs]") as HTMLElement;
+  const tabsMeta = documentRef.querySelector("[data-tool-nav-meta]") as HTMLElement;
+  const searchLabel = documentRef.querySelector("[data-tool-search-label]") as HTMLElement;
+  const searchInput = documentRef.querySelector("[data-tool-search]") as HTMLInputElement;
   const input = documentRef.querySelector("[data-json-input]") as HTMLTextAreaElement;
   const output = documentRef.querySelector("[data-result-output]") as HTMLElement;
   const resultSummary = documentRef.querySelector("[data-result-summary]") as HTMLElement;
   const report = documentRef.querySelector("[data-report]") as HTMLElement;
+  const context = documentRef.querySelector("[data-tool-context]") as HTMLElement;
+  const visual = documentRef.querySelector("[data-result-visual]") as HTMLElement;
+  const contact = documentRef.querySelector("[data-result-contact]") as HTMLElement;
   const downloadButton = documentRef.querySelector("[data-download]") as HTMLButtonElement;
   const downloadHtmlButton = documentRef.querySelector("[data-download-html]") as HTMLButtonElement;
   const printButton = documentRef.querySelector("[data-print]") as HTMLButtonElement;
@@ -6319,13 +7675,155 @@ export function initApp(documentRef = globalThis.document) {
   const friendlyForm = documentRef.querySelector("[data-friendly-form]") as HTMLElement;
   let lastResponse = null as any;
 
+  function renderNavigation() {
+    const groups = buildFilteredToolGroups(state.query, state.lang);
+    const total = groups.reduce((sum, group) => sum + group.items.length, 0);
+    searchLabel.textContent = TEXT[state.lang].findCalculator;
+    searchInput.placeholder = TEXT[state.lang].findCalculator;
+    searchInput.value = state.query;
+    tabsMeta.textContent = `${total} ${TEXT[state.lang].calculatorCount}`;
+    tabs.innerHTML = renderToolTabs(state.toolId, state.query, state.lang);
+    overview.innerHTML = buildToolOverviewHtml(state.query, state.lang);
+  }
+
+  function renderVisuals(response: any) {
+    const html = buildVisualizationHtml(response, state.lang);
+    if (!html) {
+      visual.hidden = true;
+      visual.innerHTML = "";
+      return;
+    }
+    visual.hidden = false;
+    visual.innerHTML = html;
+  }
+
+  async function handleContactSubmit(event: Event) {
+    event.preventDefault();
+    const status = contact.querySelector("[data-contact-status]") as HTMLElement | null;
+    const fallbackLink = contact.querySelector("[data-contact-fallback]") as HTMLAnchorElement | null;
+    if (status) status.textContent = TEXT[state.lang].contactStatusIdle;
+    const payload = {
+      email: (contact.querySelector("[data-contact-email]") as HTMLInputElement | null)?.value?.trim() || "",
+      project_name: (contact.querySelector("[data-contact-project]") as HTMLInputElement | null)?.value?.trim() || "",
+      message: (contact.querySelector("[data-contact-message]") as HTMLTextAreaElement | null)?.value?.trim() || "",
+      lead_tracking_consent: (contact.querySelector("[data-contact-consent]") as HTMLInputElement | null)?.checked || false,
+      source_tool: state.toolId,
+      tool_label: activeText(state.toolId, state.lang),
+      locale: state.lang,
+      source_url: globalThis.location?.href || "",
+      result_summary: buildContactSummaryLines(lastResponse, state.lang),
+      turnstile_token: state.turnstileToken,
+    };
+    state.contact = {
+      projectName: payload.project_name,
+      email: payload.email,
+      message: payload.message,
+      consent: payload.lead_tracking_consent,
+    };
+    persistContactState(state.contact);
+    const directMailto = buildDirectMailto(state.toolId, state.lang, state.contact, lastResponse);
+    if (fallbackLink) fallbackLink.href = directMailto;
+    try {
+      const response = await fetch(`${API_BASE_URL}${CONTACT_ENDPOINT}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to prepare the enquiry.");
+      }
+      if (status) status.textContent = TEXT[state.lang].contactStatusSubmitted;
+      globalThis.location.href = result.mailto || directMailto;
+    } catch (error) {
+      if (status) status.textContent = String(error instanceof Error ? error.message : error);
+    }
+  }
+
+  function activateTurnstile() {
+    const target = contact.querySelector("[data-contact-turnstile]") as HTMLElement | null;
+    const status = contact.querySelector("[data-contact-status]") as HTMLElement | null;
+    if (!target || !status || target.dataset.loaded === "true") return;
+    status.textContent = TEXT[state.lang].contactStatusVerification;
+    loadTurnstileScript(documentRef)
+      .then((turnstile) => {
+        if (!turnstile || target.dataset.loaded === "true") return;
+        target.dataset.loaded = "true";
+        turnstile.render(target, {
+          sitekey: TURNSTILE_SITE_KEY,
+          callback: (token: string) => {
+            state.turnstileToken = token;
+            status.textContent = TEXT[state.lang].contactStatusIdle;
+          },
+          "expired-callback": () => {
+            state.turnstileToken = "";
+            status.textContent = TEXT[state.lang].contactStatusVerification;
+          },
+          "error-callback": () => {
+            state.turnstileToken = "";
+            status.textContent = TEXT[state.lang].contactVerificationUnavailable;
+          },
+        });
+      })
+      .catch(() => {
+        status.textContent = TEXT[state.lang].contactVerificationUnavailable;
+      });
+  }
+
+  function renderContactPanel(response: any) {
+    const summaryLines = buildContactSummaryLines(response, state.lang);
+    const fallbackMailto = buildDirectMailto(state.toolId, state.lang, state.contact, response);
+    contact.innerHTML = [
+      `<h3>${escapeHtml(TEXT[state.lang].contactTitle)}</h3>`,
+      `<p>${escapeHtml(TEXT[state.lang].contactIntro)}</p>`,
+      `<div class="result-contact-summary"><strong>${escapeHtml(TEXT[state.lang].contactSummary)}</strong><ul>${summaryLines.length ? summaryLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("") : `<li>${escapeHtml(TEXT[state.lang].none)}</li>`}</ul></div>`,
+      `<form class="result-contact-form" data-contact-form>`,
+      `<div class="result-contact-grid">`,
+      `<label class="result-contact-field"><span>${escapeHtml(TEXT[state.lang].contactProject)}</span><input data-contact-project type="text" value="${escapeHtml(state.contact.projectName)}"></label>`,
+      `<label class="result-contact-field"><span>${escapeHtml(TEXT[state.lang].contactEmail)}</span><input data-contact-email type="email" value="${escapeHtml(state.contact.email)}"></label>`,
+      `<label class="result-contact-field result-contact-field--full"><span>${escapeHtml(TEXT[state.lang].contactMessage)}</span><textarea data-contact-message>${escapeHtml(state.contact.message)}</textarea></label>`,
+      `</div>`,
+      `<label class="result-contact-consent"><input data-contact-consent type="checkbox" ${state.contact.consent ? "checked" : ""}><span>${escapeHtml(TEXT[state.lang].contactConsent)}</span></label>`,
+      `<div data-contact-turnstile></div>`,
+      `<div class="result-contact-actions">`,
+      `<button type="submit" class="primary" data-contact-submit>${escapeHtml(TEXT[state.lang].contactSubmit)}</button>`,
+      `<a data-contact-fallback href="${escapeHtml(fallbackMailto)}">${escapeHtml(TEXT[state.lang].contactFallback)}</a>`,
+      `</div>`,
+      `<div class="result-contact-status" data-contact-status>${escapeHtml(TEXT[state.lang].contactStatusIdle)}</div>`,
+      `</form>`,
+    ].join("");
+    const formEl = contact.querySelector("[data-contact-form]") as HTMLFormElement | null;
+    formEl?.addEventListener("submit", (event) => {
+      void handleContactSubmit(event);
+    });
+    contact.querySelectorAll("[data-contact-project], [data-contact-email], [data-contact-message], [data-contact-consent]").forEach((field) => {
+      field.addEventListener("input", () => {
+        state.contact = {
+          projectName: (contact.querySelector("[data-contact-project]") as HTMLInputElement | null)?.value || "",
+          email: (contact.querySelector("[data-contact-email]") as HTMLInputElement | null)?.value || "",
+          message: (contact.querySelector("[data-contact-message]") as HTMLTextAreaElement | null)?.value || "",
+          consent: (contact.querySelector("[data-contact-consent]") as HTMLInputElement | null)?.checked || false,
+        };
+        persistContactState(state.contact);
+      });
+      field.addEventListener("change", () => {
+        state.contact = {
+          projectName: (contact.querySelector("[data-contact-project]") as HTMLInputElement | null)?.value || "",
+          email: (contact.querySelector("[data-contact-email]") as HTMLInputElement | null)?.value || "",
+          message: (contact.querySelector("[data-contact-message]") as HTMLTextAreaElement | null)?.value || "",
+          consent: (contact.querySelector("[data-contact-consent]") as HTMLInputElement | null)?.checked || false,
+        };
+        persistContactState(state.contact);
+      });
+    });
+    activateTurnstile();
+  }
+
   function render() {
     const text = TEXT[state.lang];
     const activeTool = TOOL_CATALOG[state.toolId];
     lastResponse = null;
-    tabs.innerHTML = Object.entries(TOOL_CATALOG).map(([toolId, tool]) => (
-      `<button type="button" data-tool-id="${toolId}" ${toolId === state.toolId ? 'aria-current="true"' : ""}>${escapeHtml(tool.title[state.lang])}</button>`
-    )).join("");
+    renderNavigation();
     documentRef.querySelector("[data-tool-title]").textContent = activeTool.title[state.lang];
     documentRef.querySelector("[data-tool-status]").textContent = text.status;
     documentRef.querySelector("[data-input-label]").textContent = text.input;
@@ -6338,9 +7836,12 @@ export function initApp(documentRef = globalThis.document) {
     downloadHtmlButton.textContent = text.downloadHtml;
     downloadHtmlButton.disabled = true;
     printButton.textContent = text.print;
-    renderFriendlyForm(friendlyForm, activeTool, state.lang, text.form);
+    renderToolContext(context, state.toolId, state.lang);
+    renderFriendlyForm(friendlyForm, state.toolId, activeTool, state.lang, text.form);
     renderResultSummary(resultSummary, null, state.lang);
     renderReport(report, null, state.lang);
+    renderVisuals(null);
+    renderContactPanel(null);
     documentRef.querySelectorAll("[data-lang]").forEach((button) => {
       const langButton = button as HTMLElement;
       if (langButton.dataset.lang === state.lang) {
@@ -6350,6 +7851,7 @@ export function initApp(documentRef = globalThis.document) {
       }
     });
     input.value = formatJson(activeTool.sample);
+    writeUrlState(state);
   }
 
   tabs.addEventListener("click", (event) => {
@@ -6359,12 +7861,28 @@ export function initApp(documentRef = globalThis.document) {
     render();
   });
 
+  overview.addEventListener("click", (event) => {
+    const groupId = (event.target as HTMLElement | null)?.dataset?.groupJump as ToolGroupId | undefined;
+    if (!groupId) return;
+    const first = Object.keys(TOOL_CATALOG).find((toolId) => toolGroupId(toolId) === groupId);
+    if (!first) return;
+    state.toolId = first;
+    state.query = "";
+    render();
+  });
+
   documentRef.querySelectorAll("[data-lang]").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.preventDefault();
-      state.lang = (button as HTMLElement).dataset.lang;
+      state.lang = ((button as HTMLElement).dataset.lang || "en") as keyof typeof TEXT;
       render();
     });
+  });
+
+  searchInput.addEventListener("input", () => {
+    state.query = searchInput.value;
+    renderNavigation();
+    writeUrlState(state);
   });
 
   friendlyForm.addEventListener("input", () => {
@@ -6393,17 +7911,21 @@ export function initApp(documentRef = globalThis.document) {
       const result = await response.json();
       renderResultSummary(resultSummary, result, state.lang);
       renderReport(report, result, state.lang);
+      renderVisuals(result);
       output.textContent = formatJson(result);
       lastResponse = result;
       downloadButton.disabled = false;
       downloadHtmlButton.disabled = false;
+      renderContactPanel(result);
     } catch (error) {
       renderResultSummary(resultSummary, null, state.lang);
       renderReport(report, null, state.lang);
+      renderVisuals(null);
       output.textContent = formatJson({ error: error.message });
       lastResponse = null;
       downloadButton.disabled = true;
       downloadHtmlButton.disabled = true;
+      renderContactPanel(null);
     }
   });
 
@@ -6441,6 +7963,9 @@ export function initApp(documentRef = globalThis.document) {
   });
 
   render();
+  void loadSchemaMetadata().then(() => {
+    renderFriendlyForm(friendlyForm, state.toolId, TOOL_CATALOG[state.toolId], state.lang, TEXT[state.lang].form);
+  });
 }
 
 function escapeHtml(value) {
@@ -6451,7 +7976,7 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-function renderFriendlyForm(container, tool, lang, heading) {
+function renderFriendlyForm(container, toolId, tool, lang, heading) {
   if (!tool.form) {
     container.hidden = true;
     container.innerHTML = "";
@@ -6461,23 +7986,24 @@ function renderFriendlyForm(container, tool, lang, heading) {
   container.innerHTML = [
     `<div class="friendly-form-heading">${escapeHtml(heading)}</div>`,
     `<div class="friendly-fields">${tool.form.fields.map((field) =>
-      renderFriendlyField(field, valueAtPath(tool.sample, field.path || [field.name]), lang)
+      renderFriendlyField(toolId, tool, field, valueAtPath(tool.sample, field.path || [field.name]), lang)
     ).join("")}</div>`,
   ].join("");
 }
 
-function renderFriendlyField(field, value, lang) {
+function renderFriendlyField(toolId, tool, field, value, lang) {
   const baseLabel = field.label[lang] || field.label.en;
   const label = field.unit ? `${baseLabel} (${field.unit})` : baseLabel;
+  const help = buildFriendlyFieldHelp(toolId, tool, field, lang);
   if (field.control === "checkbox") {
-    return `<label class="friendly-field friendly-field-checkbox"><input name="${escapeHtml(field.name)}" type="checkbox" ${value ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`;
+    return `<label class="friendly-field friendly-field-checkbox"><input name="${escapeHtml(field.name)}" type="checkbox" ${value ? "checked" : ""}><span>${escapeHtml(label)}</span>${help ? `<small class="friendly-field-help">${escapeHtml(help)}</small>` : ""}</label>`;
   }
   const control = field.control === "select"
     ? `<select name="${escapeHtml(field.name)}">${field.options.map((option) =>
       `<option value="${escapeHtml(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`
     ).join("")}</select>`
-    : `<input name="${escapeHtml(field.name)}" type="number" step="${escapeHtml(field.step || "any")}" value="${escapeHtml(value)}">`;
-  return `<label class="friendly-field"><span>${escapeHtml(label)}</span>${control}</label>`;
+    : `<input name="${escapeHtml(field.name)}" type="${field.control === "text" ? "text" : "number"}" ${field.control === "text" ? "" : `step="${escapeHtml(field.step || "any")}"`} value="${escapeHtml(value)}">`;
+  return `<label class="friendly-field"><span>${escapeHtml(label)}</span>${control}${help ? `<small class="friendly-field-help">${escapeHtml(help)}</small>` : ""}</label>`;
 }
 
 function syncJsonFromFriendlyForm(toolId, container, input) {

@@ -5,6 +5,10 @@ import { test } from "node:test";
 import {
   API_BASE_URL,
   TOOL_CATALOG,
+  TOOL_GROUP_ORDER,
+  buildFriendlyFieldHelp,
+  buildDirectMailto,
+  buildFilteredToolGroups,
   buildPayloadFromFormValues,
   buildReportFilename,
   buildReportHtml,
@@ -12,6 +16,8 @@ import {
   buildResultDownloadText,
   buildResultFilename,
   buildResultSummaryItems,
+  buildToolContextModel,
+  buildVisualizationHtml,
   formatJson,
 } from "../app.js";
 
@@ -39,6 +45,9 @@ test("frontend is configured for structural subdomain and private API", async ()
   const mainHtml = await readFile(new URL("../../easuys.github.io/index-en.html", import.meta.url), "utf8");
   const favicon = await readFile(new URL("../favicon.ico", import.meta.url));
   const logo = await readFile(new URL("../images/logo.jpg", import.meta.url));
+  const spacingImage = await readFile(new URL("../images/calculators/ec5-spacing-requirements.png", import.meta.url));
+  const groupBoltsImage = await readFile(new URL("../images/calculators/ec5-group-effect-bolts.png", import.meta.url));
+  const groupConnectorsImage = await readFile(new URL("../images/calculators/ec5-group-effect-connectors.png", import.meta.url));
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
   const tsconfig = JSON.parse(await readFile(new URL("../tsconfig.json", import.meta.url), "utf8"));
 
@@ -60,6 +69,11 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /data-friendly-form/);
   assert.match(html, /data-result-summary/);
   assert.match(html, /data-report/);
+  assert.match(html, /data-tool-overview/);
+  assert.match(html, /data-tool-search/);
+  assert.match(html, /data-tool-context/);
+  assert.match(html, /data-result-visual/);
+  assert.match(html, /data-result-contact/);
   assert.match(html, /downloadable JSON or HTML output/);
   assert.match(html, /data-download/);
   assert.match(html, /data-download-html/);
@@ -67,14 +81,23 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(css, /\.page\s*{\s*max-width: 1140px;/);
   assert.match(css, /\.lang-switch a\s*{/);
   assert.match(css, /\.tool-shell button\s*{/);
+  assert.match(css, /\.tool-nav-search\s*{/);
+  assert.match(css, /\.tool-context\s*{/);
+  assert.match(css, /\.tool-asset-gallery\s*{/);
   assert.match(css, /\.friendly-fields\s*{/);
+  assert.match(css, /\.friendly-field-help\s*{/);
   assert.match(css, /\.friendly-field-checkbox\s*{/);
   assert.match(css, /\.result-summary dl\s*{/);
   assert.match(css, /\.report-view\s*{/);
+  assert.match(css, /\.result-visual\s*{/);
+  assert.match(css, /\.result-contact\s*{/);
   assert.match(css, /\.result-actions\s*{/);
   assert.equal(css.split("/* Structural tools app: scoped additions after the copied www.easuys.be base CSS. */")[0].trim(), mainCss.trim());
   assert.ok(favicon.byteLength > 0);
   assert.ok(logo.byteLength > 0);
+  assert.ok(spacingImage.byteLength > 0);
+  assert.ok(groupBoltsImage.byteLength > 0);
+  assert.ok(groupConnectorsImage.byteLength > 0);
   assert.equal(
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"
@@ -131,9 +154,190 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
   const appJs = await readFile(new URL("../app.js", import.meta.url), "utf8");
   const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
   assert.match(appTs, /as HTMLTextAreaElement/);
+  assert.match(appTs, /const TURNSTILE_SITE_KEY = "0x4AAAAAADYeVJCZgqihubKs"/);
+  assert.match(appTs, /const TURNSTILE_SCRIPT_URL = "https:\/\/challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit"/);
+  assert.match(appTs, /data-contact-turnstile/);
   for (const app of [appJs, appTs]) {
     assert.doesNotMatch(app, /function calculate/i);
     assert.doesNotMatch(app, /fk = K/i);
+  }
+});
+
+test("tool groups and search build a grouped calculator library view", () => {
+  assert.deepEqual(TOOL_GROUP_ORDER, ["beam", "ec1", "ec2", "ec3", "ec5", "ec6", "composite"]);
+
+  const filtered = buildFilteredToolGroups("bolt", "en");
+  assert.ok(filtered.length >= 1);
+  assert.ok(filtered.some((group) => group.groupId === "ec3"));
+  assert.ok(filtered.flatMap((group) => group.items).some((item) => item.toolId === "ec3_bolt_group_torsion"));
+});
+
+test("tool context exposes route and bounded-scope guidance", () => {
+  const context = buildToolContextModel("ec2_rectangular_section_capacity", "en");
+  assert.equal(context.groupLabel, "EC2 concrete");
+  assert.equal(context.route, "/calculate/ec2/rectangular-section-capacity");
+  assert.match(context.summary, /Rectangular concrete section/);
+  assert.match(context.limitations, /No full reinforced-concrete detailing/);
+});
+
+test("tool context exposes curated engineering image assets where available", () => {
+  const context = buildToolContextModel("ec5_axial_screw", "en");
+  assert.equal(context.assets.length, 1);
+  assert.equal(context.assets[0].src, "images/calculators/ec5-spacing-requirements.png");
+  assert.match(context.assets[0].caption, /minimum spacing/);
+});
+
+test("friendly field help can be derived from schema metadata and tool overrides", () => {
+  const schemaMetadata = {
+    schemas: {
+      "/calculate/ec1/roof-loads": {
+        fields: {
+          roof_angle_degrees: {
+            description: "Roof pitch angle used for the pitched-roof snow shape coefficient.",
+            required: true,
+            default: null,
+          },
+        },
+      },
+    },
+  };
+
+  const roofField = TOOL_CATALOG.ec1_roof_loads.form.fields.find((field) => field.name === "roof_angle_degrees");
+  const roofHelp = buildFriendlyFieldHelp("ec1_roof_loads", TOOL_CATALOG.ec1_roof_loads, roofField, "en", schemaMetadata);
+  assert.match(roofHelp, /Roof pitch angle/);
+  assert.match(roofHelp, /Required/);
+
+  const lapField = TOOL_CATALOG.ec3_bolted_lap_joint.form.fields.find((field) => field.name === "e1_mm");
+  const lapHelp = buildFriendlyFieldHelp("ec3_bolted_lap_joint", TOOL_CATALOG.ec3_bolted_lap_joint, lapField, "en", { schemas: {} });
+  assert.match(lapHelp, /Loaded end distance/);
+});
+
+test("contact mailto includes project, tool, message and result summary", () => {
+  const mailto = decodeURIComponent(buildDirectMailto(
+    "ec5_timber_floor_vibration",
+    "en",
+    {
+      projectName: "Warehouse floor",
+      email: "engineer@example.com",
+      message: "Please review the vibration result.",
+      consent: true,
+    },
+    {
+      calculator_id: "ec5_timber_floor_vibration",
+      result: {
+        overall_status: "PASS",
+        w_point_load_mm: 1.241,
+        f1_hz: 12.983,
+      },
+    }
+  ));
+
+  assert.match(mailto, /Warehouse floor/);
+  assert.match(mailto, /EC5 timber floor vibration/);
+  assert.match(mailto, /Please review the vibration result/);
+  assert.match(mailto, /Point-load deflection/);
+});
+
+test("beam and EC2 visualization helpers render SVG output from returned API fields", () => {
+  const beamHtml = buildVisualizationHtml({
+    calculator_id: "beam_simple_diagrams",
+    input: {
+      span_m: 5,
+      uniform_loads: [{ label: "floor", permanent_kn_per_m: 2.5, variable_kn_per_m: 3 }],
+      point_loads: [{ label: "machine", permanent_kn: 0, variable_kn: 25, position_m: 2.5 }],
+    },
+    result: {
+      span_m: 5,
+      cases: {
+        uls: {
+          diagrams: {
+            x_m: [0, 2.5, 5],
+            shear_kn: [20, 0, -20],
+            moment_knm: [0, 15, 0],
+          },
+        },
+      },
+    },
+  }, "en");
+  const ec2Html = buildVisualizationHtml({
+    calculator_id: "ec2_rectangular_section_capacity",
+    input: { b_mm: 400, h_mm: 400 },
+    result: {
+      section_width_mm: 400,
+      section_height_mm: 400,
+      reinforcement_layers: [
+        { n_bars: 4, depth_mm: 45, phi_mm: 20 },
+        { n_bars: 4, depth_mm: 355, phi_mm: 20 },
+      ],
+      applied_moment_knm: 180,
+      uls_capacity_knm: 394.46,
+      sls_characteristic_capacity_knm: 205.93,
+      sls_frequent_capacity_knm: 208.1,
+      ultimate_utilization: 0.456,
+      sls_characteristic_utilization: 0.874,
+      sls_frequent_utilization: 0.865,
+    },
+  }, "en");
+
+  assert.match(beamHtml, /svg/);
+  assert.match(beamHtml, /MEd/);
+  assert.match(ec2Html, /circle/);
+  assert.match(ec2Html, /ULS/);
+});
+
+test("expanded EC3, EC5, and EC6 visualization helpers render output from returned API fields", () => {
+  const ec3Html = buildVisualizationHtml({
+    calculator_id: "ec3_bolted_lap_joint",
+    input: { plate_width_mm: 140, num_cols: 2, num_rows: 2, force_uls_kn: 150 },
+    result: {
+      utilization_ratio: 0.508,
+      governing_resistance_kn: 295.36,
+      governing_mode: "net section",
+    },
+  }, "en");
+  const ec5Html = buildVisualizationHtml({
+    calculator_id: "ec5_timber_contact_moment_joint",
+    input: {
+      interface: { width_mm: 160, height_mm: 360 },
+      screws: [{ y_mm: -120 }, { y_mm: -120 }, { y_mm: -60 }, { y_mm: -60 }],
+    },
+    result: {
+      utilization_ratio: 0.638,
+      compression_depth_mm: 120,
+    },
+  }, "en");
+  const ec6Html = buildVisualizationHtml({
+    calculator_id: "ec6_inplane_shear_wall",
+    input: { length_mm: 1200, height_mm: 2600 },
+    result: {
+      compressed_length_lc_mm: 900,
+      bending_utilization_ratio: 0.31,
+      shear_utilization_ratio: 0.71,
+    },
+  }, "en");
+
+  assert.match(ec3Html, /svg/);
+  assert.match(ec3Html, /net section/);
+  assert.match(ec5Html, /circle/);
+  assert.match(ec5Html, /Compression/);
+  assert.match(ec6Html, /Wall panel/);
+  assert.match(ec6Html, /Bending/);
+});
+
+test("screenshot preview pages and captured PNGs exist", async () => {
+  for (const path of [
+    "../docs/screenshots/navigation-preview.html",
+    "../docs/screenshots/result-preview.html",
+    "../docs/screenshots/contact-preview.html",
+    "../docs/screenshots/navigation-desktop.png",
+    "../docs/screenshots/navigation-mobile.png",
+    "../docs/screenshots/result-desktop.png",
+    "../docs/screenshots/result-mobile.png",
+    "../docs/screenshots/contact-desktop.png",
+    "../docs/screenshots/contact-mobile.png",
+  ]) {
+    const file = await readFile(new URL(path, import.meta.url));
+    assert.ok(file.byteLength > 0, `${path} should exist`);
   }
 });
 

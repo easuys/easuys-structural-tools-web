@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Structural tools navigation preview</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+  <div class="page">
+    <section class="section">
+      <h2>Navigation preview</h2>
+      <div class="tool-overview">
+        <div class="tool-overview-summary"><strong>39</strong> calculators</div>
+        <div class="tool-overview-groups">
+          <article class="tool-overview-card">
+            <h3>EC3 steel</h3>
+            <p>Focused steel and connection checks with explicit geometry and clear governing components.</p>
+            <button type="button">EC3 bolt group torsion</button>
+          </article>
+          <article class="tool-overview-card">
+            <h3>EC5 timber</h3>
+            <p>Timber, screw, connector, and vibration helpers for early feasibility checks.</p>
+            <button type="button">EC5 timber beam check</button>
+          </article>
+          <article class="tool-overview-card">
+            <h3>EC6 masonry</h3>
+            <p>Unreinforced masonry helpers for compression, bearing, in-plane, and out-of-plane quick checks.</p>
+            <button type="button">EC6 in-plane shear wall</button>
+          </article>
+        </div>
+      </div>
+
+      <div class="tool-shell" style="margin-top: 18px;">
+        <aside class="tool-nav" aria-label="Calculators">
+          <div class="tool-nav-head">
+            <label class="tool-nav-search-label" for="tool-search">Find calculator</label>
+            <input id="tool-search" class="tool-nav-search" type="search" value="timber">
+            <div class="tool-nav-meta">12 calculators</div>
+          </div>
+          <div class="tool-nav-groups">
+            <section class="tool-nav-group">
+              <div class="tool-nav-group-title">EC5 timber</div>
+              <button type="button" aria-current="true">EC5 timber beam check</button>
+              <button type="button">EC5 timber floor vibration</button>
+              <button type="button">EC5 timber contact moment joint</button>
+              <button type="button">EC5 timber member ULS, six components</button>
+            </section>
+            <section class="tool-nav-group">
+              <div class="tool-nav-group-title">Beam mechanics</div>
+              <button type="button">Beam continuous strip</button>
+            </section>
+          </div>
+        </aside>
+
+        <section class="workspace">
+          <header class="workspace-header">
+            <p class="eyebrow">Calculator</p>
+            <h2>EC5 timber beam check</h2>
+            <p>Indicative calculation record.</p>
+          </header>
+
+          <section class="tool-context">
+            <div class="tool-context-header">
+              <h3>EC5 timber beam check</h3>
+              <span class="tool-context-chip">EC5 timber</span>
+            </div>
+            <div class="tool-context-grid">
+              <section>
+                <h4>Scope</h4>
+                <p>Bounded rectangular floor-beam check for bending, shear, deflection, and vibration.</p>
+              </section>
+              <section>
+                <h4>Limitations</h4>
+                <p>No full detailing, execution detailing, or manufacturer-specific modules.</p>
+              </section>
+            </div>
+            <div class="tool-overview-summary"><strong>Route:</strong> /calculate/ec5/timber-beam-check</div>
+          </section>
+        </section>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

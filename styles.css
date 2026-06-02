@@ -403,6 +403,105 @@ a:hover {
     padding: 18px;
 }
 
+.tool-overview {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.tool-overview-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.tool-overview-groups {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.tool-overview-card {
+    background: rgba(246, 243, 236, 0.6);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    padding: 12px 14px;
+}
+
+.tool-overview-card h3,
+.tool-overview-card p {
+    margin: 0;
+}
+
+.tool-overview-card h3 {
+    font-size: 1rem;
+}
+
+.tool-overview-card p {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.tool-overview-card button {
+    justify-self: start;
+}
+
+.tool-nav-head {
+    display: grid;
+    gap: 8px;
+}
+
+.tool-nav-search-label,
+.tool-nav-meta {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.tool-nav-search {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    font: inherit;
+    min-height: 38px;
+    padding: 8px 10px;
+    width: 100%;
+}
+
+.tool-nav-groups {
+    display: grid;
+    gap: 14px;
+}
+
+.tool-nav-group {
+    display: grid;
+    gap: 8px;
+}
+
+.tool-nav-group-title {
+    color: var(--accent);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.tool-nav-empty {
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 12px;
+}
+
 .tool-shell button {
     background: var(--paper-bright);
     border: 1px solid var(--line);
@@ -460,6 +559,110 @@ a:hover {
 .workspace-header p:not(.eyebrow) {
     color: var(--muted);
     margin-top: 6px;
+}
+
+.tool-context {
+    background: rgba(246, 243, 236, 0.5);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: grid;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 16px;
+}
+
+.tool-context-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.tool-context-header h3,
+.tool-context p,
+.tool-context ul {
+    margin: 0;
+}
+
+.tool-context-header h3 {
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    font-size: 1.1rem;
+}
+
+.tool-context-chip {
+    background: var(--paper-bright);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    padding: 5px 10px;
+    text-transform: uppercase;
+}
+
+.tool-context-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tool-context-grid section {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    min-width: 0;
+    padding: 12px;
+}
+
+.tool-context-grid h4 {
+    color: var(--accent);
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+}
+
+.tool-context-grid p,
+.tool-context-grid li {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.tool-context-grid ul {
+    padding-left: 18px;
+}
+
+.tool-asset-gallery {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.tool-asset-card {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.tool-asset-card img {
+    display: block;
+    max-height: 180px;
+    object-fit: contain;
+    width: 100%;
+    height: auto;
+}
+
+.tool-asset-card figcaption {
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.45;
+    padding: 0 10px 10px;
 }
 
 .eyebrow {
@@ -528,6 +731,12 @@ a:hover {
     min-width: 0;
 }
 
+.friendly-field-help {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
 .friendly-field input,
 .friendly-field select {
     background: #ffffff;
@@ -554,6 +763,10 @@ a:hover {
     grid-template-columns: 18px 1fr;
     min-height: 38px;
     padding: 8px 10px;
+}
+
+.friendly-field-checkbox .friendly-field-help {
+    grid-column: 2;
 }
 
 .calculator textarea,
@@ -624,6 +837,180 @@ a:hover {
     gap: 12px;
     margin-bottom: 12px;
     padding-bottom: 12px;
+}
+
+.result-visual[hidden] {
+    display: none;
+}
+
+.result-visual {
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+}
+
+.visual-card {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+}
+
+.visual-card h3,
+.visual-card p {
+    margin: 0;
+}
+
+.visual-card h3 {
+    font-size: 0.9rem;
+}
+
+.visual-card p {
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.visual-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.visual-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.visual-metrics {
+    display: grid;
+    gap: 8px;
+}
+
+.visual-metric {
+    display: grid;
+    gap: 4px;
+}
+
+.visual-metric-label {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.visual-metric-track {
+    background: rgba(43, 76, 101, 0.1);
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+}
+
+.visual-metric-fill {
+    background: var(--accent);
+    border-radius: inherit;
+    height: 100%;
+}
+
+.visual-metric-fill.is-danger {
+    background: #a5513d;
+}
+
+.visual-metric-value {
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.result-contact {
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+}
+
+.result-contact h3,
+.result-contact p {
+    margin: 0;
+}
+
+.result-contact p {
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.result-contact-form {
+    display: grid;
+    gap: 10px;
+}
+
+.result-contact-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.result-contact-field {
+    display: grid;
+    gap: 4px;
+}
+
+.result-contact-field--full {
+    grid-column: 1 / -1;
+}
+
+.result-contact-field span,
+.result-contact-status,
+.result-contact-note {
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.result-contact-field input,
+.result-contact-field textarea {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    font: inherit;
+    min-width: 0;
+    padding: 8px 10px;
+    width: 100%;
+}
+
+.result-contact-field textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.result-contact-consent {
+    align-items: start;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 18px 1fr;
+}
+
+.result-contact-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.result-contact-summary {
+    background: rgba(246, 243, 236, 0.55);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.result-contact-summary ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
 }
 
 .report-view h3,
@@ -704,6 +1091,11 @@ a:hover {
     .tool-nav {
         border-bottom: 1px solid var(--line);
         border-right: 0;
+    }
+
+    .tool-context-grid,
+    .result-contact-grid {
+        grid-template-columns: 1fr;
     }
 }
 

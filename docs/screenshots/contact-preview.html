@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Structural tools contact preview</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+  <div class="page">
+    <section class="section">
+      <h2>Contact preview</h2>
+      <section class="result-panel" aria-live="polite">
+        <section class="result-contact">
+          <h3>Need a project-specific review?</h3>
+          <p>Use this result as a starting point and open a prefilled project enquiry for a reviewed study or targeted engineering question.</p>
+          <div class="result-contact-summary">
+            <strong>Result summary</strong>
+            <ul>
+              <li>Frequency: 12.98 Hz</li>
+              <li>Point-load deflection: 1.24 mm</li>
+              <li>Overall status: PASS</li>
+            </ul>
+          </div>
+          <form class="result-contact-form">
+            <div class="result-contact-grid">
+              <label class="result-contact-field"><span>Project name</span><input type="text" value="Warehouse floor"></label>
+              <label class="result-contact-field"><span>Email</span><input type="email" value="engineer@example.com"></label>
+              <label class="result-contact-field result-contact-field--full"><span>Question or context</span><textarea>Please review this floor before issue for construction.</textarea></label>
+            </div>
+            <label class="result-contact-consent"><input type="checkbox" checked><span>EA Suys may contact me about this enquiry.</span></label>
+            <div class="result-contact-actions">
+              <button type="button" class="primary">Prepare enquiry</button>
+              <a href="mailto:info@easuys.be">Open email directly</a>
+            </div>
+            <div class="result-contact-status">This opens an email draft with the tool and result summary.</div>
+          </form>
+        </section>
+      </section>
+    </section>
+  </div>
+</body>
+</html>

@@ -52,14 +52,23 @@
       <section class="section" id="calculators">
         <h2>Calculators</h2>
         <p>Use the form view for quick input or the JSON view for reproducible calculation records.</p>
+        <div class="tool-overview" data-tool-overview></div>
         <div class="tool-shell" aria-label="Structural calculators">
-          <aside class="tool-nav" aria-label="Calculators" data-tool-tabs></aside>
+          <aside class="tool-nav" aria-label="Calculators">
+            <div class="tool-nav-head">
+              <label class="tool-nav-search-label" for="tool-search" data-tool-search-label>Find calculator</label>
+              <input id="tool-search" class="tool-nav-search" type="search" data-tool-search>
+              <div class="tool-nav-meta" data-tool-nav-meta></div>
+            </div>
+            <div data-tool-tabs></div>
+          </aside>
           <section class="workspace">
             <header class="workspace-header">
               <p class="eyebrow">Calculator</p>
               <h2 data-tool-title>EA Suys Structural Tools</h2>
               <p data-tool-status>Indicative calculation record.</p>
             </header>
+            <section class="tool-context" data-tool-context></section>
 
             <div class="tool-grid">
               <form class="calculator" data-calculator-form>
@@ -77,11 +86,13 @@
                 <h2 data-result-heading>Result</h2>
                 <div class="result-summary" data-result-summary hidden></div>
                 <div class="report-view" data-report hidden></div>
+                <div class="result-visual" data-result-visual hidden></div>
                 <div class="actions result-actions">
                   <button type="button" data-download disabled>Download JSON</button>
                   <button type="button" data-download-html disabled>Download HTML</button>
                   <button type="button" data-print>Print</button>
                 </div>
+                <section class="result-contact" data-result-contact></section>
                 <pre data-result-output>{}</pre>
               </section>
             </div>
