@@ -1,5 +1,87 @@
 export const API_BASE_URL = "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev";
 export const TOOL_CATALOG = {
+    ec1_roof_loads: {
+        endpoint: "/calculate/ec1/roof-loads",
+        title: {
+            nl: "EC1 daklasten",
+            en: "EC1 roof loads",
+            fr: "EC1 charges de toiture",
+        },
+        sample: {
+            roof_angle_degrees: 40,
+            roof_surface_area_m2: 6.888,
+            altitude_m: 0,
+            obstacle: false,
+            ground_snow_load_kn_m2: 0.5,
+            ce_exposure: 1,
+            ct_thermal: 1,
+            maintenance_category_h_kn_m2: 0.4,
+        },
+        form: {
+            fields: [
+                {
+                    name: "roof_angle_degrees",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.1",
+                    label: { nl: "Dakhelling", en: "Roof angle", fr: "Inclinaison toiture" },
+                    unit: "deg",
+                },
+                {
+                    name: "roof_surface_area_m2",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.01",
+                    label: { nl: "Dakoppervlak", en: "Roof surface", fr: "Surface toiture" },
+                    unit: "m2",
+                },
+                {
+                    name: "altitude_m",
+                    value_type: "number",
+                    control: "number",
+                    step: "1",
+                    label: { nl: "Hoogte", en: "Altitude", fr: "Altitude" },
+                    unit: "m",
+                },
+                {
+                    name: "obstacle",
+                    value_type: "boolean",
+                    control: "checkbox",
+                    label: { nl: "Sneeuwophoping door obstakels", en: "Obstacle snow accumulation", fr: "Accumulation par obstacle" },
+                },
+                {
+                    name: "ground_snow_load_kn_m2",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.01",
+                    label: { nl: "Sneeuwlast grond", en: "Ground snow load", fr: "Charge neige sol" },
+                    unit: "kN/m2",
+                },
+                {
+                    name: "ce_exposure",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.05",
+                    label: { nl: "CE", en: "CE", fr: "CE" },
+                },
+                {
+                    name: "ct_thermal",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.05",
+                    label: { nl: "CT", en: "CT", fr: "CT" },
+                },
+                {
+                    name: "maintenance_category_h_kn_m2",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.01",
+                    label: { nl: "Onderhoud Cat. H", en: "Maintenance Cat. H", fr: "Entretien Cat. H" },
+                    unit: "kN/m2",
+                },
+            ],
+        },
+    },
     ec3_bolt_group_torsion: {
         endpoint: "/calculate/ec3/bolt-group-torsion",
         title: {
@@ -2973,6 +3055,15 @@ const TEXT = {
     },
 };
 const RESULT_SUMMARY_FIELDS = {
+    ec1_roof_loads: [
+        { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+        { path: ["result", "governing_variable_load_kn_m2"], label: { nl: "Maatgevende last", en: "Governing load", fr: "Charge determinante" }, unit: "kN/m2" },
+        { path: ["result", "governing_variable_load_kind"], label: { nl: "Maatgevend type", en: "Governing type", fr: "Type determinant" } },
+        { path: ["result", "snow_load_kn_m2"], label: { nl: "Sneeuwlast", en: "Snow load", fr: "Charge neige" }, unit: "kN/m2" },
+        { path: ["result", "maintenance_load_formula_kn_m2"], label: { nl: "Onderhoud formule", en: "Maintenance formula", fr: "Entretien formule" }, unit: "kN/m2" },
+        { path: ["result", "snow_shape_coefficient_mu1"], label: { nl: "mu1", en: "mu1", fr: "mu1" } },
+        { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+    ],
     ec3_bolt_group_torsion: [
         { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
         { path: ["result", "critical_bolt_id"], label: { nl: "Kritische bout", en: "Critical bolt", fr: "Boulon critique" } },

@@ -53,6 +53,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
+    "ec1_roof_loads",
     "ec3_bolt_group_torsion",
     "ec3_bolted_lap_joint",
     "ec3_bolted_moment_connection",
@@ -82,6 +83,30 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     assert.doesNotMatch(app, /function calculate/i);
     assert.doesNotMatch(app, /fk = K/i);
   }
+});
+
+test("EC1 roof loads form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec1_roof_loads", {
+    roof_angle_degrees: "40",
+    roof_surface_area_m2: "6.888",
+    altitude_m: "0",
+    obstacle: false,
+    ground_snow_load_kn_m2: "0.5",
+    ce_exposure: "1",
+    ct_thermal: "1",
+    maintenance_category_h_kn_m2: "0.4",
+  });
+
+  assert.deepEqual(payload, {
+    roof_angle_degrees: 40,
+    roof_surface_area_m2: 6.888,
+    altitude_m: 0,
+    obstacle: false,
+    ground_snow_load_kn_m2: 0.5,
+    ce_exposure: 1,
+    ct_thermal: 1,
+    maintenance_category_h_kn_m2: 0.4,
+  });
 });
 
 test("contact moment joint form metadata preserves fixed screw rows", () => {
@@ -748,6 +773,31 @@ test("all first-wave tools expose form metadata", () => {
     []
   );
   assert.equal(buildPayloadFromFormValues("unknown_tool", {}), null);
+});
+
+test("EC1 result summaries format returned API fields only", () => {
+  const roofLoads = buildResultSummaryItems({
+    calculator_id: "ec1_roof_loads",
+    result: {
+      overall_status: "PASS",
+      governing_variable_load_kn_m2: 0.73112,
+      governing_variable_load_kind: "maintenance_formula",
+      snow_load_kn_m2: 0.266667,
+      maintenance_load_formula_kn_m2: 0.73112,
+      snow_shape_coefficient_mu1: 0.533333,
+      warning_codes: ["MAINTENANCE_FORMULA_GOVERNS"],
+    },
+  }, "en");
+
+  assert.deepEqual(roofLoads, [
+    { label: "Status", value: "PASS" },
+    { label: "Governing load", value: "0.731 kN/m2" },
+    { label: "Governing type", value: "maintenance_formula" },
+    { label: "Snow load", value: "0.267 kN/m2" },
+    { label: "Maintenance formula", value: "0.731 kN/m2" },
+    { label: "mu1", value: "0.533" },
+    { label: "Warnings", value: "MAINTENANCE_FORMULA_GOVERNS" },
+  ]);
 });
 
 test("masonry result summaries format returned API fields only", () => {
