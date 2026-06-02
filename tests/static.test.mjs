@@ -53,6 +53,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
+    "ec3_bolt_group_torsion",
     "ec3_bolted_lap_joint",
     "ec3_bolted_moment_connection",
     "ec3_fillet_weld",
@@ -119,6 +120,50 @@ test("ec3 plate tension form metadata builds the API payload", () => {
     steel_grade: "S355",
     hole_diameter_mm: 22,
     n_holes: 2,
+  });
+});
+
+test("ec3 bolt group torsion form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_bolt_group_torsion", {
+    plate_thickness_mm: "10",
+    steel_grade: "S235",
+    bolt_class: "8.8",
+    bolt_diameter_mm: "20",
+    shear_in_threads: "true",
+    hole_type: "normal",
+    num_rows: "2",
+    num_cols: "2",
+    pitch_z_mm: "100",
+    pitch_x_mm: "100",
+    edge_top_mm: "50",
+    edge_bottom_mm: "50",
+    edge_left_mm: "50",
+    edge_right_mm: "50",
+    shear_force_z_kn: "100",
+    shear_force_x_kn: "0",
+    torsion_moment_knm: "10",
+    gamma_m2: "1.25",
+  });
+
+  assert.deepEqual(payload, {
+    plate_thickness_mm: 10,
+    steel_grade: "S235",
+    bolt_class: "8.8",
+    bolt_diameter_mm: 20,
+    shear_in_threads: true,
+    hole_type: "normal",
+    num_rows: 2,
+    num_cols: 2,
+    pitch_z_mm: 100,
+    pitch_x_mm: 100,
+    edge_top_mm: 50,
+    edge_bottom_mm: 50,
+    edge_left_mm: 50,
+    edge_right_mm: 50,
+    shear_force_z_kn: 100,
+    shear_force_x_kn: 0,
+    torsion_moment_knm: 10,
+    gamma_m2: 1.25,
   });
 });
 
@@ -700,6 +745,27 @@ test("masonry result summaries format returned API fields only", () => {
 });
 
 test("ec3 result summaries format returned API fields only", () => {
+  const torsion = buildResultSummaryItems({
+    calculator_id: "ec3_bolt_group_torsion",
+    result: {
+      overall_status: "PASS",
+      critical_bolt_id: 2,
+      max_bolt_force_kn: 55.901699,
+      shear_resistance_per_bolt_kn: 94.08,
+      utilization_percent: 59.4,
+      warning_codes: ["SHEAR_RESISTANCE_GOVERNS"],
+    },
+  }, "en");
+
+  assert.deepEqual(torsion, [
+    { label: "Status", value: "PASS" },
+    { label: "Critical bolt", value: "2" },
+    { label: "Max bolt force", value: "55.902 kN" },
+    { label: "Shear resistance/bolt", value: "94.08 kN" },
+    { label: "Utilization", value: "59.4 %" },
+    { label: "Warnings", value: "SHEAR_RESISTANCE_GOVERNS" },
+  ]);
+
   const bolt = buildResultSummaryItems({
     calculator_id: "ec3_bolted_lap_joint",
     result: {
