@@ -72,6 +72,48 @@ export const TOOL_CATALOG = {
       ],
     },
   },
+  beam_support_fixity_bracketing: {
+    endpoint: "/calculate/beam/support-fixity-bracketing",
+    title: {
+      nl: "Balk steunfixatie bracket",
+      en: "Beam support-fixity bracketing",
+      fr: "Poutre bracket fixite appuis",
+    },
+    sample: {
+      length_m: 3.2,
+      e_modulus_gpa: 11,
+      inertia_m4: 0.000072,
+      distributed_loads: [
+        { label: "zone_1", start_kn_per_m: 8, end_kn_per_m: 8, start_m: 0, end_m: 1.2 },
+        { label: "zone_2", start_kn_per_m: 12, end_kn_per_m: 18, start_m: 1.2, end_m: 3.2 },
+      ],
+      point_loads: [
+        { label: "machine", magnitude_kn: 6, position_m: 1.2 },
+        { label: "partition", magnitude_kn: 3.5, position_m: 2.7 },
+      ],
+      sample_points: 81,
+    },
+    form: {
+      fields: [
+        { name: "length_m", value_type: "number", control: "number", step: "0.01", label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+        { name: "e_modulus_gpa", value_type: "number", control: "number", step: "0.1", label: { nl: "E-modulus", en: "E modulus", fr: "Module E" }, unit: "GPa" },
+        { name: "inertia_m4", value_type: "number", control: "number", step: "0.000001", label: { nl: "Traagheidsmoment I", en: "Inertia I", fr: "Inertie I" }, unit: "m4" },
+        { name: "distributed_loads.0.start_kn_per_m", path: ["distributed_loads", 0, "start_kn_per_m"], value_type: "number", control: "number", step: "0.1", label: { nl: "Zone 1 q start", en: "Zone 1 q start", fr: "Zone 1 q debut" }, unit: "kN/m" },
+        { name: "distributed_loads.0.end_kn_per_m", path: ["distributed_loads", 0, "end_kn_per_m"], value_type: "number", control: "number", step: "0.1", label: { nl: "Zone 1 q einde", en: "Zone 1 q end", fr: "Zone 1 q fin" }, unit: "kN/m" },
+        { name: "distributed_loads.0.start_m", path: ["distributed_loads", 0, "start_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "Zone 1 start", en: "Zone 1 start", fr: "Zone 1 debut" }, unit: "m" },
+        { name: "distributed_loads.0.end_m", path: ["distributed_loads", 0, "end_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "Zone 1 einde", en: "Zone 1 end", fr: "Zone 1 fin" }, unit: "m" },
+        { name: "distributed_loads.1.start_kn_per_m", path: ["distributed_loads", 1, "start_kn_per_m"], value_type: "number", control: "number", step: "0.1", label: { nl: "Zone 2 q start", en: "Zone 2 q start", fr: "Zone 2 q debut" }, unit: "kN/m" },
+        { name: "distributed_loads.1.end_kn_per_m", path: ["distributed_loads", 1, "end_kn_per_m"], value_type: "number", control: "number", step: "0.1", label: { nl: "Zone 2 q einde", en: "Zone 2 q end", fr: "Zone 2 q fin" }, unit: "kN/m" },
+        { name: "distributed_loads.1.start_m", path: ["distributed_loads", 1, "start_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "Zone 2 start", en: "Zone 2 start", fr: "Zone 2 debut" }, unit: "m" },
+        { name: "distributed_loads.1.end_m", path: ["distributed_loads", 1, "end_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "Zone 2 einde", en: "Zone 2 end", fr: "Zone 2 fin" }, unit: "m" },
+        { name: "point_loads.0.magnitude_kn", path: ["point_loads", 0, "magnitude_kn"], value_type: "number", control: "number", step: "0.1", label: { nl: "Puntlast 1", en: "Point load 1", fr: "Charge ponctuelle 1" }, unit: "kN" },
+        { name: "point_loads.0.position_m", path: ["point_loads", 0, "position_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "Positie 1", en: "Position 1", fr: "Position 1" }, unit: "m" },
+        { name: "point_loads.1.magnitude_kn", path: ["point_loads", 1, "magnitude_kn"], value_type: "number", control: "number", step: "0.1", label: { nl: "Puntlast 2", en: "Point load 2", fr: "Charge ponctuelle 2" }, unit: "kN" },
+        { name: "point_loads.1.position_m", path: ["point_loads", 1, "position_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "Positie 2", en: "Position 2", fr: "Position 2" }, unit: "m" },
+        { name: "sample_points", value_type: "number", control: "number", step: "1", label: { nl: "Diagram punten", en: "Diagram points", fr: "Points diagramme" } },
+      ],
+    },
+  },
   composite_embedded_profile_bearing: {
     endpoint: "/calculate/composite/embedded-profile-bearing",
     title: {
@@ -4692,6 +4734,14 @@ const RESULT_SUMMARY_FIELDS = {
     { path: ["result", "cases", "uls", "reactions", "right_kn"], label: { nl: "ULS R rechts", en: "ULS R right", fr: "ELU R droite" }, unit: "kN" },
     { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
   ],
+  beam_support_fixity_bracketing: [
+    { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+    { path: ["result", "fixed_case", "max_moment_knm", "absolute_value"], label: { nl: "Vast Mmax", en: "Fixed Mmax", fr: "Fixe Mmax" }, unit: "kNm" },
+    { path: ["result", "pinned_case", "max_moment_knm", "absolute_value"], label: { nl: "Scharnier Mmax", en: "Pinned Mmax", fr: "Articule Mmax" }, unit: "kNm" },
+    { path: ["result", "average_response", "max_abs_moment_knm"], label: { nl: "Gemiddeld |M|max", en: "Average |M|max", fr: "Moyenne |M|max" }, unit: "kNm" },
+    { path: ["result", "average_response", "max_abs_deflection_mm"], label: { nl: "Gemiddelde doorbuiging", en: "Average deflection", fr: "Fleche moyenne" }, unit: "mm" },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
   composite_embedded_profile_bearing: [
     { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
     { path: ["result", "sigma_c_max_kpa"], label: { nl: "Sigma c max", en: "Sigma c max", fr: "Sigma c max" }, unit: "kPa" },
@@ -4957,6 +5007,46 @@ const RESULT_SUMMARY_FIELDS = {
 };
 
 const REPORT_SECTION_FIELDS = {
+  beam_support_fixity_bracketing: [
+    {
+      heading: { nl: "Model en belastingen", en: "Model and loads", fr: "Modele et charges" },
+      fields: [
+        { path: ["result", "length_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+        { path: ["result", "e_modulus_gpa"], label: { nl: "E-modulus", en: "E modulus", fr: "Module E" }, unit: "GPa" },
+        { path: ["result", "inertia_m4"], label: { nl: "Traagheidsmoment I", en: "Inertia I", fr: "Inertie I" }, unit: "m4" },
+        { path: ["result", "distributed_load_count"], label: { nl: "Aantal verdeelde lasten", en: "Distributed loads", fr: "Charges reparties" } },
+        { path: ["result", "point_load_count"], label: { nl: "Aantal puntlasten", en: "Point loads", fr: "Charges ponctuelles" } },
+      ],
+    },
+    {
+      heading: { nl: "Vaste linker steun", en: "Fixed-left case", fr: "Cas gauche fixe" },
+      fields: [
+        { path: ["result", "fixed_case", "reactions", 0, "ry_kn"], label: { nl: "Reactie links", en: "Left reaction", fr: "Reaction gauche" }, unit: "kN" },
+        { path: ["result", "fixed_case", "reactions", 1, "ry_kn"], label: { nl: "Reactie rechts", en: "Right reaction", fr: "Reaction droite" }, unit: "kN" },
+        { path: ["result", "fixed_case", "max_shear_kn", "absolute_value"], label: { nl: "Max |V|", en: "Max |V|", fr: "Max |V|" }, unit: "kN" },
+        { path: ["result", "fixed_case", "max_moment_knm", "signed_value"], label: { nl: "Mmax", en: "Mmax", fr: "Mmax" }, unit: "kNm" },
+        { path: ["result", "fixed_case", "max_deflection_mm", "absolute_value"], label: { nl: "Max doorbuiging", en: "Max deflection", fr: "Fleche max" }, unit: "mm" },
+      ],
+    },
+    {
+      heading: { nl: "Scharnierende linker steun", en: "Pinned-left case", fr: "Cas gauche articule" },
+      fields: [
+        { path: ["result", "pinned_case", "reactions", 0, "ry_kn"], label: { nl: "Reactie links", en: "Left reaction", fr: "Reaction gauche" }, unit: "kN" },
+        { path: ["result", "pinned_case", "reactions", 1, "ry_kn"], label: { nl: "Reactie rechts", en: "Right reaction", fr: "Reaction droite" }, unit: "kN" },
+        { path: ["result", "pinned_case", "max_shear_kn", "absolute_value"], label: { nl: "Max |V|", en: "Max |V|", fr: "Max |V|" }, unit: "kN" },
+        { path: ["result", "pinned_case", "max_moment_knm", "signed_value"], label: { nl: "Mmax", en: "Mmax", fr: "Mmax" }, unit: "kNm" },
+        { path: ["result", "pinned_case", "max_deflection_mm", "absolute_value"], label: { nl: "Max doorbuiging", en: "Max deflection", fr: "Fleche max" }, unit: "mm" },
+      ],
+    },
+    {
+      heading: { nl: "Gemiddelde bracketrespons", en: "Average bracket response", fr: "Reponse moyenne bracket" },
+      fields: [
+        { path: ["result", "average_response", "max_abs_shear_kn"], label: { nl: "Max |V|", en: "Max |V|", fr: "Max |V|" }, unit: "kN" },
+        { path: ["result", "average_response", "max_abs_moment_knm"], label: { nl: "Max |M|", en: "Max |M|", fr: "Max |M|" }, unit: "kNm" },
+        { path: ["result", "average_response", "max_abs_deflection_mm"], label: { nl: "Max doorbuiging", en: "Max deflection", fr: "Fleche max" }, unit: "mm" },
+      ],
+    },
+  ],
   ec5_timber_beam_check: [
     {
       heading: { nl: "Geometrie en belastingen", en: "Geometry and loads", fr: "Geometrie et charges" },

@@ -73,6 +73,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "beam_composite_shear_stress",
     "beam_simple_diagrams",
+    "beam_support_fixity_bracketing",
     "composite_embedded_profile_bearing",
     "ec1_roof_loads",
     "ec2_rectangular_section_capacity",
@@ -221,6 +222,42 @@ test("EC2 rectangular section form metadata builds the API payload", () => {
     kt: 0.4,
     wmax_mm: 0.3,
     applied_moment_knm: 210,
+  });
+});
+
+test("beam support-fixity bracketing form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("beam_support_fixity_bracketing", {
+    length_m: "3.2",
+    e_modulus_gpa: "11",
+    inertia_m4: "0.000072",
+    "distributed_loads.0.start_kn_per_m": "8",
+    "distributed_loads.0.end_kn_per_m": "8",
+    "distributed_loads.0.start_m": "0",
+    "distributed_loads.0.end_m": "1.2",
+    "distributed_loads.1.start_kn_per_m": "12",
+    "distributed_loads.1.end_kn_per_m": "18",
+    "distributed_loads.1.start_m": "1.2",
+    "distributed_loads.1.end_m": "3.2",
+    "point_loads.0.magnitude_kn": "6",
+    "point_loads.0.position_m": "1.2",
+    "point_loads.1.magnitude_kn": "3.5",
+    "point_loads.1.position_m": "2.7",
+    sample_points: "121",
+  });
+
+  assert.deepEqual(payload, {
+    length_m: 3.2,
+    e_modulus_gpa: 11,
+    inertia_m4: 0.000072,
+    distributed_loads: [
+      { label: "zone_1", start_kn_per_m: 8, end_kn_per_m: 8, start_m: 0, end_m: 1.2 },
+      { label: "zone_2", start_kn_per_m: 12, end_kn_per_m: 18, start_m: 1.2, end_m: 3.2 },
+    ],
+    point_loads: [
+      { label: "machine", magnitude_kn: 6, position_m: 1.2 },
+      { label: "partition", magnitude_kn: 3.5, position_m: 2.7 },
+    ],
+    sample_points: 121,
   });
 });
 
@@ -1492,6 +1529,33 @@ test("supporting tool result summaries format returned API fields only", () => {
     { label: "ULS R right", value: "38.438 kN" },
     { label: "Warnings", value: "SOURCE_SIMPLIFIED_MAXIMA" },
   ]);
+
+  const fixityBracket = buildResultSummaryItems({
+    calculator_id: "beam_support_fixity_bracketing",
+    status: "ok",
+    result: {
+      fixed_case: {
+        max_moment_knm: { absolute_value: 19.734263 },
+      },
+      pinned_case: {
+        max_moment_knm: { absolute_value: 20.364618 },
+      },
+      average_response: {
+        max_abs_moment_knm: 15.832047,
+        max_abs_deflection_mm: 19.540241,
+      },
+      warning_codes: ["AVERAGE_RESPONSE_IS_HEURISTIC"],
+    },
+  }, "en");
+
+  assert.deepEqual(fixityBracket, [
+    { label: "Status", value: "OK" },
+    { label: "Fixed Mmax", value: "19.734 kNm" },
+    { label: "Pinned Mmax", value: "20.365 kNm" },
+    { label: "Average |M|max", value: "15.832 kNm" },
+    { label: "Average deflection", value: "19.54 mm" },
+    { label: "Warnings", value: "AVERAGE_RESPONSE_IS_HEURISTIC" },
+  ]);
 });
 
 test("EC1 result summaries format returned API fields only", () => {
@@ -2240,4 +2304,46 @@ test("timber report helpers include detailed sections in standalone HTML output"
   assert.match(html, /Self weight/);
   assert.match(html, /1 kN deflection/);
   assert.match(html, /All criteria OK/);
+});
+
+test("beam support-fixity report helpers include bracket sections in standalone HTML output", () => {
+  const response = {
+    calculator_id: "beam_support_fixity_bracketing",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.31",
+    result: {
+      length_m: 3.2,
+      e_modulus_gpa: 11,
+      inertia_m4: 0.000072,
+      distributed_load_count: 2,
+      point_load_count: 2,
+      fixed_case: {
+        reactions: [{ ry_kn: -27.013832 }, { ry_kn: -22.086168 }],
+        max_shear_kn: { absolute_value: 27.013832 },
+        max_moment_knm: { signed_value: 19.734263 },
+        max_deflection_mm: { absolute_value: 11.965417 },
+      },
+      pinned_case: {
+        reactions: [{ ry_kn: -20.846602 }, { ry_kn: -28.253124 }],
+        max_shear_kn: { absolute_value: 28.253124 },
+        max_moment_knm: { signed_value: -20.364618 },
+        max_deflection_mm: { absolute_value: 27.404596 },
+      },
+      average_response: {
+        max_abs_shear_kn: 25.169646,
+        max_abs_moment_knm: 15.832047,
+        max_abs_deflection_mm: 19.540241,
+      },
+      warning_codes: ["AVERAGE_RESPONSE_IS_HEURISTIC"],
+    },
+    assumptions: ["Bracket helper only."],
+    source_refs: ["Source script example_wrappers.py."],
+    status: "ok",
+  };
+
+  const html = buildReportHtml(response, "en", new Date("2026-06-02T18:25:00.000Z"));
+  assert.match(html, /Model and loads/);
+  assert.match(html, /Fixed-left case/);
+  assert.match(html, /Pinned-left case/);
+  assert.match(html, /Average bracket response/);
+  assert.match(html, /Distributed loads/);
 });
