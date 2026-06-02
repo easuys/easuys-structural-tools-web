@@ -6,6 +6,8 @@ import {
   API_BASE_URL,
   TOOL_CATALOG,
   buildPayloadFromFormValues,
+  buildResultDownloadText,
+  buildResultFilename,
   buildResultSummaryItems,
   formatJson,
 } from "../app.js";
@@ -23,12 +25,15 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /<a href="#en" data-lang="en" aria-current="page">EN<\/a>/);
   assert.match(html, /data-friendly-form/);
   assert.match(html, /data-result-summary/);
+  assert.match(html, /data-download/);
+  assert.match(html, /data-print/);
   assert.match(css, /\.page\s*{\s*max-width: 1140px;/);
   assert.match(css, /\.lang-switch a\s*{/);
   assert.match(css, /\.tool-shell button\s*{/);
   assert.match(css, /\.friendly-fields\s*{/);
   assert.match(css, /\.friendly-field-checkbox\s*{/);
   assert.match(css, /\.result-summary dl\s*{/);
+  assert.match(css, /\.result-actions\s*{/);
   assert.equal(
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"
@@ -619,4 +624,21 @@ test("ec5 result summaries format returned API fields only", () => {
 
 test("formatJson is stable", () => {
   assert.equal(formatJson({ b: 2, a: 1 }), '{\n  "b": 2,\n  "a": 1\n}');
+});
+
+test("result download helpers create stable JSON artifacts", () => {
+  const response = {
+    calculator_id: "ec5_osb_composite_vibration",
+    result: { overall_status: "PASS" },
+  };
+
+  assert.equal(
+    buildResultFilename("ec5_osb_composite_vibration", new Date("2026-06-02T05:00:00.000Z")),
+    "ea-suys-ec5-osb-composite-vibration-20260602T050000Z.json"
+  );
+  assert.equal(buildResultDownloadText(response), formatJson(response));
+  assert.equal(
+    buildResultFilename("", new Date("2026-06-02T05:00:00.000Z")),
+    "ea-suys-calculation-20260602T050000Z.json"
+  );
 });

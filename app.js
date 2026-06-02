@@ -1628,6 +1628,8 @@ const TEXT = {
     calculate: "Bereken",
     save: "Bewaar",
     load: "Laad",
+    download: "Download JSON",
+    print: "Afdrukken",
     status: "Indicatief rekenrecord.",
   },
   en: {
@@ -1637,6 +1639,8 @@ const TEXT = {
     calculate: "Calculate",
     save: "Save",
     load: "Load",
+    download: "Download JSON",
+    print: "Print",
     status: "Indicative calculation record.",
   },
   fr: {
@@ -1646,6 +1650,8 @@ const TEXT = {
     calculate: "Calculer",
     save: "Enregistrer",
     load: "Charger",
+    download: "Telecharger JSON",
+    print: "Imprimer",
     status: "Releve de calcul indicatif.",
   },
 };
@@ -1743,6 +1749,22 @@ export function formatJson(value) {
   return JSON.stringify(value, null, 2);
 }
 
+export function buildResultDownloadText(response) {
+  return formatJson(response);
+}
+
+export function buildResultFilename(toolId, date = new Date()) {
+  const stamp = date.toISOString()
+    .replaceAll("-", "")
+    .replaceAll(":", "")
+    .replace(/\.\d{3}Z$/, "Z");
+  const slug = String(toolId || "calculation")
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase() || "calculation";
+  return `ea-suys-${slug}-${stamp}.json`;
+}
+
 export function buildResultSummaryItems(response, lang = "en") {
   const fields = RESULT_SUMMARY_FIELDS[response?.calculator_id] || [];
   return fields
@@ -1776,12 +1798,16 @@ export function initApp(documentRef = globalThis.document) {
   const input = documentRef.querySelector("[data-json-input]");
   const output = documentRef.querySelector("[data-result-output]");
   const resultSummary = documentRef.querySelector("[data-result-summary]");
+  const downloadButton = documentRef.querySelector("[data-download]");
+  const printButton = documentRef.querySelector("[data-print]");
   const form = documentRef.querySelector("[data-calculator-form]");
   const friendlyForm = documentRef.querySelector("[data-friendly-form]");
+  let lastResponse = null;
 
   function render() {
     const text = TEXT[state.lang];
     const activeTool = TOOL_CATALOG[state.toolId];
+    lastResponse = null;
     tabs.innerHTML = Object.entries(TOOL_CATALOG).map(([toolId, tool]) => (
       `<button type="button" data-tool-id="${toolId}" ${toolId === state.toolId ? 'aria-current="true"' : ""}>${escapeHtml(tool.title[state.lang])}</button>`
     )).join("");
@@ -1792,6 +1818,9 @@ export function initApp(documentRef = globalThis.document) {
     documentRef.querySelector("[data-calculate]").textContent = text.calculate;
     documentRef.querySelector("[data-save]").textContent = text.save;
     documentRef.querySelector("[data-load]").textContent = text.load;
+    downloadButton.textContent = text.download;
+    downloadButton.disabled = true;
+    printButton.textContent = text.print;
     renderFriendlyForm(friendlyForm, activeTool, state.lang, text.form);
     renderResultSummary(resultSummary, null, state.lang);
     documentRef.querySelectorAll("[data-lang]").forEach((button) => {
@@ -1831,6 +1860,8 @@ export function initApp(documentRef = globalThis.document) {
     event.preventDefault();
     output.textContent = "";
     renderResultSummary(resultSummary, null, state.lang);
+    lastResponse = null;
+    downloadButton.disabled = true;
     try {
       const payload = JSON.parse(input.value);
       const response = await fetch(`${API_BASE_URL}${TOOL_CATALOG[state.toolId].endpoint}`, {
@@ -1841,10 +1872,24 @@ export function initApp(documentRef = globalThis.document) {
       const result = await response.json();
       renderResultSummary(resultSummary, result, state.lang);
       output.textContent = formatJson(result);
+      lastResponse = result;
+      downloadButton.disabled = false;
     } catch (error) {
       renderResultSummary(resultSummary, null, state.lang);
       output.textContent = formatJson({ error: error.message });
+      lastResponse = null;
+      downloadButton.disabled = true;
     }
+  });
+
+  downloadButton.addEventListener("click", () => {
+    if (!lastResponse) return;
+    const toolId = lastResponse.calculator_id || state.toolId;
+    triggerDownload(documentRef, buildResultFilename(toolId), buildResultDownloadText(lastResponse));
+  });
+
+  printButton.addEventListener("click", () => {
+    globalThis.print?.();
   });
 
   documentRef.querySelector("[data-save]").addEventListener("click", () => {
@@ -1919,6 +1964,18 @@ function renderResultSummary(container, response, lang) {
   container.innerHTML = `<dl>${items.map((item) =>
     `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`
   ).join("")}</dl>`;
+}
+
+function triggerDownload(documentRef, filename, text) {
+  const blob = new Blob([text], { type: "application/json" });
+  const url = globalThis.URL.createObjectURL(blob);
+  const link = documentRef.createElement("a");
+  link.href = url;
+  link.download = filename;
+  documentRef.body.appendChild(link);
+  link.click();
+  link.remove();
+  globalThis.URL.revokeObjectURL(url);
 }
 
 function coerceFieldValue(field, rawValue) {
