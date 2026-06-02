@@ -58,6 +58,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec3_bolted_moment_connection",
     "ec3_fillet_weld",
     "ec3_plate_tension",
+    "ec3_splice_moment_connection",
     "ec5_axial_screw",
     "ec5_joist_spacing_optimizer",
     "ec5_osb_composite_vibration",
@@ -165,6 +166,47 @@ test("ec3 bolt group torsion form metadata builds the API payload", () => {
     torsion_moment_knm: 10,
     gamma_m2: 1.25,
   });
+});
+
+test("ec3 splice moment connection form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_splice_moment_connection", {
+    "beam.steel_grade": "S355",
+    "end_plate.steel_grade": "S355",
+    "beam.height_mm": "400",
+    "beam.width_mm": "180",
+    "beam.web_thickness_mm": "8.6",
+    "beam.flange_thickness_mm": "13.5",
+    "beam.root_radius_mm": "21",
+    "end_plate.thickness_mm": "20",
+    "end_plate.width_mm": "200",
+    "end_plate.height_mm": "450",
+    "welds.flange_throat_mm": "8",
+    "welds.web_throat_mm": "5",
+    "bolts.diameter_mm": "20",
+    "bolts.bolt_class": "8.8",
+    "bolts.horizontal_spacing_mm": "100",
+    "bolts.edge_distance_horizontal_mm": "50",
+    "bolts.rows.0.vertical_position_mm": "60",
+    "bolts.rows.1.vertical_position_mm": "140",
+    "bolts.rows.2.vertical_position_mm": "310",
+    "bolts.rows.3.vertical_position_mm": "390",
+    "loads.moment_knm": "150",
+    "loads.shear_kn": "100",
+  });
+
+  assert.equal(payload.beam.profile, "IPE400");
+  assert.equal(payload.beam.height_mm, 400);
+  assert.equal(payload.end_plate.height_mm, 450);
+  assert.equal(payload.welds.web_throat_mm, 5);
+  assert.equal(payload.bolts.diameter_mm, 20);
+  assert.deepEqual(payload.bolts.rows, [
+    { row_id: 1, vertical_position_mm: 60, number_of_bolts: 2 },
+    { row_id: 2, vertical_position_mm: 140, number_of_bolts: 2 },
+    { row_id: 3, vertical_position_mm: 310, number_of_bolts: 2 },
+    { row_id: 4, vertical_position_mm: 390, number_of_bolts: 2 },
+  ]);
+  assert.deepEqual(payload.loads, { moment_knm: 150, shear_kn: 100, axial_kn: 0 });
+  assert.equal(payload.gamma_m2, 1.25);
 });
 
 test("ec3 fillet weld form metadata builds the API payload", () => {
@@ -764,6 +806,27 @@ test("ec3 result summaries format returned API fields only", () => {
     { label: "Shear resistance/bolt", value: "94.08 kN" },
     { label: "Utilization", value: "59.4 %" },
     { label: "Warnings", value: "SHEAR_RESISTANCE_GOVERNS" },
+  ]);
+
+  const splice = buildResultSummaryItems({
+    calculator_id: "ec3_splice_moment_connection",
+    result: {
+      overall_status: "PASS",
+      mj_rd_knm: 166.707113,
+      sj_ini_knm_per_rad: 200118.4059,
+      utilization_percent: 90,
+      compression_flange_governs: true,
+      warning_codes: ["COMPRESSION_FLANGE_GOVERNS"],
+    },
+  }, "en");
+
+  assert.deepEqual(splice, [
+    { label: "Status", value: "PASS" },
+    { label: "Mj,Rd", value: "166.7 kNm" },
+    { label: "Sj,ini", value: "200118.4 kNm/rad" },
+    { label: "Utilization", value: "90 %" },
+    { label: "Compression flange governs", value: "PASS" },
+    { label: "Warnings", value: "COMPRESSION_FLANGE_GOVERNS" },
   ]);
 
   const bolt = buildResultSummaryItems({
