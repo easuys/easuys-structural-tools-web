@@ -40,6 +40,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_axial_screw",
     "ec5_stabilizing_force",
     "ec5_steel_timber_screw_connection",
+    "ec5_timber_beam_check",
     "ec5_timber_contact_moment_joint",
     "ec5_timber_timber_single_shear_connection",
     "ec6_beam_bearing",
@@ -246,6 +247,30 @@ test("stabilizing force form metadata builds the API payload", () => {
   });
 });
 
+test("timber beam check form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_timber_beam_check", {
+    span_m: "4.2",
+    spacing_m: "0.7",
+    b_mm: "63",
+    h_mm: "175",
+    wood_grade: "C18",
+    climate_class: "1",
+    q_permanent_kn_m2: "1",
+    q_variable_kn_m2: "2",
+  });
+
+  assert.deepEqual(payload, {
+    span_m: 4.2,
+    spacing_m: 0.7,
+    b_mm: 63,
+    h_mm: 175,
+    wood_grade: "C18",
+    climate_class: 1,
+    q_permanent_kn_m2: 1,
+    q_variable_kn_m2: 2,
+  });
+});
+
 test("steel-timber screw form metadata builds nested spacing payload", () => {
   const payload = buildPayloadFromFormValues("ec5_steel_timber_screw_connection", {
     config_type: "central",
@@ -437,6 +462,27 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Fd", value: "0.037 kN" },
     { label: "lambda rel,m", value: "0.816" },
     { label: "kcrit", value: "0.948" },
+    { label: "Warnings", value: "None" },
+  ]);
+
+  const timberBeam = buildResultSummaryItems({
+    calculator_id: "ec5_timber_beam_check",
+    result: {
+      overall_status: "PASS",
+      uc_bending: 0.465958033125,
+      uc_shear: 0.17473426242187495,
+      w_fin_mm: 7.46298432,
+      f1_hz: 12.98299870898008,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(timberBeam, [
+    { label: "Status", value: "PASS" },
+    { label: "Bending UC", value: "0.466" },
+    { label: "Shear UC", value: "0.175" },
+    { label: "Final deflection", value: "7.463 mm" },
+    { label: "Frequency f1", value: "12.983 Hz" },
     { label: "Warnings", value: "None" },
   ]);
 
