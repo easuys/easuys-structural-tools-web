@@ -2307,6 +2307,75 @@ test("html report model exposes returned API metadata", () => {
   assert.deepEqual(report.sections, []);
 });
 
+test("ec3 calculators have calculator-specific report sections", async () => {
+  const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
+  for (const calculatorId of [
+    "ec3_bolt_group_torsion",
+    "ec3_bolted_lap_joint",
+    "ec3_bolted_moment_connection",
+    "ec3_double_sided_web_connection",
+    "ec3_fillet_weld",
+    "ec3_lateral_torsional_buckling",
+    "ec3_plate_tension",
+    "ec3_profile_optimizer",
+    "ec3_splice_moment_connection",
+    "ec3_steel_section_check",
+  ]) {
+    assert.match(appTs, new RegExp(`${calculatorId}: \\[`));
+  }
+});
+
+test("ec3 steel report model exposes calculator-specific detail sections", () => {
+  const report = buildReportModel({
+    calculator_id: "ec3_steel_section_check",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.18",
+    status: "ok",
+    result: {
+      overall_status: "PASS",
+      profile_name: "IPE 240",
+      steel_grade: "S355",
+      section_class: 1,
+      flange_class: 1,
+      web_class: 1,
+      critical_check: "Deflection",
+      max_utilization: 0.955868,
+      resistances: {
+        n_rd_kn: 1388.05,
+        m_y_rd_knm: 130.143,
+        m_z_rd_knm: 26.2345,
+        v_y_rd_kn: 801.391041,
+        v_z_rd_kn: 482.064381,
+      },
+      deflection_check: {
+        deflection_mm: 19.117359,
+        limit_mm: 20,
+        utilization_ratio: 0.955868,
+      },
+      warning_codes: [],
+    },
+    assumptions: ["Explicit I-section scope only."],
+    source_refs: ["Source scripts verification.py and eurocode.py."],
+  }, "en", new Date("2026-06-02T19:25:00.000Z"));
+
+  assert.deepEqual(report.sections.map((section) => section.heading), [
+    "Section and classification",
+    "Resistances",
+    "Checks",
+  ]);
+  assert.deepEqual(report.sections[0].items, [
+    { label: "Profile", value: "IPE 240" },
+    { label: "Steel grade", value: "S355" },
+    { label: "Section class", value: "1" },
+    { label: "Flange class", value: "1" },
+    { label: "Web class", value: "1" },
+  ]);
+  assert.deepEqual(report.sections[2].items.slice(0, 3), [
+    { label: "Critical check", value: "Deflection" },
+    { label: "Max utilization", value: "0.956" },
+    { label: "Deflection", value: "19.117 mm" },
+  ]);
+});
+
 test("timber member report model exposes calculator-specific detail sections", () => {
   const report = buildReportModel({
     calculator_id: "ec5_timber_member_uls_6_component",
@@ -2519,4 +2588,39 @@ test("beam spring calibration report helpers include calibration sections in sta
   assert.match(html, /Spring stiffness/);
   assert.match(html, /Spring reaction/);
   assert.match(html, /Governing response/);
+});
+
+test("ec3 bolted moment report helpers include detailed sections in standalone HTML output", () => {
+  const response = {
+    calculator_id: "ec3_bolted_moment_connection",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.10",
+    result: {
+      overall_status: "PASS",
+      connection_type: "single_sided",
+      column_profile: "HEB400",
+      beam_profile: "IPE600",
+      bolt_class: "10.9",
+      bolt_row_count: 3,
+      center_of_compression_mm: 186.5,
+      applied_moment_knm: 500,
+      applied_shear_kn: 200,
+      sj_ini_knm_per_rad: 110909.634316,
+      mj_rd_knm: 816.149139,
+      overall_utilization: 0.966855,
+      critical_component: "Column web panel shear",
+      utilization_percent: 96.7,
+      geometry_warning_count: 0,
+      warning_codes: [],
+    },
+    assumptions: ["Component-method helper only."],
+    source_refs: ["Source script eurocode_bolt_moment.py."],
+    status: "ok",
+  };
+
+  const html = buildReportHtml(response, "en", new Date("2026-06-02T19:40:00.000Z"));
+  assert.match(html, /Members and bolts/);
+  assert.match(html, /Loading and resistance/);
+  assert.match(html, /Column profile/);
+  assert.match(html, /Applied moment/);
+  assert.match(html, /Critical component/);
 });

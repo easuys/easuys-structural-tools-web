@@ -5181,6 +5181,253 @@ const REPORT_SECTION_FIELDS = {
       ],
     },
   ],
+  ec3_bolt_group_torsion: [
+    {
+      heading: { nl: "Boutgroep", en: "Bolt group", fr: "Groupe de boulons" },
+      fields: [
+        { path: ["result", "steel_grade"], label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" } },
+        { path: ["result", "bolt_class"], label: { nl: "Boutklasse", en: "Bolt class", fr: "Classe de boulon" } },
+        { path: ["result", "bolt_count"], label: { nl: "Aantal bouten", en: "Bolt count", fr: "Nombre de boulons" } },
+        { path: ["result", "hole_diameter_mm"], label: { nl: "Gatdiameter", en: "Hole diameter", fr: "Diametre de trou" }, unit: "mm" },
+        { path: ["result", "polar_inertia_mm2"], label: { nl: "Polair traagheidsmoment", en: "Polar inertia", fr: "Inertie polaire" }, unit: "mm2" },
+      ],
+    },
+    {
+      heading: { nl: "Weerstand en benutting", en: "Resistance and utilization", fr: "Resistance et utilisation" },
+      fields: [
+        { path: ["result", "max_bolt_force_kn"], label: { nl: "Max boutkracht", en: "Max bolt force", fr: "Effort boulon max" }, unit: "kN" },
+        { path: ["result", "shear_resistance_per_bolt_kn"], label: { nl: "Afschuifweerstand/bout", en: "Shear resistance/bolt", fr: "Resistance cisaillement/boulon" }, unit: "kN" },
+        { path: ["result", "min_bearing_resistance_kn"], label: { nl: "Min oplegweerstand", en: "Min bearing resistance", fr: "Resistance appui min" }, unit: "kN" },
+        { path: ["result", "global_utilization"], label: { nl: "Globale benutting", en: "Global utilization", fr: "Utilisation globale" } },
+        { path: ["result", "critical_bolt_id"], label: { nl: "Kritische bout", en: "Critical bolt", fr: "Boulon critique" } },
+      ],
+    },
+  ],
+  ec3_splice_moment_connection: [
+    {
+      heading: { nl: "Verbinding", en: "Connection", fr: "Connexion" },
+      fields: [
+        { path: ["result", "beam_profile"], label: { nl: "Liggerprofiel", en: "Beam profile", fr: "Profil poutre" } },
+        { path: ["result", "steel_grade"], label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" } },
+        { path: ["result", "bolt_class"], label: { nl: "Boutklasse", en: "Bolt class", fr: "Classe de boulon" } },
+        { path: ["result", "bolt_row_count"], label: { nl: "Boutrijen", en: "Bolt rows", fr: "Rangees de boulons" } },
+        { path: ["result", "tension_row_count"], label: { nl: "Trekrijen", en: "Tension rows", fr: "Rangees en traction" } },
+        { path: ["result", "geometry_status"], label: { nl: "Geometriestatus", en: "Geometry status", fr: "Statut geometrie" }, format: "status" },
+      ],
+    },
+    {
+      heading: { nl: "Stijfheid en weerstand", en: "Stiffness and resistance", fr: "Rigidite et resistance" },
+      fields: [
+        { path: ["result", "mj_rd_knm"], label: { nl: "Mj,Rd", en: "Mj,Rd", fr: "Mj,Rd" }, unit: "kNm" },
+        { path: ["result", "sj_ini_knm_per_rad"], label: { nl: "Sj,ini", en: "Sj,ini", fr: "Sj,ini" }, unit: "kNm/rad" },
+        { path: ["result", "compression_reduction_factor"], label: { nl: "Reductiefactor druk", en: "Compression reduction factor", fr: "Facteur reduction compression" } },
+        { path: ["result", "overall_utilization"], label: { nl: "Globale benutting", en: "Overall utilization", fr: "Utilisation globale" } },
+        { path: ["result", "compression_flange_governs"], label: { nl: "Drukflens maatgevend", en: "Compression flange governs", fr: "Semelle comprimee critique" }, format: "check" },
+      ],
+    },
+  ],
+  ec3_double_sided_web_connection: [
+    {
+      heading: { nl: "Profielen en bouten", en: "Profiles and bolts", fr: "Profils et boulons" },
+      fields: [
+        { path: ["result", "project_name"], label: { nl: "Project", en: "Project", fr: "Projet" } },
+        { path: ["result", "primary_profile"], label: { nl: "Primair profiel", en: "Primary profile", fr: "Profil principal" } },
+        { path: ["result", "secondary_profile"], label: { nl: "Secundair profiel", en: "Secondary profile", fr: "Profil secondaire" } },
+        { path: ["result", "bolt_count"], label: { nl: "Aantal bouten", en: "Bolt count", fr: "Nombre de boulons" } },
+        { path: ["result", "bolt_diameter_mm"], label: { nl: "Boutdiameter", en: "Bolt diameter", fr: "Diametre de boulon" }, unit: "mm" },
+      ],
+    },
+    {
+      heading: { nl: "Componentweerstanden", en: "Component resistances", fr: "Resistances des composants" },
+      fields: [
+        { path: ["result", "bolt_shear_capacity_kn"], label: { nl: "Boutafschuifcapaciteit", en: "Bolt shear capacity", fr: "Capacite cisaillement boulons" }, unit: "kN" },
+        { path: ["result", "plate_bearing_capacity_kn"], label: { nl: "Plaatoplegcapaciteit", en: "Plate bearing capacity", fr: "Capacite appui platine" }, unit: "kN" },
+        { path: ["result", "primary_web_bearing_capacity_kn"], label: { nl: "Opleg primair lijf", en: "Primary web bearing", fr: "Appui ame principale" }, unit: "kN" },
+        { path: ["result", "moment_resistance_knm"], label: { nl: "Momentweerstand", en: "Moment resistance", fr: "Resistance moment" }, unit: "kNm" },
+        { path: ["result", "compression_limit_kn"], label: { nl: "Druklimiet", en: "Compression limit", fr: "Limite compression" }, unit: "kN" },
+      ],
+    },
+    {
+      heading: { nl: "Maatgevend resultaat", en: "Governing result", fr: "Resultat determinant" },
+      fields: [
+        { path: ["result", "compression_reduction_factor"], label: { nl: "Reductiefactor druk", en: "Compression reduction factor", fr: "Facteur reduction compression" } },
+        { path: ["result", "critical_component"], label: { nl: "Kritisch component", en: "Critical component", fr: "Composant critique" } },
+        { path: ["result", "max_utilization"], label: { nl: "Max benutting", en: "Max utilization", fr: "Utilisation max" } },
+      ],
+    },
+  ],
+  ec3_bolted_lap_joint: [
+    {
+      heading: { nl: "Verbindingsgegevens", en: "Connection data", fr: "Donnees de connexion" },
+      fields: [
+        { path: ["result", "steel_grade"], label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" } },
+        { path: ["result", "bolt_class"], label: { nl: "Boutklasse", en: "Bolt class", fr: "Classe de boulon" } },
+        { path: ["result", "category"], label: { nl: "Categorie", en: "Category", fr: "Categorie" } },
+        { path: ["result", "bolt_count"], label: { nl: "Aantal bouten", en: "Bolt count", fr: "Nombre de boulons" } },
+        { path: ["result", "hole_diameter_mm"], label: { nl: "Gatdiameter", en: "Hole diameter", fr: "Diametre de trou" }, unit: "mm" },
+        { path: ["result", "geometry_warning_count"], label: { nl: "Geometriewaarschuwingen", en: "Geometry warnings", fr: "Avertissements geometrie" } },
+      ],
+    },
+    {
+      heading: { nl: "Weerstand en belasting", en: "Resistance and loading", fr: "Resistance et chargement" },
+      fields: [
+        { path: ["result", "applied_force_uls_kn"], label: { nl: "ULS kracht", en: "ULS force", fr: "Effort ELU" }, unit: "kN" },
+        { path: ["result", "applied_force_sls_kn"], label: { nl: "SLS kracht", en: "SLS force", fr: "Effort ELS" }, unit: "kN" },
+        { path: ["result", "governing_mode"], label: { nl: "Maatgevend", en: "Governing mode", fr: "Mode determinant" } },
+        { path: ["result", "governing_resistance_kn"], label: { nl: "Maatgevende weerstand", en: "Governing resistance", fr: "Resistance determinante" }, unit: "kN" },
+        { path: ["result", "utilization_ratio"], label: { nl: "Benutting ULS", en: "ULS utilization", fr: "Utilisation ELU" } },
+        { path: ["result", "utilization_sls"], label: { nl: "Benutting SLS", en: "SLS utilization", fr: "Utilisation ELS" } },
+      ],
+    },
+  ],
+  ec3_bolted_moment_connection: [
+    {
+      heading: { nl: "Leden en bouten", en: "Members and bolts", fr: "Elements et boulons" },
+      fields: [
+        { path: ["result", "connection_type"], label: { nl: "Verbindingstype", en: "Connection type", fr: "Type de connexion" } },
+        { path: ["result", "column_profile"], label: { nl: "Kolomprofiel", en: "Column profile", fr: "Profil colonne" } },
+        { path: ["result", "beam_profile"], label: { nl: "Liggerprofiel", en: "Beam profile", fr: "Profil poutre" } },
+        { path: ["result", "bolt_class"], label: { nl: "Boutklasse", en: "Bolt class", fr: "Classe de boulon" } },
+        { path: ["result", "bolt_row_count"], label: { nl: "Boutrijen", en: "Bolt rows", fr: "Rangees de boulons" } },
+        { path: ["result", "center_of_compression_mm"], label: { nl: "Drukcentrum", en: "Center of compression", fr: "Centre de compression" }, unit: "mm" },
+      ],
+    },
+    {
+      heading: { nl: "Belasting en weerstand", en: "Loading and resistance", fr: "Chargement et resistance" },
+      fields: [
+        { path: ["result", "applied_moment_knm"], label: { nl: "Aangebracht moment", en: "Applied moment", fr: "Moment applique" }, unit: "kNm" },
+        { path: ["result", "applied_shear_kn"], label: { nl: "Aangebrachte dwarskracht", en: "Applied shear", fr: "Effort tranchant applique" }, unit: "kN" },
+        { path: ["result", "sj_ini_knm_per_rad"], label: { nl: "Sj,ini", en: "Sj,ini", fr: "Sj,ini" }, unit: "kNm/rad" },
+        { path: ["result", "mj_rd_knm"], label: { nl: "Mj,Rd", en: "Mj,Rd", fr: "Mj,Rd" }, unit: "kNm" },
+        { path: ["result", "overall_utilization"], label: { nl: "Globale benutting", en: "Overall utilization", fr: "Utilisation globale" } },
+        { path: ["result", "critical_component"], label: { nl: "Kritisch component", en: "Critical component", fr: "Composant critique" } },
+      ],
+    },
+  ],
+  ec3_fillet_weld: [
+    {
+      heading: { nl: "Las en materiaal", en: "Weld and material", fr: "Soudure et materiau" },
+      fields: [
+        { path: ["result", "steel_grade"], label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" } },
+        { path: ["result", "verification_method"], label: { nl: "Methode", en: "Method", fr: "Methode" } },
+        { path: ["result", "fu_mpa"], label: { nl: "fu", en: "fu", fr: "fu" }, unit: "MPa" },
+        { path: ["result", "beta_w"], label: { nl: "beta w", en: "beta w", fr: "beta w" } },
+        { path: ["result", "gamma_m2"], label: { nl: "gamma M2", en: "gamma M2", fr: "gamma M2" } },
+      ],
+    },
+    {
+      heading: { nl: "Controle", en: "Verification", fr: "Verification" },
+      fields: [
+        { path: ["result", "geometry_check", "geometry_check_passed"], label: { nl: "Geometrie OK", en: "Geometry OK", fr: "Geometrie OK" }, format: "check" },
+        { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+        { path: ["result", "utilization_percent"], label: { nl: "Benutting procent", en: "Utilization percent", fr: "Utilisation pourcent" }, unit: "%" },
+      ],
+    },
+  ],
+  ec3_plate_tension: [
+    {
+      heading: { nl: "Plaat en materiaal", en: "Plate and material", fr: "Plaque et materiau" },
+      fields: [
+        { path: ["result", "steel_grade"], label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" } },
+        { path: ["result", "fy_mpa"], label: { nl: "fy", en: "fy", fr: "fy" }, unit: "MPa" },
+        { path: ["result", "fu_mpa"], label: { nl: "fu", en: "fu", fr: "fu" }, unit: "MPa" },
+        { path: ["result", "a_gross_mm2"], label: { nl: "Bruto-oppervlakte", en: "Gross area", fr: "Section brute" }, unit: "mm2" },
+        { path: ["result", "n_pl_rd_kn"], label: { nl: "Npl,Rd", en: "Npl,Rd", fr: "Npl,Rd" }, unit: "kN" },
+      ],
+    },
+    {
+      heading: { nl: "Maatgevend resultaat", en: "Governing result", fr: "Resultat determinant" },
+      fields: [
+        { path: ["result", "n_rd_kn"], label: { nl: "NRd", en: "NRd", fr: "NRd" }, unit: "kN" },
+        { path: ["result", "governing_criterion"], label: { nl: "Maatgevend criterium", en: "Governing criterion", fr: "Critere determinant" } },
+        { path: ["result", "utilization_percent"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" }, unit: "%" },
+      ],
+    },
+  ],
+  ec3_steel_section_check: [
+    {
+      heading: { nl: "Sectie en classificatie", en: "Section and classification", fr: "Section et classification" },
+      fields: [
+        { path: ["result", "profile_name"], label: { nl: "Profiel", en: "Profile", fr: "Profil" } },
+        { path: ["result", "steel_grade"], label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" } },
+        { path: ["result", "section_class"], label: { nl: "Sectieklasse", en: "Section class", fr: "Classe section" } },
+        { path: ["result", "flange_class"], label: { nl: "Flensklasse", en: "Flange class", fr: "Classe semelle" } },
+        { path: ["result", "web_class"], label: { nl: "Lijfklasse", en: "Web class", fr: "Classe ame" } },
+      ],
+    },
+    {
+      heading: { nl: "Weerstanden", en: "Resistances", fr: "Resistances" },
+      fields: [
+        { path: ["result", "resistances", "n_rd_kn"], label: { nl: "NRd", en: "NRd", fr: "NRd" }, unit: "kN" },
+        { path: ["result", "resistances", "m_y_rd_knm"], label: { nl: "My,Rd", en: "My,Rd", fr: "My,Rd" }, unit: "kNm" },
+        { path: ["result", "resistances", "m_z_rd_knm"], label: { nl: "Mz,Rd", en: "Mz,Rd", fr: "Mz,Rd" }, unit: "kNm" },
+        { path: ["result", "resistances", "v_y_rd_kn"], label: { nl: "Vy,Rd", en: "Vy,Rd", fr: "Vy,Rd" }, unit: "kN" },
+        { path: ["result", "resistances", "v_z_rd_kn"], label: { nl: "Vz,Rd", en: "Vz,Rd", fr: "Vz,Rd" }, unit: "kN" },
+      ],
+    },
+    {
+      heading: { nl: "Controles", en: "Checks", fr: "Verifications" },
+      fields: [
+        { path: ["result", "critical_check"], label: { nl: "Maatgevend", en: "Critical check", fr: "Verification critique" } },
+        { path: ["result", "max_utilization"], label: { nl: "Max benutting", en: "Max utilization", fr: "Utilisation max" } },
+        { path: ["result", "deflection_check", "deflection_mm"], label: { nl: "Doorbuiging", en: "Deflection", fr: "Fleche" }, unit: "mm" },
+        { path: ["result", "deflection_check", "limit_mm"], label: { nl: "Doorbuigingslimiet", en: "Deflection limit", fr: "Limite fleche" }, unit: "mm" },
+        { path: ["result", "deflection_check", "utilization_ratio"], label: { nl: "Benutting doorbuiging", en: "Deflection utilization", fr: "Utilisation fleche" } },
+      ],
+    },
+  ],
+  ec3_lateral_torsional_buckling: [
+    {
+      heading: { nl: "Sectie en belasting", en: "Section and loading", fr: "Section et chargement" },
+      fields: [
+        { path: ["result", "profile_name"], label: { nl: "Profiel", en: "Profile", fr: "Profil" } },
+        { path: ["result", "steel_grade"], label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" } },
+        { path: ["result", "m_ed_knm"], label: { nl: "MEd", en: "MEd", fr: "MEd" }, unit: "kNm" },
+        { path: ["result", "unbraced_length_m"], label: { nl: "Ongebrande lengte", en: "Unbraced length", fr: "Longueur non contreventee" }, unit: "m" },
+        { path: ["result", "loading_type"], label: { nl: "Belastingstype", en: "Loading type", fr: "Type de chargement" } },
+        { path: ["result", "load_position"], label: { nl: "Belastingspositie", en: "Load position", fr: "Position de charge" } },
+      ],
+    },
+    {
+      heading: { nl: "Kiprespons", en: "LTB response", fr: "Reponse deversement" },
+      fields: [
+        { path: ["result", "mcr_knm"], label: { nl: "Mcr", en: "Mcr", fr: "Mcr" }, unit: "kNm" },
+        { path: ["result", "lambda_lt"], label: { nl: "Lambda LT", en: "Lambda LT", fr: "Lambda LT" } },
+        { path: ["result", "chi_lt"], label: { nl: "Chi LT", en: "Chi LT", fr: "Chi LT" } },
+        { path: ["result", "chi_lt_modified"], label: { nl: "Chi LT aangepast", en: "Modified chi LT", fr: "Chi LT modifie" } },
+        { path: ["result", "mb_rd_knm"], label: { nl: "Mb,Rd", en: "Mb,Rd", fr: "Mb,Rd" }, unit: "kNm" },
+        { path: ["result", "ltb_required"], label: { nl: "Kipcontrole nodig", en: "LTB required", fr: "Deversement requis" }, format: "check" },
+      ],
+    },
+  ],
+  ec3_profile_optimizer: [
+    {
+      heading: { nl: "Optimalisatie-instelling", en: "Optimization setup", fr: "Parametres optimisation" },
+      fields: [
+        { path: ["result", "steel_grade"], label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" } },
+        { path: ["result", "profile_count"], label: { nl: "Aantal profielen", en: "Profile count", fr: "Nombre de profils" } },
+        { path: ["result", "member_length_m"], label: { nl: "Liggerlengte", en: "Member length", fr: "Longueur element" }, unit: "m" },
+        { path: ["result", "max_utilization"], label: { nl: "Max toegelaten benutting", en: "Max allowed utilization", fr: "Utilisation max admise" } },
+        { path: ["result", "optimization_criterion"], label: { nl: "Optimalisatiecriterium", en: "Optimization criterion", fr: "Critere optimisation" } },
+      ],
+    },
+    {
+      heading: { nl: "Geselecteerd profiel", en: "Selected profile", fr: "Profil retenu" },
+      fields: [
+        { path: ["result", "optimized_profile", "profile_name"], label: { nl: "Profiel", en: "Profile", fr: "Profil" } },
+        { path: ["result", "optimized_profile", "total_weight_kg"], label: { nl: "Totaal gewicht", en: "Total weight", fr: "Poids total" }, unit: "kg" },
+        { path: ["result", "optimized_profile", "utilization_percent"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" }, unit: "%" },
+        { path: ["result", "optimized_profile", "critical_check"], label: { nl: "Maatgevend", en: "Critical check", fr: "Verification critique" } },
+      ],
+    },
+    {
+      heading: { nl: "Zoekresultaat", en: "Search result", fr: "Resultat de recherche" },
+      fields: [
+        { path: ["result", "total_candidates"], label: { nl: "Totaal kandidaten", en: "Total candidates", fr: "Candidats totaux" } },
+        { path: ["result", "suitable_count"], label: { nl: "Geschikte kandidaten", en: "Suitable candidates", fr: "Candidats valables" } },
+      ],
+    },
+  ],
   ec5_timber_beam_check: [
     {
       heading: { nl: "Geometrie en belastingen", en: "Geometry and loads", fr: "Geometrie et charges" },
