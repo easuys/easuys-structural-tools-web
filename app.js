@@ -5547,6 +5547,614 @@ const REPORT_SECTION_FIELDS = {
             ],
         },
     ],
+    beam_composite_shear_stress: [
+        {
+            heading: { nl: "Doorsnede en doelpunt", en: "Section and target point", fr: "Section et point cible" },
+            fields: [
+                { path: ["result", "shear_force_n"], label: { nl: "Dwarskracht", en: "Shear force", fr: "Effort tranchant" }, unit: "N" },
+                { path: ["result", "y_target_mm"], label: { nl: "Doelhoogte", en: "Target height", fr: "Hauteur cible" }, unit: "mm" },
+                { path: ["result", "actual_width_at_target_mm"], label: { nl: "Breedte op doelpunt", en: "Width at target", fr: "Largeur au point cible" }, unit: "mm" },
+                { path: ["result", "reference_e_modulus_mpa"], label: { nl: "Referentie E", en: "Reference E", fr: "E de reference" }, unit: "MPa" },
+            ],
+        },
+        {
+            heading: { nl: "Getransformeerde doorsnede", en: "Transformed section", fr: "Section transformee" },
+            fields: [
+                { path: ["result", "neutral_axis_y_mm"], label: { nl: "Neutrale as", en: "Neutral axis", fr: "Axe neutre" }, unit: "mm" },
+                { path: ["result", "transformed_inertia_i_prime_mm4"], label: { nl: "I prime", en: "I prime", fr: "I prime" }, unit: "mm4" },
+                { path: ["result", "static_moment_s_prime_mm3"], label: { nl: "S prime", en: "S prime", fr: "S prime" }, unit: "mm3" },
+            ],
+        },
+        {
+            heading: { nl: "Schuifspanning", en: "Shear stress", fr: "Contrainte de cisaillement" },
+            fields: [
+                { path: ["result", "tau_n_per_mm2"], label: { nl: "Tau doelpunt", en: "Tau at target", fr: "Tau au point cible" }, unit: "N/mm2" },
+                { path: ["result", "max_abs_tau_n_per_mm2"], label: { nl: "Max tau", en: "Max tau", fr: "Tau max" }, unit: "N/mm2" },
+                { path: ["result", "max_abs_tau_y_mm"], label: { nl: "Hoogte max tau", en: "Height of max tau", fr: "Hauteur tau max" }, unit: "mm" },
+            ],
+        },
+    ],
+    beam_simple_diagrams: [
+        {
+            heading: { nl: "Model en combinaties", en: "Model and combinations", fr: "Modele et combinaisons" },
+            fields: [
+                { path: ["result", "span_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { path: ["result", "load_counts", "uniform"], label: { nl: "Aantal verdeelde lasten", en: "Uniform loads", fr: "Charges reparties" } },
+                { path: ["result", "load_counts", "point"], label: { nl: "Aantal puntlasten", en: "Point loads", fr: "Charges ponctuelles" } },
+                { path: ["result", "load_combinations", "gamma_g"], label: { nl: "Gamma G", en: "Gamma G", fr: "Gamma G" } },
+                { path: ["result", "load_combinations", "gamma_q"], label: { nl: "Gamma Q", en: "Gamma Q", fr: "Gamma Q" } },
+            ],
+        },
+        {
+            heading: { nl: "ULS respons", en: "ULS response", fr: "Reponse ELU" },
+            fields: [
+                { path: ["result", "cases", "uls", "m_max_knm"], label: { nl: "Mmax ULS", en: "ULS Mmax", fr: "Mmax ELU" }, unit: "kNm" },
+                { path: ["result", "cases", "uls", "v_max_kn"], label: { nl: "Vmax ULS", en: "ULS Vmax", fr: "Vmax ELU" }, unit: "kN" },
+                { path: ["result", "cases", "uls", "reactions", "left_kn"], label: { nl: "Reactie links", en: "Left reaction", fr: "Reaction gauche" }, unit: "kN" },
+                { path: ["result", "cases", "uls", "reactions", "right_kn"], label: { nl: "Reactie rechts", en: "Right reaction", fr: "Reaction droite" }, unit: "kN" },
+            ],
+        },
+        {
+            heading: { nl: "SLS respons", en: "SLS response", fr: "Reponse ELS" },
+            fields: [
+                { path: ["result", "cases", "sls", "m_max_knm"], label: { nl: "Mmax SLS", en: "SLS Mmax", fr: "Mmax ELS" }, unit: "kNm" },
+                { path: ["result", "cases", "sls", "v_max_kn"], label: { nl: "Vmax SLS", en: "SLS Vmax", fr: "Vmax ELS" }, unit: "kN" },
+                { path: ["result", "cases", "sls", "reactions", "left_kn"], label: { nl: "Reactie links", en: "Left reaction", fr: "Reaction gauche" }, unit: "kN" },
+                { path: ["result", "cases", "sls", "reactions", "right_kn"], label: { nl: "Reactie rechts", en: "Right reaction", fr: "Reaction droite" }, unit: "kN" },
+            ],
+        },
+    ],
+    composite_embedded_profile_bearing: [
+        {
+            heading: { nl: "Geometrie en belasting", en: "Geometry and loading", fr: "Geometrie et chargement" },
+            fields: [
+                { path: ["result", "eccentricity_m"], label: { nl: "Excentriciteit", en: "Eccentricity", fr: "Excentricite" }, unit: "m" },
+                { path: ["result", "max_hanging_force_kn"], label: { nl: "Max ophangkracht", en: "Max hanging force", fr: "Effort suspendu max" }, unit: "kN" },
+                { path: ["result", "bar_design_tension_kn"], label: { nl: "Staafkracht", en: "Bar design tension", fr: "Traction barre" }, unit: "kN" },
+                { path: ["result", "max_bending_moment_knm"], label: { nl: "Max moment", en: "Max bending moment", fr: "Moment max" }, unit: "kNm" },
+            ],
+        },
+        {
+            heading: { nl: "Contactdruk", en: "Contact pressure", fr: "Pression de contact" },
+            fields: [
+                { path: ["result", "sigma_c_max_kpa"], label: { nl: "Sigma c max", en: "Sigma c max", fr: "Sigma c max" }, unit: "kPa" },
+                { path: ["result", "sigma_c_min_kpa"], label: { nl: "Sigma c min", en: "Sigma c min", fr: "Sigma c min" }, unit: "kPa" },
+                { path: ["result", "concrete_design_pressure_kpa"], label: { nl: "Toelaatbare druk", en: "Design pressure", fr: "Pression de calcul" }, unit: "kPa" },
+                { path: ["result", "pressure_check_passed"], label: { nl: "Drukcontrole", en: "Pressure check", fr: "Verification pression" }, format: "check" },
+            ],
+        },
+        {
+            heading: { nl: "Wapening", en: "Reinforcement", fr: "Armatures" },
+            fields: [
+                { path: ["result", "required_bars"], label: { nl: "Vereiste staven", en: "Required bars", fr: "Barres requises" } },
+                { path: ["result", "provided_bars"], label: { nl: "Voorziene staven", en: "Provided bars", fr: "Barres prevues" } },
+                { path: ["result", "bar_count_check_passed"], label: { nl: "Staafcontrole", en: "Bar count check", fr: "Verification barres" }, format: "check" },
+            ],
+        },
+    ],
+    ec1_roof_loads: [
+        {
+            heading: { nl: "Dak en site", en: "Roof and site", fr: "Toiture et site" },
+            fields: [
+                { path: ["result", "roof_angle_degrees"], label: { nl: "Dakhelling", en: "Roof angle", fr: "Pente toiture" } },
+                { path: ["result", "roof_surface_area_m2"], label: { nl: "Dakoppervlak", en: "Roof area", fr: "Surface toiture" }, unit: "m2" },
+                { path: ["result", "altitude_m"], label: { nl: "Hoogte", en: "Altitude", fr: "Altitude" }, unit: "m" },
+                { path: ["result", "obstacle"], label: { nl: "Obstakel", en: "Obstacle", fr: "Obstacle" }, format: "check" },
+            ],
+        },
+        {
+            heading: { nl: "Sneeuw en onderhoud", en: "Snow and maintenance", fr: "Neige et entretien" },
+            fields: [
+                { path: ["result", "snow_shape_coefficient_mu1"], label: { nl: "Mu1", en: "Mu1", fr: "Mu1" } },
+                { path: ["result", "ground_snow_load_kn_m2"], label: { nl: "Grondsneeuw", en: "Ground snow load", fr: "Charge neige au sol" }, unit: "kN/m2" },
+                { path: ["result", "adjusted_ground_snow_load_kn_m2"], label: { nl: "Aangepaste grondsneeuw", en: "Adjusted ground snow", fr: "Charge neige ajustee" }, unit: "kN/m2" },
+                { path: ["result", "snow_load_kn_m2"], label: { nl: "Sneeuwlast", en: "Snow load", fr: "Charge neige" }, unit: "kN/m2" },
+                { path: ["result", "maintenance_load_formula_kn_m2"], label: { nl: "Onderhoud formule", en: "Maintenance formula", fr: "Entretien formule" }, unit: "kN/m2" },
+                { path: ["result", "maintenance_load_category_h_kn_m2"], label: { nl: "Onderhoud categorie H", en: "Maintenance category H", fr: "Entretien categorie H" }, unit: "kN/m2" },
+            ],
+        },
+        {
+            heading: { nl: "Maatgevende last", en: "Governing load", fr: "Charge determinante" },
+            fields: [
+                { path: ["result", "governing_variable_load_kind"], label: { nl: "Maatgevend type", en: "Governing type", fr: "Type determinant" } },
+                { path: ["result", "governing_variable_load_kn_m2"], label: { nl: "Maatgevende last", en: "Governing load", fr: "Charge determinante" }, unit: "kN/m2" },
+            ],
+        },
+    ],
+    ec2_rectangular_section_capacity: [
+        {
+            heading: { nl: "Doorsnede en normaalkracht", en: "Section and axial load", fr: "Section et effort normal" },
+            fields: [
+                { path: ["result", "section_width_mm"], label: { nl: "Breedte", en: "Width", fr: "Largeur" }, unit: "mm" },
+                { path: ["result", "section_height_mm"], label: { nl: "Hoogte", en: "Height", fr: "Hauteur" }, unit: "mm" },
+                { path: ["result", "concrete_cover_bottom_mm"], label: { nl: "Dek onder", en: "Bottom cover", fr: "Enrobage bas" }, unit: "mm" },
+                { path: ["result", "concrete_cover_top_mm"], label: { nl: "Dek boven", en: "Top cover", fr: "Enrobage haut" }, unit: "mm" },
+                { path: ["result", "axial_force_uls_kn"], label: { nl: "N ULS", en: "ULS axial force", fr: "Effort normal ELU" }, unit: "kN" },
+                { path: ["result", "applied_moment_knm"], label: { nl: "Aangebracht moment", en: "Applied moment", fr: "Moment applique" }, unit: "kNm" },
+            ],
+        },
+        {
+            heading: { nl: "Capaciteiten", en: "Capacities", fr: "Capacites" },
+            fields: [
+                { path: ["result", "uls_capacity_knm"], label: { nl: "ULS capaciteit", en: "ULS capacity", fr: "Capacite ELU" }, unit: "kNm" },
+                { path: ["result", "sls_characteristic_capacity_knm"], label: { nl: "SLS karakteristiek", en: "SLS characteristic", fr: "ELS caracteristique" }, unit: "kNm" },
+                { path: ["result", "sls_frequent_capacity_knm"], label: { nl: "SLS frequent", en: "SLS frequent", fr: "ELS frequent" }, unit: "kNm" },
+                { path: ["result", "governing_capacity_case"], label: { nl: "Maatgevende toestand", en: "Governing case", fr: "Cas determinant" } },
+                { path: ["result", "governing_capacity_knm"], label: { nl: "Maatgevende capaciteit", en: "Governing capacity", fr: "Capacite determinante" }, unit: "kNm" },
+            ],
+        },
+        {
+            heading: { nl: "Benutting", en: "Utilization", fr: "Utilisation" },
+            fields: [
+                { path: ["result", "ultimate_utilization"], label: { nl: "Benutting ULS", en: "ULS utilization", fr: "Utilisation ELU" } },
+                { path: ["result", "sls_characteristic_utilization"], label: { nl: "Benutting SLS karakteristiek", en: "SLS characteristic utilization", fr: "Utilisation ELS caracteristique" } },
+                { path: ["result", "sls_frequent_utilization"], label: { nl: "Benutting SLS frequent", en: "SLS frequent utilization", fr: "Utilisation ELS frequent" } },
+                { path: ["result", "max_utilization"], label: { nl: "Max benutting", en: "Max utilization", fr: "Utilisation max" } },
+            ],
+        },
+    ],
+    ec5_timber_contact_moment_joint: [
+        {
+            heading: { nl: "Belastingen", en: "Applied loads", fr: "Charges appliquees" },
+            fields: [
+                { path: ["result", "wood_grade"], label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" } },
+                { path: ["result", "n_ed_kN"], label: { nl: "NEd", en: "NEd", fr: "NEd" }, unit: "kN" },
+                { path: ["result", "m_ed_kNm"], label: { nl: "MEd", en: "MEd", fr: "MEd" }, unit: "kNm" },
+            ],
+        },
+        {
+            heading: { nl: "Capaciteit", en: "Capacity", fr: "Capacite" },
+            fields: [
+                { path: ["result", "m_rd_kNm"], label: { nl: "MRd", en: "MRd", fr: "MRd" }, unit: "kNm" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "governing_compression_strength_mpa"], label: { nl: "Maatgevende druksterkte", en: "Governing compression strength", fr: "Resistance compression determinante" }, unit: "MPa" },
+                { path: ["result", "governing_compression_member"], label: { nl: "Maatgevend lid", en: "Governing member", fr: "Element determinant" } },
+            ],
+        },
+        {
+            heading: { nl: "Capaciteitstoestand", en: "Capacity state", fr: "Etat de capacite" },
+            fields: [
+                { path: ["result", "capacity_state", "neutral_axis_mm"], label: { nl: "Neutrale as", en: "Neutral axis", fr: "Axe neutre" }, unit: "mm" },
+                { path: ["result", "capacity_state", "compression_depth_mm"], label: { nl: "Drukdiepte", en: "Compression depth", fr: "Profondeur compression" }, unit: "mm" },
+                { path: ["result", "capacity_state", "compression_resultant_n"], label: { nl: "Drukresultante", en: "Compression resultant", fr: "Resultante compression" }, unit: "N" },
+            ],
+        },
+    ],
+    ec5_axial_screw: [
+        {
+            heading: { nl: "Aantrek- en terugtrekmodel", en: "Withdrawal model", fr: "Modele arrachement" },
+            fields: [
+                { path: ["result", "n_effective"], label: { nl: "n effectief", en: "Effective n", fr: "n effectif" } },
+                { path: ["result", "f_ax_k"], label: { nl: "Fax,k", en: "Fax,k", fr: "Fax,k" } },
+                { path: ["result", "k_mod"], label: { nl: "kmod", en: "kmod", fr: "kmod" } },
+                { path: ["result", "gamma_m"], label: { nl: "gamma M", en: "Gamma M", fr: "Gamma M" } },
+            ],
+        },
+        {
+            heading: { nl: "Capaciteit", en: "Capacity", fr: "Capacite" },
+            fields: [
+                { path: ["result", "design_capacity_n"], label: { nl: "Ontwerpcapaciteit", en: "Design capacity", fr: "Capacite de calcul" }, unit: "N" },
+                { path: ["result", "governing_failure_mode"], label: { nl: "Maatgevend bezwijkmechanisme", en: "Governing failure mode", fr: "Mode de rupture determinant" } },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "check_passed"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
+            ],
+        },
+    ],
+    ec5_stabilizing_force: [
+        {
+            heading: { nl: "Lid en materiaal", en: "Member and material", fr: "Element et materiau" },
+            fields: [
+                { path: ["result", "b_mm"], label: { nl: "Breedte", en: "Width", fr: "Largeur" }, unit: "mm" },
+                { path: ["result", "h_mm"], label: { nl: "Hoogte", en: "Height", fr: "Hauteur" }, unit: "mm" },
+                { path: ["result", "l_unbraced_mm"], label: { nl: "Onversteunde lengte", en: "Unbraced length", fr: "Longueur non contreventee" }, unit: "mm" },
+                { path: ["result", "l_ef_mm"], label: { nl: "Effectieve lengte", en: "Effective length", fr: "Longueur efficace" }, unit: "mm" },
+                { path: ["result", "wood_grade"], label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" } },
+                { path: ["result", "timber_type"], label: { nl: "Houttype", en: "Timber type", fr: "Type de bois" } },
+            ],
+        },
+        {
+            heading: { nl: "Stabiliteit", en: "Stability", fr: "Stabilite" },
+            fields: [
+                { path: ["result", "sigma_m_crit_mpa"], label: { nl: "Sigma m crit", en: "Sigma m crit", fr: "Sigma m crit" }, unit: "MPa" },
+                { path: ["result", "lambda_rel_m"], label: { nl: "Lambda rel,m", en: "Lambda rel,m", fr: "Lambda rel,m" } },
+                { path: ["result", "k_crit"], label: { nl: "kcrit", en: "kcrit", fr: "kcrit" } },
+                { path: ["result", "stabilizing_force_required"], label: { nl: "Stabiliserende kracht nodig", en: "Stabilizing force required", fr: "Effort stabilisant requis" }, format: "check" },
+            ],
+        },
+        {
+            heading: { nl: "Resultaat", en: "Result", fr: "Resultat" },
+            fields: [
+                { path: ["result", "m_d_knm"], label: { nl: "Md", en: "Md", fr: "Md" }, unit: "kNm" },
+                { path: ["result", "nd_total_kn"], label: { nl: "Nd totaal", en: "Total Nd", fr: "Nd total" }, unit: "kN" },
+                { path: ["result", "f_d_kn"], label: { nl: "Fd", en: "Fd", fr: "Fd" }, unit: "kN" },
+            ],
+        },
+    ],
+    ec5_joist_spacing_optimizer: [
+        {
+            heading: { nl: "Zoekbereik", en: "Search range", fr: "Plage de recherche" },
+            fields: [
+                { path: ["result", "span_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { path: ["result", "b_mm"], label: { nl: "Breedte", en: "Width", fr: "Largeur" }, unit: "mm" },
+                { path: ["result", "h_mm"], label: { nl: "Hoogte", en: "Height", fr: "Hauteur" }, unit: "mm" },
+                { path: ["result", "wood_grade"], label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" } },
+                { path: ["result", "min_spacing_m"], label: { nl: "Min afstand", en: "Min spacing", fr: "Entraxe min" }, unit: "m" },
+                { path: ["result", "max_spacing_m"], label: { nl: "Max afstand", en: "Max spacing", fr: "Entraxe max" }, unit: "m" },
+                { path: ["result", "spacing_step_m"], label: { nl: "Stap", en: "Step", fr: "Pas" }, unit: "m" },
+            ],
+        },
+        {
+            heading: { nl: "Zoekresultaat", en: "Search result", fr: "Resultat de recherche" },
+            fields: [
+                { path: ["result", "spacing_count"], label: { nl: "Aantal gecontroleerd", en: "Checked spacings", fr: "Entraxes verifiés" } },
+                { path: ["result", "adequate_spacing_count"], label: { nl: "Aantal voldoende", en: "Passing spacings", fr: "Entraxes valides" } },
+                { path: ["result", "source_first_adequate_spacing_m"], label: { nl: "Eerste voldoende bron", en: "Source first passing", fr: "Premier valide source" }, unit: "m" },
+                { path: ["result", "recommended_spacing_m"], label: { nl: "Aanbevolen afstand", en: "Recommended spacing", fr: "Entraxe recommande" }, unit: "m" },
+                { path: ["result", "recommended_spacing_cm"], label: { nl: "Aanbevolen afstand", en: "Recommended spacing", fr: "Entraxe recommande" }, unit: "cm" },
+            ],
+        },
+        {
+            heading: { nl: "Grensgevallen", en: "Boundary cases", fr: "Cas limites" },
+            fields: [
+                { path: ["result", "first_spacing_result", "spacing_cm"], label: { nl: "Eerste afstand", en: "First spacing", fr: "Premier entraxe" }, unit: "cm" },
+                { path: ["result", "first_spacing_result", "overall_status"], label: { nl: "Eerste status", en: "First status", fr: "Premier statut" }, format: "status" },
+                { path: ["result", "last_spacing_result", "spacing_cm"], label: { nl: "Laatste afstand", en: "Last spacing", fr: "Dernier entraxe" }, unit: "cm" },
+                { path: ["result", "last_spacing_result", "overall_status"], label: { nl: "Laatste status", en: "Last status", fr: "Dernier statut" }, format: "status" },
+            ],
+        },
+    ],
+    ec5_osb_composite_vibration: [
+        {
+            heading: { nl: "Vloer en materiaal", en: "Floor and material", fr: "Plancher et materiau" },
+            fields: [
+                { path: ["result", "span_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { path: ["result", "b_mm"], label: { nl: "Breedte", en: "Width", fr: "Largeur" }, unit: "mm" },
+                { path: ["result", "h_mm"], label: { nl: "Hoogte", en: "Height", fr: "Hauteur" }, unit: "mm" },
+                { path: ["result", "wood_grade"], label: { nl: "Houtkwaliteit", en: "Wood grade", fr: "Classe de bois" } },
+                { path: ["result", "composite_factor"], label: { nl: "Composietfaktor", en: "Composite factor", fr: "Facteur composite" } },
+            ],
+        },
+        {
+            heading: { nl: "Doorbuiging", en: "Deflection", fr: "Fleche" },
+            fields: [
+                { path: ["result", "load_n"], label: { nl: "Puntlast", en: "Point load", fr: "Charge ponctuelle" }, unit: "N" },
+                { path: ["result", "limit_mm"], label: { nl: "Limiet", en: "Limit", fr: "Limite" }, unit: "mm" },
+                { path: ["result", "base_deflection_mm"], label: { nl: "Zonder OSB", en: "Without OSB", fr: "Sans OSB" }, unit: "mm" },
+                { path: ["result", "composite_deflection_mm"], label: { nl: "Met OSB", en: "With OSB", fr: "Avec OSB" }, unit: "mm" },
+                { path: ["result", "reduction_percent"], label: { nl: "Reductie", en: "Reduction", fr: "Reduction" }, unit: "%" },
+                { path: ["result", "vibration_deflection_ok"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
+            ],
+        },
+    ],
+    ec5_steel_timber_screw_connection: [
+        {
+            heading: { nl: "Configuratie", en: "Configuration", fr: "Configuration" },
+            fields: [
+                { path: ["result", "config_type"], label: { nl: "Configuratietype", en: "Configuration type", fr: "Type de configuration" } },
+                { path: ["result", "input_summary", "t_timber_1_mm"], label: { nl: "Houtdikte 1", en: "Timber thickness 1", fr: "Epaisseur bois 1" }, unit: "mm" },
+                { path: ["result", "input_summary", "t_timber_2_mm"], label: { nl: "Houtdikte 2", en: "Timber thickness 2", fr: "Epaisseur bois 2" }, unit: "mm" },
+                { path: ["result", "input_summary", "t_plate_mm"], label: { nl: "Plaatdikte", en: "Plate thickness", fr: "Epaisseur plaque" }, unit: "mm" },
+                { path: ["result", "input_summary", "n"], label: { nl: "Aantal schroeven", en: "Screw count", fr: "Nombre de vis" } },
+                { path: ["result", "input_summary", "d_mm"], label: { nl: "Diameter", en: "Diameter", fr: "Diametre" }, unit: "mm" },
+            ],
+        },
+        {
+            heading: { nl: "Materiaal en weerstand", en: "Material and resistance", fr: "Materiau et resistance" },
+            fields: [
+                { path: ["result", "k_mod"], label: { nl: "kmod", en: "kmod", fr: "kmod" } },
+                { path: ["result", "k_90"], label: { nl: "k90", en: "k90", fr: "k90" } },
+                { path: ["result", "f_h_k_mpa"], label: { nl: "fh,k", en: "fh,k", fr: "fh,k" }, unit: "MPa" },
+                { path: ["result", "f_v_rk_per_screw_n"], label: { nl: "Fv,Rk per schroef", en: "Fv,Rk per screw", fr: "Fv,Rk par vis" }, unit: "N" },
+                { path: ["result", "r_d_kn"], label: { nl: "Rd", en: "Rd", fr: "Rd" }, unit: "kN" },
+                { path: ["result", "governing_mode"], label: { nl: "Maatgevend mechanisme", en: "Governing mode", fr: "Mode determinant" } },
+            ],
+        },
+        {
+            heading: { nl: "Controle", en: "Verification", fr: "Verification" },
+            fields: [
+                { path: ["result", "f_d_kn"], label: { nl: "Fd", en: "Fd", fr: "Fd" }, unit: "kN" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "strength_check_passed"], label: { nl: "Sterktecontrole", en: "Strength check", fr: "Verification resistance" }, format: "check" },
+                { path: ["result", "geometry_check_passed"], label: { nl: "Geometriecontrole", en: "Geometry check", fr: "Verification geometrie" }, format: "check" },
+            ],
+        },
+    ],
+    ec5_steel_timber_double_shear_connection: [
+        {
+            heading: { nl: "Configuratie", en: "Configuration", fr: "Configuration" },
+            fields: [
+                { path: ["result", "connection_type"], label: { nl: "Verbindingstype", en: "Connection type", fr: "Type de connexion" } },
+                { path: ["result", "configuration"], label: { nl: "Samenstelling", en: "Arrangement", fr: "Assemblage" } },
+                { path: ["result", "input_summary", "t2_mm"], label: { nl: "Houtdikte", en: "Timber thickness", fr: "Epaisseur bois" }, unit: "mm" },
+                { path: ["result", "input_summary", "t_plate_mm"], label: { nl: "Plaatdikte", en: "Plate thickness", fr: "Epaisseur plaque" }, unit: "mm" },
+                { path: ["result", "input_summary", "n"], label: { nl: "Aantal bouten", en: "Fastener count", fr: "Nombre de fixations" } },
+                { path: ["result", "input_summary", "d_mm"], label: { nl: "Diameter", en: "Diameter", fr: "Diametre" }, unit: "mm" },
+            ],
+        },
+        {
+            heading: { nl: "Weerstand", en: "Resistance", fr: "Resistance" },
+            fields: [
+                { path: ["result", "k_mod"], label: { nl: "kmod", en: "kmod", fr: "kmod" } },
+                { path: ["result", "k_90"], label: { nl: "k90", en: "k90", fr: "k90" } },
+                { path: ["result", "f_v_rk_per_shear_plane_kn"], label: { nl: "Fv,Rk per vlak", en: "Fv,Rk per plane", fr: "Fv,Rk par plan" }, unit: "kN" },
+                { path: ["result", "r_k_per_fastener_kn"], label: { nl: "Rk per bevestiger", en: "Rk per fastener", fr: "Rk par fixation" }, unit: "kN" },
+                { path: ["result", "r_d_kn"], label: { nl: "Rd", en: "Rd", fr: "Rd" }, unit: "kN" },
+                { path: ["result", "governing_mode"], label: { nl: "Maatgevend mechanisme", en: "Governing mode", fr: "Mode determinant" } },
+            ],
+        },
+        {
+            heading: { nl: "Controle", en: "Verification", fr: "Verification" },
+            fields: [
+                { path: ["result", "f_d_kn"], label: { nl: "Fd", en: "Fd", fr: "Fd" }, unit: "kN" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "strength_check_passed"], label: { nl: "Sterktecontrole", en: "Strength check", fr: "Verification resistance" }, format: "check" },
+                { path: ["result", "geometry_check_passed"], label: { nl: "Geometriecontrole", en: "Geometry check", fr: "Verification geometrie" }, format: "check" },
+            ],
+        },
+    ],
+    ec5_steel_timber_five_member_connection: [
+        {
+            heading: { nl: "Configuratie", en: "Configuration", fr: "Configuration" },
+            fields: [
+                { path: ["result", "connection_type"], label: { nl: "Verbindingstype", en: "Connection type", fr: "Type de connexion" } },
+                { path: ["result", "configuration"], label: { nl: "Samenstelling", en: "Arrangement", fr: "Assemblage" } },
+                { path: ["result", "input_summary", "t_w1_mm"], label: { nl: "Houtdikte 1", en: "Timber thickness 1", fr: "Epaisseur bois 1" }, unit: "mm" },
+                { path: ["result", "input_summary", "t_w2_mm"], label: { nl: "Houtdikte 2", en: "Timber thickness 2", fr: "Epaisseur bois 2" }, unit: "mm" },
+                { path: ["result", "input_summary", "t_plate_mm"], label: { nl: "Plaatdikte", en: "Plate thickness", fr: "Epaisseur plaque" }, unit: "mm" },
+                { path: ["result", "input_summary", "n"], label: { nl: "Aantal bouten", en: "Fastener count", fr: "Nombre de fixations" } },
+            ],
+        },
+        {
+            heading: { nl: "Weerstand", en: "Resistance", fr: "Resistance" },
+            fields: [
+                { path: ["result", "r_k_unit1_per_fastener_kn"], label: { nl: "Rk lid 1 per bevestiger", en: "Rk member 1 per fastener", fr: "Rk membre 1 par fixation" }, unit: "kN" },
+                { path: ["result", "r_k_unit2_per_fastener_kn"], label: { nl: "Rk lid 2 per bevestiger", en: "Rk member 2 per fastener", fr: "Rk membre 2 par fixation" }, unit: "kN" },
+                { path: ["result", "r_k_per_fastener_kn"], label: { nl: "Rk totaal per bevestiger", en: "Total Rk per fastener", fr: "Rk total par fixation" }, unit: "kN" },
+                { path: ["result", "r_d_kn"], label: { nl: "Rd", en: "Rd", fr: "Rd" }, unit: "kN" },
+                { path: ["result", "governing_unit_label"], label: { nl: "Maatgevend lid", en: "Governing member", fr: "Element determinant" } },
+                { path: ["result", "governing_mode"], label: { nl: "Maatgevend mechanisme", en: "Governing mode", fr: "Mode determinant" } },
+            ],
+        },
+        {
+            heading: { nl: "Controle", en: "Verification", fr: "Verification" },
+            fields: [
+                { path: ["result", "f_d_kn"], label: { nl: "Fd", en: "Fd", fr: "Fd" }, unit: "kN" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "strength_check_passed"], label: { nl: "Sterktecontrole", en: "Strength check", fr: "Verification resistance" }, format: "check" },
+                { path: ["result", "geometry_check_passed"], label: { nl: "Geometriecontrole", en: "Geometry check", fr: "Verification geometrie" }, format: "check" },
+            ],
+        },
+    ],
+    ec5_timber_timber_single_shear_connection: [
+        {
+            heading: { nl: "Model", en: "Model", fr: "Modele" },
+            fields: [
+                { path: ["result", "k_mod_1"], label: { nl: "kmod 1", en: "kmod 1", fr: "kmod 1" } },
+                { path: ["result", "k_mod_2"], label: { nl: "kmod 2", en: "kmod 2", fr: "kmod 2" } },
+                { path: ["result", "n_actual"], label: { nl: "Aantal bevestigers", en: "Fastener count", fr: "Nombre de fixations" } },
+                { path: ["result", "n_effective"], label: { nl: "n effectief", en: "Effective n", fr: "n effectif" } },
+                { path: ["result", "group_effect_applied"], label: { nl: "Groepseffect", en: "Group effect applied", fr: "Effet de groupe applique" }, format: "check" },
+            ],
+        },
+        {
+            heading: { nl: "Weerstand", en: "Resistance", fr: "Resistance" },
+            fields: [
+                { path: ["result", "f_v_rk_per_fastener_kn"], label: { nl: "Fv,Rk per bevestiger", en: "Fv,Rk per fastener", fr: "Fv,Rk par fixation" }, unit: "kN" },
+                { path: ["result", "r_k_kn"], label: { nl: "Rk", en: "Rk", fr: "Rk" }, unit: "kN" },
+                { path: ["result", "r_d_kn"], label: { nl: "Rd", en: "Rd", fr: "Rd" }, unit: "kN" },
+                { path: ["result", "governing_mode"], label: { nl: "Maatgevend mechanisme", en: "Governing mode", fr: "Mode determinant" } },
+            ],
+        },
+        {
+            heading: { nl: "Controle", en: "Verification", fr: "Verification" },
+            fields: [
+                { path: ["result", "f_v_ed_kn"], label: { nl: "Fv,Ed", en: "Fv,Ed", fr: "Fv,Ed" }, unit: "kN" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "strength_check_passed"], label: { nl: "Sterktecontrole", en: "Strength check", fr: "Verification resistance" }, format: "check" },
+                { path: ["result", "geometry_check_passed"], label: { nl: "Geometriecontrole", en: "Geometry check", fr: "Verification geometrie" }, format: "check" },
+            ],
+        },
+    ],
+    ec5_timber_timber_double_shear_connection: [
+        {
+            heading: { nl: "Model", en: "Model", fr: "Modele" },
+            fields: [
+                { path: ["result", "k_mod_outer"], label: { nl: "kmod buiten", en: "Outer kmod", fr: "kmod exterieur" } },
+                { path: ["result", "k_mod_inner"], label: { nl: "kmod binnen", en: "Inner kmod", fr: "kmod interieur" } },
+                { path: ["result", "gamma_m"], label: { nl: "gamma M", en: "Gamma M", fr: "Gamma M" } },
+                { path: ["result", "f_h_outer_k_mpa"], label: { nl: "fh buiten", en: "Outer fh,k", fr: "fh,k exterieur" }, unit: "MPa" },
+                { path: ["result", "f_h_inner_k_mpa"], label: { nl: "fh binnen", en: "Inner fh,k", fr: "fh,k interieur" }, unit: "MPa" },
+            ],
+        },
+        {
+            heading: { nl: "Weerstand", en: "Resistance", fr: "Resistance" },
+            fields: [
+                { path: ["result", "f_v_rk_per_shear_plane_kn"], label: { nl: "Fv,Rk per vlak", en: "Fv,Rk per plane", fr: "Fv,Rk par plan" }, unit: "kN" },
+                { path: ["result", "r_k_kn"], label: { nl: "Rk", en: "Rk", fr: "Rk" }, unit: "kN" },
+                { path: ["result", "r_d_kn"], label: { nl: "Rd", en: "Rd", fr: "Rd" }, unit: "kN" },
+                { path: ["result", "governing_mode"], label: { nl: "Maatgevend mechanisme", en: "Governing mode", fr: "Mode determinant" } },
+            ],
+        },
+        {
+            heading: { nl: "Controle", en: "Verification", fr: "Verification" },
+            fields: [
+                { path: ["result", "f_v_ed_kn"], label: { nl: "Fv,Ed", en: "Fv,Ed", fr: "Fv,Ed" }, unit: "kN" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "strength_check_passed"], label: { nl: "Sterktecontrole", en: "Strength check", fr: "Verification resistance" }, format: "check" },
+                { path: ["result", "geometry_check_passed"], label: { nl: "Geometriecontrole", en: "Geometry check", fr: "Verification geometrie" }, format: "check" },
+            ],
+        },
+    ],
+    ec5_toothed_plate_connection: [
+        {
+            heading: { nl: "Connector en materiaal", en: "Connector and material", fr: "Connecteur et materiau" },
+            fields: [
+                { path: ["result", "connector_type"], label: { nl: "Connectortype", en: "Connector type", fr: "Type de connecteur" } },
+                { path: ["result", "k_mod"], label: { nl: "kmod", en: "kmod", fr: "kmod" } },
+                { path: ["result", "k1"], label: { nl: "k1", en: "k1", fr: "k1" } },
+                { path: ["result", "k2"], label: { nl: "k2", en: "k2", fr: "k2" } },
+                { path: ["result", "k3"], label: { nl: "k3", en: "k3", fr: "k3" } },
+            ],
+        },
+        {
+            heading: { nl: "Plaat- en boutweerstand", en: "Plate and bolt resistance", fr: "Resistance plaque et boulon" },
+            fields: [
+                { path: ["result", "r_d_plate_kn"], label: { nl: "Rd plaat", en: "Plate Rd", fr: "Rd plaque" }, unit: "kN" },
+                { path: ["result", "r_d_bolt_kn"], label: { nl: "Rd bout", en: "Bolt Rd", fr: "Rd boulon" }, unit: "kN" },
+                { path: ["result", "r_d_kn"], label: { nl: "Rd totaal", en: "Total Rd", fr: "Rd total" }, unit: "kN" },
+                { path: ["result", "governing_bolt_mode"], label: { nl: "Maatgevende boutmodus", en: "Governing bolt mode", fr: "Mode boulon determinant" } },
+            ],
+        },
+        {
+            heading: { nl: "Controle", en: "Verification", fr: "Verification" },
+            fields: [
+                { path: ["result", "f_v_ed_kn"], label: { nl: "Fv,Ed", en: "Fv,Ed", fr: "Fv,Ed" }, unit: "kN" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "strength_check_passed"], label: { nl: "Sterktecontrole", en: "Strength check", fr: "Verification resistance" }, format: "check" },
+                { path: ["result", "geometry_check_passed"], label: { nl: "Geometriecontrole", en: "Geometry check", fr: "Verification geometrie" }, format: "check" },
+            ],
+        },
+    ],
+    ec6_masonry_strength: [
+        {
+            heading: { nl: "Materiaal", en: "Material", fr: "Materiau" },
+            fields: [
+                { path: ["result", "k_factor"], label: { nl: "K factor", en: "K factor", fr: "Facteur K" } },
+                { path: ["result", "gamma_m"], label: { nl: "gamma M", en: "Gamma M", fr: "Gamma M" } },
+                { path: ["result", "formula"], label: { nl: "Formule", en: "Formula", fr: "Formule" } },
+            ],
+        },
+        {
+            heading: { nl: "Resultaat", en: "Result", fr: "Resultat" },
+            fields: [
+                { path: ["result", "fk_mpa"], label: { nl: "fk", en: "fk", fr: "fk" }, unit: "MPa" },
+                { path: ["result", "fd_mpa"], label: { nl: "fd", en: "fd", fr: "fd" }, unit: "MPa" },
+                { path: ["result", "check_passed"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
+            ],
+        },
+    ],
+    ec6_beam_bearing: [
+        {
+            heading: { nl: "Opleg", en: "Bearing", fr: "Appui" },
+            fields: [
+                { path: ["result", "effective_length_mm"], label: { nl: "Effectieve lengte", en: "Effective length", fr: "Longueur efficace" }, unit: "mm" },
+                { path: ["result", "bearing_area_mm2"], label: { nl: "Oplegoppervlak", en: "Bearing area", fr: "Surface d'appui" }, unit: "mm2" },
+                { path: ["result", "effective_area_mm2"], label: { nl: "Effectieve oppervlakte", en: "Effective area", fr: "Surface efficace" }, unit: "mm2" },
+                { path: ["result", "beta"], label: { nl: "Beta", en: "Beta", fr: "Beta" } },
+            ],
+        },
+        {
+            heading: { nl: "Spanning en weerstand", en: "Stress and resistance", fr: "Contrainte et resistance" },
+            fields: [
+                { path: ["result", "contact_pressure_mpa"], label: { nl: "Contactspanning", en: "Contact pressure", fr: "Contrainte de contact" }, unit: "MPa" },
+                { path: ["result", "design_bearing_resistance_mpa"], label: { nl: "Oplegweerstand", en: "Bearing resistance", fr: "Resistance d'appui" }, unit: "MPa" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "check_passed"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
+            ],
+        },
+    ],
+    ec6_masonry_contact_pressure: [
+        {
+            heading: { nl: "Ligger en opleg", en: "Beam and bearing", fr: "Poutre et appui" },
+            fields: [
+                { path: ["result", "beam_id"], label: { nl: "Ligger", en: "Beam", fr: "Poutre" } },
+                { path: ["result", "profile_name"], label: { nl: "Profiel", en: "Profile", fr: "Profil" } },
+                { path: ["result", "beam_width_mm"], label: { nl: "Liggerbreedte", en: "Beam width", fr: "Largeur poutre" }, unit: "mm" },
+                { path: ["result", "beam_width_source"], label: { nl: "Breedtebron", en: "Width source", fr: "Source largeur" } },
+                { path: ["result", "support_length_mm"], label: { nl: "Opleglengte", en: "Support length", fr: "Longueur appui" }, unit: "mm" },
+            ],
+        },
+        {
+            heading: { nl: "Drukcontrole", en: "Pressure check", fr: "Verification pression" },
+            fields: [
+                { path: ["result", "n_ed_kn"], label: { nl: "NEd", en: "NEd", fr: "NEd" }, unit: "kN" },
+                { path: ["result", "contact_area_mm2"], label: { nl: "Contactoppervlak", en: "Contact area", fr: "Surface de contact" }, unit: "mm2" },
+                { path: ["result", "sigma_d_mpa"], label: { nl: "Sigma d", en: "Sigma d", fr: "Sigma d" }, unit: "MPa" },
+                { path: ["result", "f_rdc_mpa"], label: { nl: "Frdc", en: "Frdc", fr: "Frdc" }, unit: "MPa" },
+                { path: ["result", "required_length_mm"], label: { nl: "Vereiste lengte", en: "Required length", fr: "Longueur requise" }, unit: "mm" },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+            ],
+        },
+    ],
+    ec6_inplane_shear_wall: [
+        {
+            heading: { nl: "Materiaal en toestand", en: "Material and stress state", fr: "Materiau et etat de contrainte" },
+            fields: [
+                { path: ["result", "unit_group"], label: { nl: "Unit group", en: "Unit group", fr: "Groupe d'unites" } },
+                { path: ["result", "k_factor"], label: { nl: "K factor", en: "K factor", fr: "Facteur K" } },
+                { path: ["result", "fk_mpa"], label: { nl: "fk", en: "fk", fr: "fk" }, unit: "MPa" },
+                { path: ["result", "fd_mpa"], label: { nl: "fd", en: "fd", fr: "fd" }, unit: "MPa" },
+                { path: ["result", "stress_case"], label: { nl: "Spanningstoestand", en: "Stress case", fr: "Cas de contrainte" } },
+                { path: ["result", "compressed_length_lc_mm"], label: { nl: "Gedrukte lengte", en: "Compressed length", fr: "Longueur comprimee" }, unit: "mm" },
+            ],
+        },
+        {
+            heading: { nl: "Buiging en schuif", en: "Bending and shear", fr: "Flexion et cisaillement" },
+            fields: [
+                { path: ["result", "sigma_max_mpa"], label: { nl: "Sigma max", en: "Sigma max", fr: "Sigma max" }, unit: "MPa" },
+                { path: ["result", "fvk_mpa"], label: { nl: "fvk", en: "fvk", fr: "fvk" }, unit: "MPa" },
+                { path: ["result", "fvd_mpa"], label: { nl: "fvd", en: "fvd", fr: "fvd" }, unit: "MPa" },
+                { path: ["result", "v_ed_kn"], label: { nl: "VEd", en: "VEd", fr: "VEd" }, unit: "kN" },
+                { path: ["result", "v_rd_kn"], label: { nl: "VRd", en: "VRd", fr: "VRd" }, unit: "kN" },
+                { path: ["result", "bending_utilization_ratio"], label: { nl: "Benutting buiging", en: "Bending utilization", fr: "Utilisation flexion" } },
+                { path: ["result", "shear_utilization_ratio"], label: { nl: "Benutting schuif", en: "Shear utilization", fr: "Utilisation cisaillement" } },
+            ],
+        },
+    ],
+    ec6_masonry_horizontal_capacity: [
+        {
+            heading: { nl: "Materiaal", en: "Material", fr: "Materiau" },
+            fields: [
+                { path: ["result", "fvko_mpa"], label: { nl: "fvko", en: "fvko", fr: "fvko" }, unit: "MPa" },
+                { path: ["result", "fvk_mpa"], label: { nl: "fvk", en: "fvk", fr: "fvk" }, unit: "MPa" },
+                { path: ["result", "design_shear_strength_mpa"], label: { nl: "Schuifsterkte ontwerp", en: "Design shear strength", fr: "Resistance cisaillement calcul" }, unit: "MPa" },
+                { path: ["result", "design_tensile_strength_mpa"], label: { nl: "Treksterkte ontwerp", en: "Design tensile strength", fr: "Resistance traction calcul" }, unit: "MPa" },
+            ],
+        },
+        {
+            heading: { nl: "Capaciteit", en: "Capacity", fr: "Capacite" },
+            fields: [
+                { path: ["result", "effective_compressed_length_mm"], label: { nl: "Effectieve gedrukte lengte", en: "Effective compressed length", fr: "Longueur comprimee efficace" }, unit: "mm" },
+                { path: ["result", "shear_area_mm2"], label: { nl: "Schuifoppervlak", en: "Shear area", fr: "Surface de cisaillement" }, unit: "mm2" },
+                { path: ["result", "shear_capacity_per_wall_kn"], label: { nl: "Schuifcapaciteit per wand", en: "Shear capacity per wall", fr: "Capacite cisaillement par mur" }, unit: "kN" },
+                { path: ["result", "bending_capacity_per_wall_kn"], label: { nl: "Buigcapaciteit per wand", en: "Bending capacity per wall", fr: "Capacite flexion par mur" }, unit: "kN" },
+                { path: ["result", "combined_capacity_kn"], label: { nl: "Totale capaciteit", en: "Combined capacity", fr: "Capacite combinee" }, unit: "kN" },
+                { path: ["result", "governing_mode"], label: { nl: "Maatgevend mechanisme", en: "Governing mode", fr: "Mode determinant" } },
+            ],
+        },
+    ],
+    ec6_lateral_wall_resistance: [
+        {
+            heading: { nl: "Geometrie en oplegging", en: "Geometry and support case", fr: "Geometrie et appuis" },
+            fields: [
+                { path: ["result", "geometry", "height_m"], label: { nl: "Hoogte", en: "Height", fr: "Hauteur" }, unit: "m" },
+                { path: ["result", "geometry", "length_m"], label: { nl: "Lengte", en: "Length", fr: "Longueur" }, unit: "m" },
+                { path: ["result", "geometry", "thickness_mm"], label: { nl: "Dikte", en: "Thickness", fr: "Epaisseur" }, unit: "mm" },
+                { path: ["result", "support_case"], label: { nl: "Oplegconditie", en: "Support case", fr: "Cas d'appui" } },
+                { path: ["result", "bending_model"], label: { nl: "Buigmodel", en: "Bending model", fr: "Modele de flexion" } },
+                { path: ["result", "h_l_ratio"], label: { nl: "h/l verhouding", en: "h/l ratio", fr: "Rapport h/l" } },
+            ],
+        },
+        {
+            heading: { nl: "Belasting en weerstand", en: "Loading and resistance", fr: "Chargement et resistance" },
+            fields: [
+                { path: ["result", "actions", "n_ed_line_kn_per_m"], label: { nl: "NEd lijn", en: "Line NEd", fr: "NEd lineique" }, unit: "kN/m" },
+                { path: ["result", "actions", "w_ed_kn_per_m2"], label: { nl: "wEd", en: "wEd", fr: "wEd" }, unit: "kN/m2" },
+                { path: ["result", "m_rd1_nmm_per_mm"], label: { nl: "MRd as 1", en: "Axis 1 MRd", fr: "MRd axe 1" }, unit: "Nmm/mm" },
+                { path: ["result", "m_rd2_nmm_per_mm"], label: { nl: "MRd as 2", en: "Axis 2 MRd", fr: "MRd axe 2" }, unit: "Nmm/mm" },
+                { path: ["result", "axis_1_utilization_ratio"], label: { nl: "Benutting as 1", en: "Axis 1 utilization", fr: "Utilisation axe 1" } },
+                { path: ["result", "axis_2_utilization_ratio"], label: { nl: "Benutting as 2", en: "Axis 2 utilization", fr: "Utilisation axe 2" } },
+            ],
+        },
+        {
+            heading: { nl: "Controle", en: "Verification", fr: "Verification" },
+            fields: [
+                { path: ["result", "axis_1_check_passed"], label: { nl: "As 1 OK", en: "Axis 1 OK", fr: "Axe 1 OK" }, format: "check" },
+                { path: ["result", "axis_2_check_passed"], label: { nl: "As 2 OK", en: "Axis 2 OK", fr: "Axe 2 OK" }, format: "check" },
+                { path: ["result", "check_passed"], label: { nl: "Globale controle", en: "Overall check", fr: "Verification globale" }, format: "check" },
+            ],
+        },
+    ],
 };
 const STORAGE_KEY = "ea-suys-structural-tools-input";
 export function formatJson(value) {

@@ -15,6 +15,22 @@ import {
   formatJson,
 } from "../app.js";
 
+function extractBlock(source, startMarker, endMarker) {
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker, start);
+  assert.notEqual(start, -1, `missing start marker: ${startMarker}`);
+  assert.notEqual(end, -1, `missing end marker: ${endMarker}`);
+  return source.slice(start + startMarker.length, end);
+}
+
+function extractObjectKeys(block) {
+  return [...block.matchAll(/^\s{2}([a-z0-9_]+): \{/gm)].map((match) => match[1]);
+}
+
+function extractArrayKeys(block) {
+  return [...block.matchAll(/^\s{2}([a-z0-9_]+): \[/gm)].map((match) => match[1]);
+}
+
 test("frontend is configured for structural subdomain and private API", async () => {
   const cname = await readFile(new URL("../CNAME", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
@@ -2304,25 +2320,23 @@ test("html report model exposes returned API metadata", () => {
   assert.deepEqual(report.warnings, ["NARROW_OSB_SCOPE"]);
   assert.deepEqual(report.assumptions, ["Point-load vibration helper only."]);
   assert.deepEqual(report.sourceRefs, ["Source script composite_osb_analysis.py."]);
-  assert.deepEqual(report.sections, []);
+  assert.deepEqual(report.sections, [
+    {
+      heading: "Deflection",
+      items: [
+        { label: "Without OSB", value: "1.241 mm" },
+        { label: "With OSB", value: "1.079 mm" },
+        { label: "Reduction", value: "13.043 %" },
+      ],
+    },
+  ]);
 });
 
-test("ec3 calculators have calculator-specific report sections", async () => {
+test("all published calculators have calculator-specific report sections", async () => {
   const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
-  for (const calculatorId of [
-    "ec3_bolt_group_torsion",
-    "ec3_bolted_lap_joint",
-    "ec3_bolted_moment_connection",
-    "ec3_double_sided_web_connection",
-    "ec3_fillet_weld",
-    "ec3_lateral_torsional_buckling",
-    "ec3_plate_tension",
-    "ec3_profile_optimizer",
-    "ec3_splice_moment_connection",
-    "ec3_steel_section_check",
-  ]) {
-    assert.match(appTs, new RegExp(`${calculatorId}: \\[`));
-  }
+  const reportBlock = extractBlock(appTs, "const REPORT_SECTION_FIELDS = {", "const STORAGE_KEY = ");
+  const reportKeys = extractArrayKeys(reportBlock);
+  assert.deepEqual(Object.keys(TOOL_CATALOG).filter((calculatorId) => !reportKeys.includes(calculatorId)), []);
 });
 
 test("ec3 steel report model exposes calculator-specific detail sections", () => {
@@ -2588,6 +2602,88 @@ test("beam spring calibration report helpers include calibration sections in sta
   assert.match(html, /Spring stiffness/);
   assert.match(html, /Spring reaction/);
   assert.match(html, /Governing response/);
+});
+
+test("masonry contact pressure report helpers include detailed sections in standalone HTML output", () => {
+  const response = {
+    calculator_id: "ec6_masonry_contact_pressure",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.15",
+    result: {
+      overall_status: "FAIL",
+      beam_id: "B4.4",
+      profile_name: "HE 240 B",
+      beam_width_mm: 240,
+      beam_width_source: "profile_estimate",
+      n_ed_kn: 131.26,
+      support_length_mm: 140,
+      contact_area_mm2: 33600,
+      sigma_d_mpa: 3.906548,
+      f_rdc_mpa: 3,
+      required_length_mm: 182.305556,
+      utilization_ratio: 1.302183,
+      warning_codes: ["PROFILE_WIDTH_ESTIMATED", "CONTACT_PRESSURE_FAILED"],
+    },
+    assumptions: ["Profile width may be estimated from the profile label."],
+    source_refs: ["Source script masonry_contact_pressure_verification.py."],
+    status: "ok",
+  };
+
+  const html = buildReportHtml(response, "en", new Date("2026-06-02T20:00:00.000Z"));
+  assert.match(html, /Beam and bearing/);
+  assert.match(html, /Pressure check/);
+  assert.match(html, /Beam width/);
+  assert.match(html, /Required length/);
+  assert.match(html, /PROFILE_WIDTH_ESTIMATED/);
+});
+
+test("steel-timber screw report model exposes calculator-specific detail sections", () => {
+  const report = buildReportModel({
+    calculator_id: "ec5_steel_timber_screw_connection",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.2",
+    status: "ok",
+    result: {
+      overall_status: "FAIL",
+      config_type: "central",
+      k_mod: 0.5,
+      k_90: 1.02,
+      f_h_k_mpa: 36.98039215686275,
+      f_v_rk_per_screw_n: 17165.847873212722,
+      governing_mode: "Mode h (Hinge in steel)",
+      r_d_kn: 13.204498364009785,
+      f_d_kn: 80,
+      utilization_ratio: 6.058541399652728,
+      strength_check_passed: false,
+      geometry_check_passed: false,
+      input_summary: {
+        t_timber_1_mm: 50,
+        t_timber_2_mm: 50,
+        t_plate_mm: 6,
+        n: 2,
+        d_mm: 8,
+      },
+      warning_codes: ["STRENGTH_CHECK_FAILED", "GEOMETRY_CHECK_FAILED"],
+    },
+    assumptions: ["Central steel-plate screw helper only."],
+    source_refs: ["Source script steel_timber_connection_single.py."],
+  }, "en", new Date("2026-06-02T20:05:00.000Z"));
+
+  assert.deepEqual(report.sections.map((section) => section.heading), [
+    "Configuration",
+    "Material and resistance",
+    "Verification",
+  ]);
+  assert.deepEqual(report.sections[0].items.slice(0, 4), [
+    { label: "Configuration type", value: "central" },
+    { label: "Timber thickness 1", value: "50 mm" },
+    { label: "Timber thickness 2", value: "50 mm" },
+    { label: "Plate thickness", value: "6 mm" },
+  ]);
+  assert.deepEqual(report.sections[2].items, [
+    { label: "Fd", value: "80 kN" },
+    { label: "Utilization", value: "6.059" },
+    { label: "Strength check", value: "FAIL" },
+    { label: "Geometry check", value: "FAIL" },
+  ]);
 });
 
 test("ec3 bolted moment report helpers include detailed sections in standalone HTML output", () => {
