@@ -40,6 +40,37 @@ export const TOOL_CATALOG = {
             ],
         },
     },
+    beam_simple_diagrams: {
+        endpoint: "/calculate/beam/simple-diagrams",
+        title: {
+            nl: "Eenvoudige balkdiagrammen",
+            en: "Simple beam diagrams",
+            fr: "Diagrammes de poutre simple",
+        },
+        sample: {
+            span_m: 5,
+            uniform_loads: [
+                { label: "floor_load", permanent_kn_per_m: 2.5, variable_kn_per_m: 3 },
+            ],
+            point_loads: [
+                { label: "midspan_point", permanent_kn: 0, variable_kn: 25, position_m: 2.5 },
+            ],
+            sample_points: 21,
+        },
+        form: {
+            fields: [
+                { name: "span_m", value_type: "number", control: "number", step: "0.1", label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { name: "uniform_loads.0.label", path: ["uniform_loads", 0, "label"], value_type: "string", control: "text", label: { nl: "Lijnlast naam", en: "UDL label", fr: "Nom charge repartie" } },
+                { name: "uniform_loads.0.permanent_kn_per_m", path: ["uniform_loads", 0, "permanent_kn_per_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "G lijnlast", en: "G UDL", fr: "G repartie" }, unit: "kN/m" },
+                { name: "uniform_loads.0.variable_kn_per_m", path: ["uniform_loads", 0, "variable_kn_per_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "Q lijnlast", en: "Q UDL", fr: "Q repartie" }, unit: "kN/m" },
+                { name: "point_loads.0.label", path: ["point_loads", 0, "label"], value_type: "string", control: "text", label: { nl: "Puntlast naam", en: "Point label", fr: "Nom charge ponctuelle" } },
+                { name: "point_loads.0.permanent_kn", path: ["point_loads", 0, "permanent_kn"], value_type: "number", control: "number", step: "0.01", label: { nl: "G puntlast", en: "G point", fr: "G ponctuelle" }, unit: "kN" },
+                { name: "point_loads.0.variable_kn", path: ["point_loads", 0, "variable_kn"], value_type: "number", control: "number", step: "0.01", label: { nl: "Q puntlast", en: "Q point", fr: "Q ponctuelle" }, unit: "kN" },
+                { name: "point_loads.0.position_m", path: ["point_loads", 0, "position_m"], value_type: "number", control: "number", step: "0.01", label: { nl: "Puntlast positie", en: "Point position", fr: "Position charge" }, unit: "m" },
+                { name: "sample_points", value_type: "number", control: "number", step: "1", label: { nl: "Diagram punten", en: "Diagram points", fr: "Points diagramme" } },
+            ],
+        },
+    },
     ec1_roof_loads: {
         endpoint: "/calculate/ec1/roof-loads",
         title: {
@@ -3770,6 +3801,15 @@ const RESULT_SUMMARY_FIELDS = {
         { path: ["result", "transformed_inertia_i_prime_mm4"], label: { nl: "I'", en: "I'", fr: "I'" }, unit: "mm4" },
         { path: ["result", "static_moment_s_prime_mm3"], label: { nl: "S'", en: "S'", fr: "S'" }, unit: "mm3" },
         { path: ["result", "actual_width_at_target_mm"], label: { nl: "Breedte", en: "Width", fr: "Largeur" }, unit: "mm" },
+        { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+    ],
+    beam_simple_diagrams: [
+        { path: ["result", "cases", "uls", "m_max_knm"], label: { nl: "ULS Mmax", en: "ULS Mmax", fr: "ELU Mmax" }, unit: "kNm" },
+        { path: ["result", "cases", "uls", "v_max_kn"], label: { nl: "ULS Vmax", en: "ULS Vmax", fr: "ELU Vmax" }, unit: "kN" },
+        { path: ["result", "cases", "sls", "m_max_knm"], label: { nl: "SLS Mmax", en: "SLS Mmax", fr: "ELS Mmax" }, unit: "kNm" },
+        { path: ["result", "cases", "sls", "v_max_kn"], label: { nl: "SLS Vmax", en: "SLS Vmax", fr: "ELS Vmax" }, unit: "kN" },
+        { path: ["result", "cases", "uls", "reactions", "left_kn"], label: { nl: "ULS R links", en: "ULS R left", fr: "ELU R gauche" }, unit: "kN" },
+        { path: ["result", "cases", "uls", "reactions", "right_kn"], label: { nl: "ULS R rechts", en: "ULS R right", fr: "ELU R droite" }, unit: "kN" },
         { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
     ],
     ec1_roof_loads: [

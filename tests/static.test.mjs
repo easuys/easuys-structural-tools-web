@@ -68,6 +68,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "beam_composite_shear_stress",
+    "beam_simple_diagrams",
     "ec1_roof_loads",
     "ec3_bolt_group_torsion",
     "ec3_bolted_lap_joint",
@@ -159,6 +160,31 @@ test("composite shear stress form metadata builds component array payload", () =
     shear_force_n: 100000,
     y_target_mm: 208,
     distribution_points: 21,
+  });
+});
+
+test("simple beam diagrams form metadata builds load array payload", () => {
+  const payload = buildPayloadFromFormValues("beam_simple_diagrams", {
+    span_m: "5",
+    "uniform_loads.0.label": "floor_load",
+    "uniform_loads.0.permanent_kn_per_m": "2.5",
+    "uniform_loads.0.variable_kn_per_m": "3",
+    "point_loads.0.label": "midspan_point",
+    "point_loads.0.permanent_kn": "0",
+    "point_loads.0.variable_kn": "25",
+    "point_loads.0.position_m": "2.5",
+    sample_points: "21",
+  });
+
+  assert.deepEqual(payload, {
+    span_m: 5,
+    uniform_loads: [
+      { label: "floor_load", permanent_kn_per_m: 2.5, variable_kn_per_m: 3 },
+    ],
+    point_loads: [
+      { label: "midspan_point", permanent_kn: 0, variable_kn: 25, position_m: 2.5 },
+    ],
+    sample_points: 21,
   });
 });
 
@@ -1022,6 +1048,37 @@ test("supporting tool result summaries format returned API fields only", () => {
     { label: "S'", value: "1101942.9 mm3" },
     { label: "Width", value: "300 mm" },
     { label: "Warnings", value: "None" },
+  ]);
+
+  const simpleBeam = buildResultSummaryItems({
+    calculator_id: "beam_simple_diagrams",
+    result: {
+      cases: {
+        uls: {
+          m_max_knm: 71.484375,
+          v_max_kn: 38.4375,
+          reactions: {
+            left_kn: 38.4375,
+            right_kn: 38.4375,
+          },
+        },
+        sls: {
+          m_max_knm: 48.4375,
+          v_max_kn: 26.25,
+        },
+      },
+      warning_codes: ["SOURCE_SIMPLIFIED_MAXIMA"],
+    },
+  }, "en");
+
+  assert.deepEqual(simpleBeam, [
+    { label: "ULS Mmax", value: "71.484 kNm" },
+    { label: "ULS Vmax", value: "38.438 kN" },
+    { label: "SLS Mmax", value: "48.438 kNm" },
+    { label: "SLS Vmax", value: "26.25 kN" },
+    { label: "ULS R left", value: "38.438 kN" },
+    { label: "ULS R right", value: "38.438 kN" },
+    { label: "Warnings", value: "SOURCE_SIMPLIFIED_MAXIMA" },
   ]);
 });
 
