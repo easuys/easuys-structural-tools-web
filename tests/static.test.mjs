@@ -54,6 +54,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
     "ec3_bolted_lap_joint",
+    "ec3_bolted_moment_connection",
     "ec3_fillet_weld",
     "ec3_plate_tension",
     "ec5_axial_screw",
@@ -195,6 +196,59 @@ test("ec3 bolted lap joint form metadata builds the API payload", () => {
     primary_web_fu_mpa: 490,
     web_bearing_factor: 1,
   });
+});
+
+test("ec3 bolted moment connection form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_bolted_moment_connection", {
+    "column.steel_grade": "S355",
+    "beam.steel_grade": "S355",
+    "end_plate.steel_grade": "S355",
+    "column.height_mm": "400",
+    "column.width_mm": "300",
+    "column.web_thickness_mm": "13.5",
+    "column.flange_thickness_mm": "24",
+    "column.root_radius_mm": "27",
+    "beam.height_mm": "600",
+    "beam.width_mm": "220",
+    "beam.web_thickness_mm": "12",
+    "beam.flange_thickness_mm": "19",
+    "beam.root_radius_mm": "24",
+    "end_plate.thickness_mm": "30",
+    "end_plate.width_mm": "280",
+    "end_plate.height_mm": "750",
+    "welds.flange_throat_mm": "12",
+    "welds.web_throat_mm": "8",
+    "bolts.diameter_mm": "27",
+    "bolts.bolt_class": "10.9",
+    "bolts.horizontal_spacing_mm": "120",
+    "bolts.edge_distance_horizontal_mm": "50",
+    "bolts.edge_distance_vertical_top_mm": "70",
+    "bolts.edge_distance_vertical_bottom_mm": "70",
+    "bolts.rows.0.vertical_position_mm": "500",
+    "bolts.rows.1.vertical_position_mm": "600",
+    "bolts.rows.2.vertical_position_mm": "680",
+    "loads.moment_knm": "500",
+    "loads.shear_kn": "200",
+    "loads.axial_kn": "0",
+  });
+
+  assert.equal(payload.column.profile, "HEB400");
+  assert.equal(payload.beam.profile, "IPE600");
+  assert.equal(payload.column.height_mm, 400);
+  assert.equal(payload.beam.flange_thickness_mm, 19);
+  assert.equal(payload.end_plate.thickness_mm, 30);
+  assert.equal(payload.welds.flange_throat_mm, 12);
+  assert.equal(payload.bolts.diameter_mm, 27);
+  assert.equal(payload.bolts.bolt_class, "10.9");
+  assert.deepEqual(payload.bolts.rows, [
+    { row_id: 1, vertical_position_mm: 500, number_of_bolts: 2 },
+    { row_id: 2, vertical_position_mm: 600, number_of_bolts: 2 },
+    { row_id: 3, vertical_position_mm: 680, number_of_bolts: 2 },
+  ]);
+  assert.deepEqual(payload.loads, { moment_knm: 500, shear_kn: 200, axial_kn: 0 });
+  assert.equal(payload.connection_type, "single_sided");
+  assert.equal(payload.include_prying_action, true);
+  assert.equal(payload.gamma_m2, 1.25);
 });
 
 test("masonry strength form metadata builds the API payload", () => {
@@ -663,6 +717,29 @@ test("ec3 result summaries format returned API fields only", () => {
     { label: "Governing resistance", value: "295.4 kN" },
     { label: "Utilization", value: "50.8 %" },
     { label: "Governing", value: "net section" },
+    { label: "Geometry warnings", value: "0" },
+    { label: "Warnings", value: "None" },
+  ]);
+
+  const moment = buildResultSummaryItems({
+    calculator_id: "ec3_bolted_moment_connection",
+    result: {
+      overall_status: "PASS",
+      mj_rd_knm: 816.149139,
+      sj_ini_knm_per_rad: 110909.634316,
+      utilization_percent: 96.7,
+      critical_component: "Column web panel shear",
+      geometry_warning_count: 0,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(moment, [
+    { label: "Status", value: "PASS" },
+    { label: "Mj,Rd", value: "816.1 kNm" },
+    { label: "Sj,ini", value: "110909.6 kNm/rad" },
+    { label: "Utilization", value: "96.7 %" },
+    { label: "Critical", value: "Column web panel shear" },
     { label: "Geometry warnings", value: "0" },
     { label: "Warnings", value: "None" },
   ]);
