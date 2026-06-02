@@ -1,5 +1,97 @@
 export const API_BASE_URL = "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev";
 export const TOOL_CATALOG = {
+    ec3_fillet_weld: {
+        endpoint: "/calculate/ec3/fillet-weld",
+        title: {
+            nl: "EC3 hoeklas",
+            en: "EC3 fillet weld",
+            fr: "EC3 soudure d'angle",
+        },
+        sample: {
+            steel_grade: "S235",
+            verification_method: "simplified",
+            throat_thickness_a_mm: 5,
+            effective_length_leff_mm: 120,
+            force_per_unit_length_fw_ed_n_per_mm: 850,
+            sigma_perp_mpa: 300,
+            tau_perp_mpa: 150,
+            tau_parallel_mpa: 100,
+            gamma_m2: 1.25,
+        },
+        form: {
+            fields: [
+                {
+                    name: "steel_grade",
+                    value_type: "string",
+                    control: "select",
+                    label: { nl: "Staalkwaliteit", en: "Steel grade", fr: "Nuance acier" },
+                    options: ["S235", "S275", "S355", "S420", "S460"],
+                },
+                {
+                    name: "verification_method",
+                    value_type: "string",
+                    control: "select",
+                    label: { nl: "Methode", en: "Method", fr: "Methode" },
+                    options: ["simplified", "directional"],
+                },
+                {
+                    name: "throat_thickness_a_mm",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.5",
+                    label: { nl: "Keelhoogte a", en: "Throat thickness a", fr: "Gorge a" },
+                    unit: "mm",
+                },
+                {
+                    name: "effective_length_leff_mm",
+                    value_type: "number",
+                    control: "number",
+                    step: "1",
+                    label: { nl: "Effectieve lengte", en: "Effective length", fr: "Longueur efficace" },
+                    unit: "mm",
+                },
+                {
+                    name: "force_per_unit_length_fw_ed_n_per_mm",
+                    value_type: "number",
+                    control: "number",
+                    step: "1",
+                    label: { nl: "Fw,Ed", en: "Fw,Ed", fr: "Fw,Ed" },
+                    unit: "N/mm",
+                },
+                {
+                    name: "sigma_perp_mpa",
+                    value_type: "number",
+                    control: "number",
+                    step: "1",
+                    label: { nl: "sigma perp", en: "sigma perp", fr: "sigma perp" },
+                    unit: "N/mm2",
+                },
+                {
+                    name: "tau_perp_mpa",
+                    value_type: "number",
+                    control: "number",
+                    step: "1",
+                    label: { nl: "tau perp", en: "tau perp", fr: "tau perp" },
+                    unit: "N/mm2",
+                },
+                {
+                    name: "tau_parallel_mpa",
+                    value_type: "number",
+                    control: "number",
+                    step: "1",
+                    label: { nl: "tau parallel", en: "tau parallel", fr: "tau parallel" },
+                    unit: "N/mm2",
+                },
+                {
+                    name: "gamma_m2",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.05",
+                    label: { nl: "gamma M2", en: "gamma M2", fr: "gamma M2" },
+                },
+            ],
+        },
+    },
     ec3_plate_tension: {
         endpoint: "/calculate/ec3/plate-tension",
         title: {
@@ -1857,6 +1949,13 @@ const TEXT = {
     },
 };
 const RESULT_SUMMARY_FIELDS = {
+    ec3_fillet_weld: [
+        { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+        { path: ["result", "verification_method"], label: { nl: "Methode", en: "Method", fr: "Methode" } },
+        { path: ["result", "utilization_percent"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" }, unit: "%" },
+        { path: ["result", "geometry_check", "geometry_check_passed"], label: { nl: "Geometrie", en: "Geometry", fr: "Geometrie" }, format: "check" },
+        { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+    ],
     ec3_plate_tension: [
         { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
         { path: ["result", "n_rd_kn"], label: { nl: "NRd", en: "NRd", fr: "NRd" }, unit: "kN" },

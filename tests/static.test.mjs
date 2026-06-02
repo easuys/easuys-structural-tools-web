@@ -53,6 +53,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
+    "ec3_fillet_weld",
     "ec3_plate_tension",
     "ec5_axial_screw",
     "ec5_joist_spacing_optimizer",
@@ -116,6 +117,32 @@ test("ec3 plate tension form metadata builds the API payload", () => {
     steel_grade: "S355",
     hole_diameter_mm: 22,
     n_holes: 2,
+  });
+});
+
+test("ec3 fillet weld form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_fillet_weld", {
+    steel_grade: "S275",
+    verification_method: "directional",
+    throat_thickness_a_mm: "4",
+    effective_length_leff_mm: "80",
+    force_per_unit_length_fw_ed_n_per_mm: "850",
+    sigma_perp_mpa: "300",
+    tau_perp_mpa: "150",
+    tau_parallel_mpa: "100",
+    gamma_m2: "1.25",
+  });
+
+  assert.deepEqual(payload, {
+    steel_grade: "S275",
+    verification_method: "directional",
+    throat_thickness_a_mm: 4,
+    effective_length_leff_mm: 80,
+    force_per_unit_length_fw_ed_n_per_mm: 850,
+    sigma_perp_mpa: 300,
+    tau_perp_mpa: 150,
+    tau_parallel_mpa: 100,
+    gamma_m2: 1.25,
   });
 });
 
@@ -568,6 +595,25 @@ test("masonry result summaries format returned API fields only", () => {
 });
 
 test("ec3 result summaries format returned API fields only", () => {
+  const weld = buildResultSummaryItems({
+    calculator_id: "ec3_fillet_weld",
+    result: {
+      overall_status: "FAIL",
+      verification_method: "directional",
+      utilization_percent: 107,
+      geometry_check: { geometry_check_passed: true },
+      warning_codes: ["DIRECTIONAL_CRITERION_1_FAILED"],
+    },
+  }, "en");
+
+  assert.deepEqual(weld, [
+    { label: "Status", value: "FAIL" },
+    { label: "Method", value: "directional" },
+    { label: "Utilization", value: "107 %" },
+    { label: "Geometry", value: "PASS" },
+    { label: "Warnings", value: "DIRECTIONAL_CRITERION_1_FAILED" },
+  ]);
+
   const plate = buildResultSummaryItems({
     calculator_id: "ec3_plate_tension",
     result: {
