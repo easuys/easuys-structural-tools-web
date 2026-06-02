@@ -70,6 +70,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec6_beam_bearing",
     "ec6_inplane_shear_wall",
     "ec6_lateral_wall_resistance",
+    "ec6_masonry_contact_pressure",
     "ec6_masonry_horizontal_capacity",
     "ec6_masonry_strength",
   ]);
@@ -379,6 +380,27 @@ test("beam bearing form metadata builds numeric and boolean API payload", () => 
     edge_distance_a1_mm: 90,
     wall_height_below_hc_mm: 450,
     top_of_wall: true,
+  });
+});
+
+test("masonry contact pressure form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec6_masonry_contact_pressure", {
+    profile_name: "HE 240 A",
+    beam_width_mm: "240",
+    n_ed_kn: "64.03",
+    masonry_thickness_mm: "140",
+    support_length_mm: "140",
+    fd_design_mpa: "3",
+  });
+
+  assert.deepEqual(payload, {
+    beam_id: "B2.1",
+    n_ed_kn: 64.03,
+    profile_name: "HE 240 A",
+    beam_width_mm: 240,
+    masonry_thickness_mm: 140,
+    support_length_mm: 140,
+    fd_design_mpa: 3,
   });
 });
 
@@ -782,6 +804,27 @@ test("masonry result summaries format returned API fields only", () => {
     { label: "Governing per wall", value: "1.227 kN" },
     { label: "Governing mode", value: "bending" },
     { label: "Warnings", value: "NO_AXIAL_LOAD_QUICK_CHECK" },
+  ]);
+
+  const contactPressure = buildResultSummaryItems({
+    calculator_id: "ec6_masonry_contact_pressure",
+    result: {
+      overall_status: "PASS",
+      sigma_d_mpa: 1.905654761904762,
+      f_rdc_mpa: 3,
+      utilization_percent: 63.52182539682539,
+      required_length_mm: 88.93055555555556,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(contactPressure, [
+    { label: "Status", value: "PASS" },
+    { label: "Contact pressure", value: "1.906 MPa" },
+    { label: "Resistance", value: "3 MPa" },
+    { label: "Utilization", value: "63.522 %" },
+    { label: "Required length", value: "88.931 mm" },
+    { label: "Warnings", value: "None" },
   ]);
   assert.deepEqual(buildResultSummaryItems({ calculator_id: "unknown", result: {} }, "en"), []);
 });
