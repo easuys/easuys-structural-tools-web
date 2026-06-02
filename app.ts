@@ -1,6 +1,46 @@
 export const API_BASE_URL = "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev";
 
 export const TOOL_CATALOG = {
+  beam_composite_shear_stress: {
+    endpoint: "/calculate/beam/composite-shear-stress",
+    title: {
+      nl: "Samengestelde balk schuifspanning",
+      en: "Composite beam shear stress",
+      fr: "Contrainte de cisaillement composite",
+    },
+    sample: {
+      components: [
+        { name: "Staal Plaat Onder", e_modulus_mpa: 210000, width_mm: 150, height_mm: 8, y_bottom_mm: 0 },
+        { name: "Beton", e_modulus_mpa: 30000, width_mm: 300, height_mm: 400, y_bottom_mm: 8 },
+        { name: "Staal Plaat Boven", e_modulus_mpa: 210000, width_mm: 150, height_mm: 8, y_bottom_mm: 408 },
+      ],
+      shear_force_n: 100000,
+      y_target_mm: 208,
+      distribution_points: 21,
+    },
+    form: {
+      fields: [
+        { name: "components.0.name", path: ["components", 0, "name"], value_type: "string", control: "text", label: { nl: "Component 1", en: "Component 1", fr: "Composant 1" } },
+        { name: "components.0.e_modulus_mpa", path: ["components", 0, "e_modulus_mpa"], value_type: "number", control: "number", step: "100", label: { nl: "E 1", en: "E 1", fr: "E 1" }, unit: "N/mm2" },
+        { name: "components.0.width_mm", path: ["components", 0, "width_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Breedte 1", en: "Width 1", fr: "Largeur 1" }, unit: "mm" },
+        { name: "components.0.height_mm", path: ["components", 0, "height_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Hoogte 1", en: "Height 1", fr: "Hauteur 1" }, unit: "mm" },
+        { name: "components.0.y_bottom_mm", path: ["components", 0, "y_bottom_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Onderkant 1", en: "Bottom 1", fr: "Bas 1" }, unit: "mm" },
+        { name: "components.1.name", path: ["components", 1, "name"], value_type: "string", control: "text", label: { nl: "Component 2", en: "Component 2", fr: "Composant 2" } },
+        { name: "components.1.e_modulus_mpa", path: ["components", 1, "e_modulus_mpa"], value_type: "number", control: "number", step: "100", label: { nl: "E 2", en: "E 2", fr: "E 2" }, unit: "N/mm2" },
+        { name: "components.1.width_mm", path: ["components", 1, "width_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Breedte 2", en: "Width 2", fr: "Largeur 2" }, unit: "mm" },
+        { name: "components.1.height_mm", path: ["components", 1, "height_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Hoogte 2", en: "Height 2", fr: "Hauteur 2" }, unit: "mm" },
+        { name: "components.1.y_bottom_mm", path: ["components", 1, "y_bottom_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Onderkant 2", en: "Bottom 2", fr: "Bas 2" }, unit: "mm" },
+        { name: "components.2.name", path: ["components", 2, "name"], value_type: "string", control: "text", label: { nl: "Component 3", en: "Component 3", fr: "Composant 3" } },
+        { name: "components.2.e_modulus_mpa", path: ["components", 2, "e_modulus_mpa"], value_type: "number", control: "number", step: "100", label: { nl: "E 3", en: "E 3", fr: "E 3" }, unit: "N/mm2" },
+        { name: "components.2.width_mm", path: ["components", 2, "width_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Breedte 3", en: "Width 3", fr: "Largeur 3" }, unit: "mm" },
+        { name: "components.2.height_mm", path: ["components", 2, "height_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Hoogte 3", en: "Height 3", fr: "Hauteur 3" }, unit: "mm" },
+        { name: "components.2.y_bottom_mm", path: ["components", 2, "y_bottom_mm"], value_type: "number", control: "number", step: "1", label: { nl: "Onderkant 3", en: "Bottom 3", fr: "Bas 3" }, unit: "mm" },
+        { name: "shear_force_n", value_type: "number", control: "number", step: "100", label: { nl: "Dwarskracht V", en: "Shear V", fr: "Effort tranchant V" }, unit: "N" },
+        { name: "y_target_mm", value_type: "number", control: "number", step: "1", label: { nl: "Doelhoogte y", en: "Target height y", fr: "Hauteur cible y" }, unit: "mm" },
+        { name: "distribution_points", value_type: "number", control: "number", step: "1", label: { nl: "Diagram punten", en: "Diagram points", fr: "Points diagramme" } },
+      ],
+    },
+  },
   ec1_roof_loads: {
     endpoint: "/calculate/ec1/roof-loads",
     title: {
@@ -3727,6 +3767,14 @@ const TEXT = {
 };
 
 const RESULT_SUMMARY_FIELDS = {
+  beam_composite_shear_stress: [
+    { path: ["result", "tau_n_per_mm2"], label: { nl: "Tau", en: "Tau", fr: "Tau" }, unit: "N/mm2" },
+    { path: ["result", "neutral_axis_y_mm"], label: { nl: "Neutrale as", en: "Neutral axis", fr: "Axe neutre" }, unit: "mm" },
+    { path: ["result", "transformed_inertia_i_prime_mm4"], label: { nl: "I'", en: "I'", fr: "I'" }, unit: "mm4" },
+    { path: ["result", "static_moment_s_prime_mm3"], label: { nl: "S'", en: "S'", fr: "S'" }, unit: "mm3" },
+    { path: ["result", "actual_width_at_target_mm"], label: { nl: "Breedte", en: "Width", fr: "Largeur" }, unit: "mm" },
+    { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+  ],
   ec1_roof_loads: [
     { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
     { path: ["result", "governing_variable_load_kn_m2"], label: { nl: "Maatgevende last", en: "Governing load", fr: "Charge determinante" }, unit: "kN/m2" },

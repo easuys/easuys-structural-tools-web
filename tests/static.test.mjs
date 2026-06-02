@@ -53,6 +53,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
+    "beam_composite_shear_stress",
     "ec1_roof_loads",
     "ec3_bolt_group_torsion",
     "ec3_bolted_lap_joint",
@@ -110,6 +111,40 @@ test("EC1 roof loads form metadata builds the API payload", () => {
     ce_exposure: 1,
     ct_thermal: 1,
     maintenance_category_h_kn_m2: 0.4,
+  });
+});
+
+test("composite shear stress form metadata builds component array payload", () => {
+  const payload = buildPayloadFromFormValues("beam_composite_shear_stress", {
+    "components.0.name": "Staal Plaat Onder",
+    "components.0.e_modulus_mpa": "210000",
+    "components.0.width_mm": "150",
+    "components.0.height_mm": "8",
+    "components.0.y_bottom_mm": "0",
+    "components.1.name": "Beton",
+    "components.1.e_modulus_mpa": "30000",
+    "components.1.width_mm": "300",
+    "components.1.height_mm": "400",
+    "components.1.y_bottom_mm": "8",
+    "components.2.name": "Staal Plaat Boven",
+    "components.2.e_modulus_mpa": "210000",
+    "components.2.width_mm": "150",
+    "components.2.height_mm": "8",
+    "components.2.y_bottom_mm": "408",
+    shear_force_n: "100000",
+    y_target_mm: "208",
+    distribution_points: "21",
+  });
+
+  assert.deepEqual(payload, {
+    components: [
+      { name: "Staal Plaat Onder", e_modulus_mpa: 210000, width_mm: 150, height_mm: 8, y_bottom_mm: 0 },
+      { name: "Beton", e_modulus_mpa: 30000, width_mm: 300, height_mm: 400, y_bottom_mm: 8 },
+      { name: "Staal Plaat Boven", e_modulus_mpa: 210000, width_mm: 150, height_mm: 8, y_bottom_mm: 408 },
+    ],
+    shear_force_n: 100000,
+    y_target_mm: 208,
+    distribution_points: 21,
   });
 });
 
@@ -951,6 +986,29 @@ test("all first-wave tools expose form metadata", () => {
     []
   );
   assert.equal(buildPayloadFromFormValues("unknown_tool", {}), null);
+});
+
+test("supporting tool result summaries format returned API fields only", () => {
+  const composite = buildResultSummaryItems({
+    calculator_id: "beam_composite_shear_stress",
+    result: {
+      tau_n_per_mm2: 1.118283,
+      neutral_axis_y_mm: 208,
+      transformed_inertia_i_prime_mm4: 328462628.571429,
+      static_moment_s_prime_mm3: 1101942.857143,
+      actual_width_at_target_mm: 300,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(composite, [
+    { label: "Tau", value: "1.118 N/mm2" },
+    { label: "Neutral axis", value: "208 mm" },
+    { label: "I'", value: "328462628.6 mm4" },
+    { label: "S'", value: "1101942.9 mm3" },
+    { label: "Width", value: "300 mm" },
+    { label: "Warnings", value: "None" },
+  ]);
 });
 
 test("EC1 result summaries format returned API fields only", () => {
