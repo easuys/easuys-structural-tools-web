@@ -66,6 +66,38 @@ export const TOOL_CATALOG = {
             ],
         },
     },
+    beam_spring_calibration: {
+        endpoint: "/calculate/beam/spring-calibration",
+        title: {
+            nl: "Balk veersteun calibratie",
+            en: "Beam spring calibration",
+            fr: "Calibration ressort de poutre",
+        },
+        sample: {
+            span_m: 11.742,
+            e_modulus_gpa: 210,
+            area_m2: 0.003912,
+            inertia_m4: 0.00003892,
+            uniform_load_kn_per_m: 28.77502545,
+            target_moment_knm: 119.05,
+            tolerance_knm: 0.1,
+            spring_position_m: 5.871,
+            sample_points: 401,
+        },
+        form: {
+            fields: [
+                { name: "span_m", value_type: "number", control: "number", step: "0.001", label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { name: "spring_position_m", value_type: "number", control: "number", step: "0.001", label: { nl: "Veerpositie", en: "Spring position", fr: "Position ressort" }, unit: "m" },
+                { name: "e_modulus_gpa", value_type: "number", control: "number", step: "0.1", label: { nl: "E-modulus", en: "E modulus", fr: "Module E" }, unit: "GPa" },
+                { name: "area_m2", value_type: "number", control: "number", step: "0.000001", label: { nl: "Doorsnede A", en: "Area A", fr: "Aire A" }, unit: "m2" },
+                { name: "inertia_m4", value_type: "number", control: "number", step: "0.000001", label: { nl: "Traagheidsmoment I", en: "Inertia I", fr: "Inertie I" }, unit: "m4" },
+                { name: "uniform_load_kn_per_m", value_type: "number", control: "number", step: "0.001", label: { nl: "Uniforme lijnlast", en: "Uniform line load", fr: "Charge lineaire uniforme" }, unit: "kN/m" },
+                { name: "target_moment_knm", value_type: "number", control: "number", step: "0.01", label: { nl: "Doelmoment", en: "Target moment", fr: "Moment cible" }, unit: "kNm" },
+                { name: "tolerance_knm", value_type: "number", control: "number", step: "0.01", label: { nl: "Tolerantie", en: "Tolerance", fr: "Tolerance" }, unit: "kNm" },
+                { name: "sample_points", value_type: "number", control: "number", step: "1", label: { nl: "Diagram punten", en: "Diagram points", fr: "Points diagramme" } },
+            ],
+        },
+    },
     beam_simple_diagrams: {
         endpoint: "/calculate/beam/simple-diagrams",
         title: {
@@ -4756,6 +4788,15 @@ const RESULT_SUMMARY_FIELDS = {
         { path: ["result", "response", "reactions", 1, "ry_kn"], label: { nl: "Binnensteun links", en: "Inner-left reaction", fr: "Reaction appui interieur gauche" }, unit: "kN" },
         { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
     ],
+    beam_spring_calibration: [
+        { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+        { path: ["result", "target_moment_knm"], label: { nl: "Doelmoment", en: "Target moment", fr: "Moment cible" }, unit: "kNm" },
+        { path: ["result", "calibration", "calibrated_stiffness_n_per_m"], label: { nl: "Gecalibreerde veer", en: "Calibrated spring", fr: "Ressort calibre" }, unit: "N/m" },
+        { path: ["result", "calibration", "measured_value"], label: { nl: "Gemeten moment", en: "Measured moment", fr: "Moment mesure" }, unit: "kNm" },
+        { path: ["result", "response", "reactions", 1, "ry_kn"], label: { nl: "Veerreactie", en: "Spring reaction", fr: "Reaction ressort" }, unit: "kN" },
+        { path: ["result", "response", "max_deflection_mm", "absolute_value"], label: { nl: "Max doorbuiging", en: "Max deflection", fr: "Fleche max" }, unit: "mm" },
+        { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+    ],
     beam_simple_diagrams: [
         { path: ["result", "cases", "uls", "m_max_knm"], label: { nl: "ULS Mmax", en: "ULS Mmax", fr: "ELU Mmax" }, unit: "kNm" },
         { path: ["result", "cases", "uls", "v_max_kn"], label: { nl: "ULS Vmax", en: "ULS Vmax", fr: "ELU Vmax" }, unit: "kN" },
@@ -5055,6 +5096,36 @@ const REPORT_SECTION_FIELDS = {
                 { path: ["result", "response", "reactions", 1, "ry_kn"], label: { nl: "Binnen links", en: "Inner left", fr: "Interieur gauche" }, unit: "kN" },
                 { path: ["result", "response", "reactions", 2, "ry_kn"], label: { nl: "Binnen rechts", en: "Inner right", fr: "Interieur droite" }, unit: "kN" },
                 { path: ["result", "response", "reactions", 3, "ry_kn"], label: { nl: "Rechts", en: "Right", fr: "Droite" }, unit: "kN" },
+            ],
+        },
+        {
+            heading: { nl: "Maatgevende respons", en: "Governing response", fr: "Reponse determinante" },
+            fields: [
+                { path: ["result", "response", "max_shear_kn", "signed_value"], label: { nl: "Vmax", en: "Vmax", fr: "Vmax" }, unit: "kN" },
+                { path: ["result", "response", "max_moment_knm", "signed_value"], label: { nl: "Mmax", en: "Mmax", fr: "Mmax" }, unit: "kNm" },
+                { path: ["result", "response", "max_deflection_mm", "signed_value"], label: { nl: "wmax", en: "wmax", fr: "wmax" }, unit: "mm" },
+            ],
+        },
+    ],
+    beam_spring_calibration: [
+        {
+            heading: { nl: "Model en belasting", en: "Model and load", fr: "Modele et charge" },
+            fields: [
+                { path: ["result", "span_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { path: ["result", "spring_position_m"], label: { nl: "Veerpositie", en: "Spring position", fr: "Position ressort" }, unit: "m" },
+                { path: ["result", "uniform_load_kn_per_m"], label: { nl: "Uniforme lijnlast", en: "Uniform line load", fr: "Charge lineaire uniforme" }, unit: "kN/m" },
+                { path: ["result", "target_moment_knm"], label: { nl: "Doelmoment", en: "Target moment", fr: "Moment cible" }, unit: "kNm" },
+                { path: ["result", "tolerance_knm"], label: { nl: "Tolerantie", en: "Tolerance", fr: "Tolerance" }, unit: "kNm" },
+            ],
+        },
+        {
+            heading: { nl: "Calibratie", en: "Calibration", fr: "Calibration" },
+            fields: [
+                { path: ["result", "calibration", "calibrated_stiffness_n_per_m"], label: { nl: "Veerstijfheid", en: "Spring stiffness", fr: "Raideur ressort" }, unit: "N/m" },
+                { path: ["result", "calibration", "measured_value"], label: { nl: "Gemeten moment", en: "Measured moment", fr: "Moment mesure" }, unit: "kNm" },
+                { path: ["result", "response", "reactions", 1, "ry_kn"], label: { nl: "Veerreactie", en: "Spring reaction", fr: "Reaction ressort" }, unit: "kN" },
+                { path: ["result", "calibration", "iterations", 0, "spring_stiffness_n_per_m"], label: { nl: "Eerste iteratie k", en: "First-iteration k", fr: "Premiere iteration k" }, unit: "N/m" },
+                { path: ["result", "calibration", "iterations", 0, "error"], label: { nl: "Eerste fout", en: "First error", fr: "Premiere erreur" }, unit: "kNm" },
             ],
         },
         {

@@ -74,6 +74,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "beam_composite_shear_stress",
     "beam_continuous_strip",
     "beam_simple_diagrams",
+    "beam_spring_calibration",
     "beam_support_fixity_bracketing",
     "composite_embedded_profile_bearing",
     "ec1_roof_loads",
@@ -279,6 +280,32 @@ test("beam support-fixity bracketing form metadata builds the API payload", () =
       { label: "partition", magnitude_kn: 3.5, position_m: 2.7 },
     ],
     sample_points: 121,
+  });
+});
+
+test("beam spring calibration form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("beam_spring_calibration", {
+    span_m: "11.742",
+    spring_position_m: "5.871",
+    e_modulus_gpa: "210",
+    area_m2: "0.003912",
+    inertia_m4: "0.00003892",
+    uniform_load_kn_per_m: "28.77502545",
+    target_moment_knm: "119.05",
+    tolerance_knm: "0.1",
+    sample_points: "401",
+  });
+
+  assert.deepEqual(payload, {
+    span_m: 11.742,
+    spring_position_m: 5.871,
+    e_modulus_gpa: 210,
+    area_m2: 0.003912,
+    inertia_m4: 0.00003892,
+    uniform_load_kn_per_m: 28.77502545,
+    target_moment_knm: 119.05,
+    tolerance_knm: 0.1,
+    sample_points: 401,
   });
 });
 
@@ -1600,6 +1627,33 @@ test("supporting tool result summaries format returned API fields only", () => {
     { label: "Average deflection", value: "19.54 mm" },
     { label: "Warnings", value: "AVERAGE_RESPONSE_IS_HEURISTIC" },
   ]);
+
+  const springCalibration = buildResultSummaryItems({
+    calculator_id: "beam_spring_calibration",
+    status: "ok",
+    result: {
+      target_moment_knm: 119.05,
+      calibration: {
+        calibrated_stiffness_n_per_m: 30518578.094482,
+        measured_value: 119.096041,
+      },
+      response: {
+        reactions: [{ ry_kn: -64.183716 }, { ry_kn: -209.509131 }],
+        max_deflection_mm: { absolute_value: 26.859422 },
+      },
+      warning_codes: ["BISECTION_CALIBRATION"],
+    },
+  }, "en");
+
+  assert.deepEqual(springCalibration, [
+    { label: "Status", value: "OK" },
+    { label: "Target moment", value: "119 kNm" },
+    { label: "Calibrated spring", value: "30518578.1 N/m" },
+    { label: "Measured moment", value: "119.1 kNm" },
+    { label: "Spring reaction", value: "-209.5 kN" },
+    { label: "Max deflection", value: "26.859 mm" },
+    { label: "Warnings", value: "BISECTION_CALIBRATION" },
+  ]);
 });
 
 test("EC1 result summaries format returned API fields only", () => {
@@ -2423,4 +2477,46 @@ test("beam continuous strip report helpers include strip sections in standalone 
   assert.match(html, /Reactions/);
   assert.match(html, /Governing response/);
   assert.match(html, /Uniform line load/);
+});
+
+test("beam spring calibration report helpers include calibration sections in standalone HTML output", () => {
+  const response = {
+    calculator_id: "beam_spring_calibration",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.33",
+    result: {
+      span_m: 11.742,
+      spring_position_m: 5.871,
+      uniform_load_kn_per_m: 28.775025,
+      target_moment_knm: 119.05,
+      tolerance_knm: 0.1,
+      calibration: {
+        calibrated_stiffness_n_per_m: 30518578.094482,
+        measured_value: 119.096041,
+        iterations: [
+          { spring_stiffness_n_per_m: 500000000500, error: 4.929203 },
+        ],
+      },
+      response: {
+        reactions: [
+          { ry_kn: -64.183716 },
+          { ry_kn: -209.509131 },
+          { ry_kn: -64.18361 },
+        ],
+        max_shear_kn: { signed_value: 104.754566 },
+        max_moment_knm: { signed_value: 119.096041 },
+        max_deflection_mm: { signed_value: 26.859422 },
+      },
+      warning_codes: ["BISECTION_CALIBRATION"],
+    },
+    assumptions: ["Spring-calibration helper only."],
+    source_refs: ["Source script example_wrappers.py."],
+    status: "ok",
+  };
+
+  const html = buildReportHtml(response, "en", new Date("2026-06-02T19:15:00.000Z"));
+  assert.match(html, /Model and load/);
+  assert.match(html, /Calibration/);
+  assert.match(html, /Spring stiffness/);
+  assert.match(html, /Spring reaction/);
+  assert.match(html, /Governing response/);
 });
