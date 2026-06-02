@@ -53,6 +53,7 @@ test("frontend is configured for structural subdomain and private API", async ()
 
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {
   assert.deepEqual(Object.keys(TOOL_CATALOG).sort(), [
+    "ec3_bolted_lap_joint",
     "ec3_fillet_weld",
     "ec3_plate_tension",
     "ec5_axial_screw",
@@ -143,6 +144,56 @@ test("ec3 fillet weld form metadata builds the API payload", () => {
     tau_perp_mpa: 150,
     tau_parallel_mpa: 100,
     gamma_m2: 1.25,
+  });
+});
+
+test("ec3 bolted lap joint form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_bolted_lap_joint", {
+    plate_t1_mm: "10",
+    plate_t2_mm: "8",
+    plate_width_mm: "140",
+    steel_grade: "S355",
+    bolt_class: "8.8",
+    bolt_diameter_mm: "16",
+    shear_in_threads: "true",
+    num_rows: "2",
+    num_cols: "2",
+    e1_mm: "40",
+    e2_mm: "35",
+    p1_mm: "60",
+    p2_mm: "70",
+    force_uls_kn: "150",
+    force_sls_kn: "90",
+    category: "B",
+    friction_surface_class: "A",
+    hole_type: "normal",
+    primary_web_thickness_mm: "8",
+    primary_web_fu_mpa: "490",
+    web_bearing_factor: "1",
+  });
+
+  assert.deepEqual(payload, {
+    plate_t1_mm: 10,
+    plate_t2_mm: 8,
+    plate_width_mm: 140,
+    steel_grade: "S355",
+    bolt_class: "8.8",
+    bolt_diameter_mm: 16,
+    shear_in_threads: true,
+    num_rows: 2,
+    num_cols: 2,
+    e1_mm: 40,
+    e2_mm: 35,
+    p1_mm: 60,
+    p2_mm: 70,
+    force_uls_kn: 150,
+    force_sls_kn: 90,
+    category: "B",
+    friction_surface_class: "A",
+    hole_type: "normal",
+    primary_web_thickness_mm: 8,
+    primary_web_fu_mpa: 490,
+    web_bearing_factor: 1,
   });
 });
 
@@ -595,6 +646,27 @@ test("masonry result summaries format returned API fields only", () => {
 });
 
 test("ec3 result summaries format returned API fields only", () => {
+  const bolt = buildResultSummaryItems({
+    calculator_id: "ec3_bolted_lap_joint",
+    result: {
+      overall_status: "PASS",
+      governing_resistance_kn: 295.36,
+      utilization_percent: 50.8,
+      governing_mode: "net section",
+      geometry_warning_count: 0,
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(bolt, [
+    { label: "Status", value: "PASS" },
+    { label: "Governing resistance", value: "295.4 kN" },
+    { label: "Utilization", value: "50.8 %" },
+    { label: "Governing", value: "net section" },
+    { label: "Geometry warnings", value: "0" },
+    { label: "Warnings", value: "None" },
+  ]);
+
   const weld = buildResultSummaryItems({
     calculator_id: "ec3_fillet_weld",
     result: {
