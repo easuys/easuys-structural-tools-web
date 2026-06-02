@@ -56,6 +56,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec6_beam_bearing",
     "ec6_inplane_shear_wall",
     "ec6_lateral_wall_resistance",
+    "ec6_masonry_horizontal_capacity",
     "ec6_masonry_strength",
   ]);
 
@@ -181,6 +182,34 @@ test("lateral wall resistance form metadata builds the API payload", () => {
     mortar_class: "M12",
     n_ed_line_kn_per_m: 75.5,
     w_ed_kn_per_m2: 1.8,
+    gamma_m: 2.2,
+  });
+});
+
+test("masonry horizontal capacity form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec6_masonry_horizontal_capacity", {
+    length_mm: "1200",
+    height_mm: "2600",
+    thickness_mm: "190",
+    n_walls: "1",
+    compression_fraction: "0.6",
+    material_type: "calcium_silicate",
+    mortar_class: "M10-M20",
+    fb_mpa: "15",
+    tensile_strength_char_mpa: "0.5",
+    gamma_m: "2.2",
+  });
+
+  assert.deepEqual(payload, {
+    length_mm: 1200,
+    height_mm: 2600,
+    thickness_mm: 190,
+    n_walls: 1,
+    compression_fraction: 0.6,
+    material_type: "calcium_silicate",
+    mortar_class: "M10-M20",
+    fb_mpa: 15,
+    tensile_strength_char_mpa: 0.5,
     gamma_m: 2.2,
   });
 });
@@ -482,6 +511,25 @@ test("masonry result summaries format returned API fields only", () => {
     { label: "Axis 2 utilization", value: "0.603" },
     { label: "Model", value: "two_way" },
     { label: "Warnings", value: "ALPHA2_NEAREST_TABLE_VALUE" },
+  ]);
+
+  const horizontal = buildResultSummaryItems({
+    calculator_id: "ec6_masonry_horizontal_capacity",
+    result: {
+      overall_status: "PASS",
+      combined_capacity_kn: 2.4533793103448276,
+      governing_per_wall_kn: 1.2266896551724138,
+      governing_mode: "bending",
+      warning_codes: ["NO_AXIAL_LOAD_QUICK_CHECK"],
+    },
+  }, "en");
+
+  assert.deepEqual(horizontal, [
+    { label: "Status", value: "PASS" },
+    { label: "Combined capacity", value: "2.453 kN" },
+    { label: "Governing per wall", value: "1.227 kN" },
+    { label: "Governing mode", value: "bending" },
+    { label: "Warnings", value: "NO_AXIAL_LOAD_QUICK_CHECK" },
   ]);
   assert.deepEqual(buildResultSummaryItems({ calculator_id: "unknown", result: {} }, "en"), []);
 });
