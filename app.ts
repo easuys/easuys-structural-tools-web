@@ -4347,6 +4347,7 @@ const TEXT = {
     save: "Bewaar",
     load: "Laad",
     download: "Download JSON",
+    downloadHtml: "Download HTML",
     print: "Afdrukken",
     reportTitle: "Rekenrecord",
     generatedAt: "Gegenereerd",
@@ -4368,6 +4369,7 @@ const TEXT = {
     save: "Save",
     load: "Load",
     download: "Download JSON",
+    downloadHtml: "Download HTML",
     print: "Print",
     reportTitle: "Calculation record",
     generatedAt: "Generated",
@@ -4389,6 +4391,7 @@ const TEXT = {
     save: "Enregistrer",
     load: "Charger",
     download: "Telecharger JSON",
+    downloadHtml: "Telecharger HTML",
     print: "Imprimer",
     reportTitle: "Releve de calcul",
     generatedAt: "Genere",
@@ -4683,6 +4686,10 @@ export function buildResultFilename(toolId, date = new Date()) {
   return `ea-suys-${slug}-${stamp}.json`;
 }
 
+export function buildReportFilename(toolId, date = new Date()) {
+  return buildResultFilename(toolId, date).replace(/\.json$/, ".html");
+}
+
 export function buildResultSummaryItems(response, lang = "en") {
   const fields = RESULT_SUMMARY_FIELDS[response?.calculator_id] || [];
   return fields
@@ -4727,6 +4734,40 @@ export function buildReportModel(response, lang = "en", generatedAt = new Date()
   };
 }
 
+export function buildReportHtml(response, lang = "en", generatedAt = new Date()) {
+  const report = buildReportModel(response, lang, generatedAt);
+  if (!report) return "";
+  return [
+    "<!DOCTYPE html>",
+    `<html lang="${escapeHtml(lang)}">`,
+    "<head>",
+    '  <meta charset="UTF-8">',
+    `  <title>${escapeHtml(report.title)}</title>`,
+    '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+    "  <style>",
+    "    body { font-family: Georgia, \"Times New Roman\", serif; color: #1f2a30; margin: 32px; line-height: 1.45; }",
+    "    h1 { font-size: 1.7rem; margin: 0 0 20px; }",
+    "    h2 { color: #8b5e00; font-size: 0.8rem; letter-spacing: 0.1em; margin: 24px 0 8px; text-transform: uppercase; }",
+    "    dl { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }",
+    "    dt { color: #6b7280; font-size: 0.85rem; font-weight: 700; }",
+    "    dd { font-weight: 700; margin: 3px 0 0; overflow-wrap: anywhere; }",
+    "    ul { margin: 8px 0 0; padding-left: 18px; }",
+    "    li { margin-top: 4px; overflow-wrap: anywhere; }",
+    "    .summary { border-top: 1px solid #d8d3c5; margin-top: 20px; padding-top: 16px; }",
+    "  </style>",
+    "</head>",
+    "<body>",
+    `  <h1>${escapeHtml(report.title)}</h1>`,
+    `  <dl>${report.details.map((item) => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`).join("")}</dl>`,
+    `  <section class="summary"><h2>${escapeHtml(report.summaryHeading)}</h2><ul>${report.summaryItems.map((item) => `<li>${escapeHtml(`${item.label}: ${item.value}`)}</li>`).join("")}</ul></section>`,
+    `  <section><h2>${escapeHtml(report.warningsHeading)}</h2><ul>${report.warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
+    `  <section><h2>${escapeHtml(report.assumptionsHeading)}</h2><ul>${report.assumptions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
+    `  <section><h2>${escapeHtml(report.sourceRefsHeading)}</h2><ul>${report.sourceRefs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`,
+    "</body>",
+    "</html>",
+  ].join("\n");
+}
+
 export function buildPayloadFromFormValues(toolId, values) {
   const tool = TOOL_CATALOG[toolId];
   if (!tool?.form) return null;
@@ -4748,6 +4789,7 @@ export function initApp(documentRef = globalThis.document) {
   const resultSummary = documentRef.querySelector("[data-result-summary]") as HTMLElement;
   const report = documentRef.querySelector("[data-report]") as HTMLElement;
   const downloadButton = documentRef.querySelector("[data-download]") as HTMLButtonElement;
+  const downloadHtmlButton = documentRef.querySelector("[data-download-html]") as HTMLButtonElement;
   const printButton = documentRef.querySelector("[data-print]") as HTMLButtonElement;
   const form = documentRef.querySelector("[data-calculator-form]") as HTMLFormElement;
   const friendlyForm = documentRef.querySelector("[data-friendly-form]") as HTMLElement;
@@ -4769,6 +4811,8 @@ export function initApp(documentRef = globalThis.document) {
     documentRef.querySelector("[data-load]").textContent = text.load;
     downloadButton.textContent = text.download;
     downloadButton.disabled = true;
+    downloadHtmlButton.textContent = text.downloadHtml;
+    downloadHtmlButton.disabled = true;
     printButton.textContent = text.print;
     renderFriendlyForm(friendlyForm, activeTool, state.lang, text.form);
     renderResultSummary(resultSummary, null, state.lang);
@@ -4814,6 +4858,7 @@ export function initApp(documentRef = globalThis.document) {
     renderReport(report, null, state.lang);
     lastResponse = null;
     downloadButton.disabled = true;
+    downloadHtmlButton.disabled = true;
     try {
       const payload = JSON.parse(input.value);
       const response = await fetch(`${API_BASE_URL}${TOOL_CATALOG[state.toolId].endpoint}`, {
@@ -4827,12 +4872,14 @@ export function initApp(documentRef = globalThis.document) {
       output.textContent = formatJson(result);
       lastResponse = result;
       downloadButton.disabled = false;
+      downloadHtmlButton.disabled = false;
     } catch (error) {
       renderResultSummary(resultSummary, null, state.lang);
       renderReport(report, null, state.lang);
       output.textContent = formatJson({ error: error.message });
       lastResponse = null;
       downloadButton.disabled = true;
+      downloadHtmlButton.disabled = true;
     }
   });
 
@@ -4840,6 +4887,17 @@ export function initApp(documentRef = globalThis.document) {
     if (!lastResponse) return;
     const toolId = lastResponse.calculator_id || state.toolId;
     triggerDownload(documentRef, buildResultFilename(toolId), buildResultDownloadText(lastResponse));
+  });
+
+  downloadHtmlButton.addEventListener("click", () => {
+    if (!lastResponse) return;
+    const toolId = lastResponse.calculator_id || state.toolId;
+    triggerDownload(
+      documentRef,
+      buildReportFilename(toolId),
+      buildReportHtml(lastResponse, state.lang),
+      "text/html"
+    );
   });
 
   printButton.addEventListener("click", () => {
@@ -4947,8 +5005,8 @@ function renderReportSection(heading, items) {
   ].join("");
 }
 
-function triggerDownload(documentRef, filename, text) {
-  const blob = new Blob([text], { type: "application/json" });
+function triggerDownload(documentRef, filename, text, mimeType = "application/json") {
+  const blob = new Blob([text], { type: mimeType });
   const url = globalThis.URL.createObjectURL(blob);
   const link = documentRef.createElement("a");
   link.href = url;

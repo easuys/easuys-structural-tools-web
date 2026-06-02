@@ -6,6 +6,8 @@ import {
   API_BASE_URL,
   TOOL_CATALOG,
   buildPayloadFromFormValues,
+  buildReportFilename,
+  buildReportHtml,
   buildReportModel,
   buildResultDownloadText,
   buildResultFilename,
@@ -42,7 +44,9 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /data-friendly-form/);
   assert.match(html, /data-result-summary/);
   assert.match(html, /data-report/);
+  assert.match(html, /downloadable JSON or HTML output/);
   assert.match(html, /data-download/);
+  assert.match(html, /data-download-html/);
   assert.match(html, /data-print/);
   assert.match(css, /\.page\s*{\s*max-width: 1140px;/);
   assert.match(css, /\.lang-switch a\s*{/);
@@ -222,6 +226,35 @@ test("embedded profile bearing form metadata builds the API payload", () => {
     provided_bars: 2,
     sample_points: 41,
   });
+});
+
+test("report helpers build standalone HTML output", () => {
+  const response = {
+    calculator_id: "composite_embedded_profile_bearing",
+    formula_version: "ea-suys-structural-formulas-2026-06-02.27",
+    result: {
+      check_passed: true,
+      sigma_c_max_kpa: 3000,
+      concrete_design_pressure_kpa: 20000,
+      max_hanging_force_kn: 60.759494,
+      required_bars: 2,
+      warning_codes: ["PARTIAL_CONTACT_TENSION_SIDE"],
+    },
+    assumptions: ["Indicative calculation aid, not a design note."],
+    source_refs: ["/home/user/scripts/CompositeTools/script_check_ingestort_profiel.py"],
+    status: "ok",
+  };
+
+  assert.equal(
+    buildReportFilename("composite_embedded_profile_bearing", new Date("2026-06-02T12:00:00.000Z")),
+    "ea-suys-composite-embedded-profile-bearing-20260602T120000Z.html"
+  );
+
+  const html = buildReportHtml(response, "en", new Date("2026-06-02T12:00:00.000Z"));
+  assert.match(html, /<!DOCTYPE html>/);
+  assert.match(html, /Calculation record/);
+  assert.match(html, /PARTIAL_CONTACT_TENSION_SIDE/);
+  assert.match(html, /ea-suys-structural-formulas-2026-06-02.27/);
 });
 
 test("contact moment joint form metadata preserves fixed screw rows", () => {
