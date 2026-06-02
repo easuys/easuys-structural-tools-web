@@ -87,6 +87,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_steel_timber_screw_connection",
     "ec5_timber_beam_check",
     "ec5_timber_contact_moment_joint",
+    "ec5_timber_timber_double_shear_connection",
     "ec5_timber_timber_single_shear_connection",
     "ec5_toothed_plate_connection",
     "ec6_beam_bearing",
@@ -1077,6 +1078,64 @@ test("toothed-plate connection form metadata builds nested spacing payload", () 
   });
 });
 
+test("timber-timber double-shear form metadata builds nested spacing payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_timber_timber_double_shear_connection", {
+    t1_mm: "50",
+    t2_mm: "100",
+    n: "4",
+    timber_type_outer: "Softwood",
+    timber_type_inner: "Softwood",
+    rho_k_outer: "420",
+    rho_k_inner: "420",
+    service_class_outer: "2",
+    service_class_inner: "2",
+    load_duration: "Short-term",
+    fastener_type: "Bolt",
+    d_mm: "12",
+    f_uk_mpa: "500",
+    pre_drilled: false,
+    use_rope_effect: false,
+    f_ax_rk_n: "0",
+    "spacings.a1_mm": "90",
+    "spacings.a2_mm": "60",
+    "spacings.a3t_mm": "120",
+    "spacings.a3c_mm": "180",
+    "spacings.a4t_mm": "70",
+    "spacings.a4c_mm": "45",
+    alpha_deg: "30",
+    f_v_ed_kn: "35",
+  });
+
+  assert.deepEqual(payload, {
+    t1_mm: 50,
+    t2_mm: 100,
+    n: 4,
+    timber_type_outer: "Softwood",
+    timber_type_inner: "Softwood",
+    rho_k_outer: 420,
+    rho_k_inner: 420,
+    service_class_outer: 2,
+    service_class_inner: 2,
+    load_duration: "Short-term",
+    fastener_type: "Bolt",
+    d_mm: 12,
+    f_uk_mpa: 500,
+    pre_drilled: false,
+    use_rope_effect: false,
+    f_ax_rk_n: 0,
+    spacings: {
+      a1_mm: 90,
+      a2_mm: 60,
+      a3t_mm: 120,
+      a3c_mm: 180,
+      a4t_mm: 70,
+      a4c_mm: 45,
+    },
+    alpha_deg: 30,
+    f_v_ed_kn: 35,
+  });
+});
+
 test("all first-wave tools expose form metadata", () => {
   assert.deepEqual(
     Object.entries(TOOL_CATALOG).filter(([, tool]) => !tool.form).map(([toolId]) => toolId),
@@ -1595,6 +1654,27 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Effective n", value: "4" },
     { label: "Governing mode", value: "Mode f (Two plastic hinges)" },
     { label: "Warnings", value: "ROPE_EFFECT_INCLUDED" },
+  ]);
+
+  const timberDouble = buildResultSummaryItems({
+    calculator_id: "ec5_timber_timber_double_shear_connection",
+    result: {
+      overall_status: "PASS",
+      r_d_kn: 41.430188063468336,
+      utilization_ratio: 0.8447946204439694,
+      f_v_rk_per_shear_plane_kn: 7.480450622570672,
+      governing_mode: "Mode j (One plastic hinge)",
+      warning_codes: [],
+    },
+  }, "en");
+
+  assert.deepEqual(timberDouble, [
+    { label: "Status", value: "PASS" },
+    { label: "Rd", value: "41.43 kN" },
+    { label: "Utilization", value: "0.845" },
+    { label: "Fv,Rk plane", value: "7.48 kN" },
+    { label: "Governing mode", value: "Mode j (One plastic hinge)" },
+    { label: "Warnings", value: "None" },
   ]);
 
   const toothedPlate = buildResultSummaryItems({
