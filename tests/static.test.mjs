@@ -89,6 +89,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_steel_timber_screw_connection",
     "ec5_timber_beam_check",
     "ec5_timber_contact_moment_joint",
+    "ec5_timber_member_uls_6_component",
     "ec5_timber_timber_double_shear_connection",
     "ec5_timber_timber_single_shear_connection",
     "ec5_toothed_plate_connection",
@@ -863,6 +864,44 @@ test("timber beam check form metadata builds the API payload", () => {
     climate_class: 1,
     q_permanent_kn_m2: 1,
     q_variable_kn_m2: 2,
+  });
+});
+
+test("timber member ULS 6-component form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec5_timber_member_uls_6_component", {
+    b_mm: "120",
+    h_mm: "360",
+    l_ef_mm: "5000",
+    wood_grade: "GL24h",
+    n_ed_kn: "20",
+    vy_ed_kn: "10",
+    vz_ed_kn: "2",
+    mt_ed_knm: "1",
+    my_ed_knm: "18",
+    mz_ed_knm: "2",
+    k_mod: "0.8",
+    support_condition: "fixed-pinned",
+    lateral_restraint_type: "discrete",
+    lateral_restraint_spacing_mm: "1250",
+    load_position: "centroid",
+  });
+
+  assert.deepEqual(payload, {
+    b_mm: 120,
+    h_mm: 360,
+    l_ef_mm: 5000,
+    wood_grade: "GL24h",
+    n_ed_kn: 20,
+    vy_ed_kn: 10,
+    vz_ed_kn: 2,
+    mt_ed_knm: 1,
+    my_ed_knm: 18,
+    mz_ed_knm: 2,
+    k_mod: 0.8,
+    support_condition: "fixed-pinned",
+    lateral_restraint_type: "discrete",
+    lateral_restraint_spacing_mm: 1250,
+    load_position: "centroid",
   });
 });
 
@@ -1660,6 +1699,27 @@ test("ec5 result summaries format returned API fields only", () => {
     { label: "Final deflection", value: "7.463 mm" },
     { label: "Frequency f1", value: "12.983 Hz" },
     { label: "Warnings", value: "None" },
+  ]);
+
+  const timberMemberUls = buildResultSummaryItems({
+    calculator_id: "ec5_timber_member_uls_6_component",
+    result: {
+      overall_status: "PASS",
+      max_utilization: 0.5952811535493826,
+      critical_check: "Tension Bending",
+      k_crit: 1,
+      kc_z: 1,
+      warning_codes: ["DISCRETE_LATERAL_RESTRAINT", "ROLLING_SHEAR_CHECK_INCLUDED"],
+    },
+  }, "en");
+
+  assert.deepEqual(timberMemberUls, [
+    { label: "Status", value: "PASS" },
+    { label: "Max utilization", value: "0.595" },
+    { label: "Critical check", value: "Tension Bending" },
+    { label: "kcrit", value: "1" },
+    { label: "kc,z", value: "1" },
+    { label: "Warnings", value: "DISCRETE_LATERAL_RESTRAINT, ROLLING_SHEAR_CHECK_INCLUDED" },
   ]);
 
   const joistOptimizer = buildResultSummaryItems({
