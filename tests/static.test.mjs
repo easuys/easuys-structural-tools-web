@@ -96,6 +96,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec5_timber_beam_check",
     "ec5_timber_beam_fire_check",
     "ec5_timber_contact_moment_joint",
+    "ec5_timber_floor_vibration",
     "ec5_timber_member_uls_6_component",
     "ec5_timber_timber_double_shear_connection",
     "ec5_timber_timber_single_shear_connection",
