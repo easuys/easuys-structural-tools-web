@@ -60,6 +60,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec3_double_sided_web_connection",
     "ec3_fillet_weld",
     "ec3_plate_tension",
+    "ec3_profile_optimizer",
     "ec3_splice_moment_connection",
     "ec3_steel_section_check",
     "ec5_axial_screw",
@@ -210,6 +211,38 @@ test("ec3 steel section check form metadata builds the API payload", () => {
     gamma_m0: 1,
     deflection_limit_ratio: 250,
   });
+});
+
+test("ec3 profile optimizer form metadata builds candidate array payload", () => {
+  const payload = buildPayloadFromFormValues("ec3_profile_optimizer", {
+    steel_grade: "S355",
+    profile_count: "1",
+    member_length_m: "5",
+    max_utilization: "0.98",
+    "loads.my_ed_knm": "80",
+    "candidates.0.profile_name": "IPE 220",
+    "candidates.0.weight_kg_per_m": "26.2",
+    "candidates.0.section.h_mm": "220",
+    "candidates.0.section.wy_pl_mm3": "285400",
+    "candidates.1.profile_name": "IPE 240",
+    "candidates.1.weight_kg_per_m": "30.7",
+    "candidates.1.section.h_mm": "240",
+    "candidates.1.section.wy_pl_mm3": "366600",
+  });
+
+  assert.equal(payload.steel_grade, "S355");
+  assert.equal(payload.profile_count, 1);
+  assert.equal(payload.member_length_m, 5);
+  assert.equal(payload.max_utilization, 0.98);
+  assert.equal(payload.loads.my_ed_knm, 80);
+  assert.equal(payload.candidates[0].profile_name, "IPE 220");
+  assert.equal(payload.candidates[0].weight_kg_per_m, 26.2);
+  assert.equal(payload.candidates[0].section.h_mm, 220);
+  assert.equal(payload.candidates[0].section.wy_pl_mm3, 285400);
+  assert.equal(payload.candidates[1].profile_name, "IPE 240");
+  assert.equal(payload.candidates[1].weight_kg_per_m, 30.7);
+  assert.equal(payload.candidates[1].section.h_mm, 240);
+  assert.equal(payload.candidates[1].section.wy_pl_mm3, 366600);
 });
 
 test("ec3 bolt group torsion form metadata builds the API payload", () => {
@@ -1156,6 +1189,29 @@ test("ec3 result summaries format returned API fields only", () => {
     { label: "My,Rd", value: "130.1 kNm" },
     { label: "Vy,Rd", value: "801.4 kN" },
     { label: "Warnings", value: "None" },
+  ]);
+
+  const optimizer = buildResultSummaryItems({
+    calculator_id: "ec3_profile_optimizer",
+    result: {
+      overall_status: "PASS",
+      optimized_profile: {
+        profile_name: "IPE 240",
+        total_weight_kg: 153.5,
+        utilization_percent: 95.6,
+      },
+      suitable_count: 1,
+      warning_codes: ["SOME_CANDIDATES_FAILED"],
+    },
+  }, "en");
+
+  assert.deepEqual(optimizer, [
+    { label: "Status", value: "PASS" },
+    { label: "Profile", value: "IPE 240" },
+    { label: "Total weight", value: "153.5 kg" },
+    { label: "Utilization", value: "95.6 %" },
+    { label: "Suitable", value: "1" },
+    { label: "Warnings", value: "SOME_CANDIDATES_FAILED" },
   ]);
 });
 
