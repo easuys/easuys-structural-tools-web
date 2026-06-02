@@ -17,14 +17,26 @@ test("frontend is configured for structural subdomain and private API", async ()
   const cname = await readFile(new URL("../CNAME", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
   const css = await readFile(new URL("../styles.css", import.meta.url), "utf8");
+  const mainCss = await readFile(new URL("../../easuys.github.io/styles.css", import.meta.url), "utf8");
+  const mainHtml = await readFile(new URL("../../easuys.github.io/index-en.html", import.meta.url), "utf8");
   const favicon = await readFile(new URL("../favicon.ico", import.meta.url));
+  const logo = await readFile(new URL("../images/logo.jpg", import.meta.url));
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
   const tsconfig = JSON.parse(await readFile(new URL("../tsconfig.json", import.meta.url), "utf8"));
 
   assert.equal(cname.trim(), "structural.easuys.com");
   assert.match(html, /EA Suys Structural Tools/);
   assert.match(html, /class="site-header"/);
-  assert.match(html, /https:\/\/www\.easuys\.be\/images\/logo\.jpg/);
+  assert.match(html, /class="brand"/);
+  assert.match(html, /class="brand-name"/);
+  assert.match(html, /class="brand-tagline"/);
+  assert.match(html, /class="hero"/);
+  assert.match(html, /class="hero-meta"/);
+  assert.match(html, /class="contact-card"/);
+  assert.match(html, /class="section" id="calculators"/);
+  assert.match(html, /EA Suys bv — Kapelle-op-den-Bos, BE/);
+  assert.match(mainHtml, /class="contact-card"/);
+  assert.match(html, /<img class="logo" src="images\/logo\.jpg" alt="EA Suys logo">/);
   assert.match(html, /<link rel="icon" href="favicon\.ico" sizes="any">/);
   assert.match(html, /<a href="#en" data-lang="en" aria-current="page">EN<\/a>/);
   assert.match(html, /data-friendly-form/);
@@ -40,7 +52,9 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(css, /\.result-summary dl\s*{/);
   assert.match(css, /\.report-view\s*{/);
   assert.match(css, /\.result-actions\s*{/);
+  assert.equal(css.split("/* Structural tools app: scoped additions after the copied www.easuys.be base CSS. */")[0].trim(), mainCss.trim());
   assert.ok(favicon.byteLength > 0);
+  assert.ok(logo.byteLength > 0);
   assert.equal(
     API_BASE_URL,
     "https://easuys-structural-tools-api.yellow-violet-f185.workers.dev"

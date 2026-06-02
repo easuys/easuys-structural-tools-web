@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>EA Suys Structural Tools</title>
-  <meta name="description" content="Indicative EC5 and EC6 structural calculation tools by EA Suys.">
+  <meta name="description" content="Indicative EC1, EC3, EC5, EC6 and structural mechanics calculation records by EA Suys.">
   <meta name="robots" content="index, follow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="favicon.ico" sizes="any">
@@ -13,7 +13,7 @@
   <div class="page">
     <header class="site-header">
       <div class="brand">
-        <img class="logo" src="https://www.easuys.be/images/logo.jpg" alt="EA Suys logo">
+        <img class="logo" src="images/logo.jpg" alt="EA Suys logo">
         <div>
           <div class="brand-name">EA Suys</div>
           <div class="brand-tagline">Structural tools</div>
@@ -29,53 +29,69 @@
     <main>
       <section class="hero">
         <h1>EA Suys Structural Tools</h1>
-        <p>Indicative EC5 and EC6 calculation records for early structural engineering checks.</p>
+        <p>Indicative calculation records for early structural engineering checks, with traceable assumptions, warnings, source references and downloadable JSON output.</p>
         <div class="hero-meta" aria-label="Current tool scope">
+          <span>EC1 loads</span>
+          <span>EC3 steel</span>
           <span>EC5 timber</span>
           <span>EC6 masonry</span>
+          <span>Beam mechanics</span>
           <span>JSON records</span>
         </div>
       </section>
 
-      <section class="tool-shell" aria-label="Structural calculators">
-        <aside class="tool-nav" aria-label="Calculators" data-tool-tabs></aside>
-        <section class="workspace">
-          <header class="workspace-header">
-            <p class="eyebrow">Calculator</p>
-            <h2 data-tool-title>EA Suys Structural Tools</h2>
-            <p data-tool-status>Indicative calculation record.</p>
-          </header>
+      <section class="contact-card">
+        <div>
+          <h2>Calculation tools</h2>
+        </div>
+        <div>
+          <p><a href="https://www.easuys.be/index-en.html">EA Suys bv</a></p>
+        </div>
+      </section>
 
-          <div class="tool-grid">
-            <form class="calculator" data-calculator-form>
-              <div class="friendly-form" data-friendly-form hidden></div>
-              <label for="json-input" data-input-label>Input JSON</label>
-              <textarea id="json-input" data-json-input spellcheck="false"></textarea>
-              <div class="actions">
-                <button type="submit" class="primary" data-calculate>Calculate</button>
-                <button type="button" data-save>Save</button>
-                <button type="button" data-load>Load</button>
-              </div>
-            </form>
+      <section class="section" id="calculators">
+        <h2>Calculators</h2>
+        <p>Use the form view for quick input or the JSON view for reproducible calculation records.</p>
+        <div class="tool-shell" aria-label="Structural calculators">
+          <aside class="tool-nav" aria-label="Calculators" data-tool-tabs></aside>
+          <section class="workspace">
+            <header class="workspace-header">
+              <p class="eyebrow">Calculator</p>
+              <h2 data-tool-title>EA Suys Structural Tools</h2>
+              <p data-tool-status>Indicative calculation record.</p>
+            </header>
 
-            <section class="result-panel" aria-live="polite">
-              <h2 data-result-heading>Result</h2>
-              <div class="result-summary" data-result-summary hidden></div>
-              <div class="report-view" data-report hidden></div>
-              <div class="actions result-actions">
-                <button type="button" data-download disabled>Download JSON</button>
-                <button type="button" data-print>Print</button>
-              </div>
-              <pre data-result-output>{}</pre>
-            </section>
-          </div>
-        </section>
+            <div class="tool-grid">
+              <form class="calculator" data-calculator-form>
+                <div class="friendly-form" data-friendly-form hidden></div>
+                <label for="json-input" data-input-label>Input JSON</label>
+                <textarea id="json-input" data-json-input spellcheck="false"></textarea>
+                <div class="actions">
+                  <button type="submit" class="primary" data-calculate>Calculate</button>
+                  <button type="button" data-save>Save</button>
+                  <button type="button" data-load>Load</button>
+                </div>
+              </form>
+
+              <section class="result-panel" aria-live="polite">
+                <h2 data-result-heading>Result</h2>
+                <div class="result-summary" data-result-summary hidden></div>
+                <div class="report-view" data-report hidden></div>
+                <div class="actions result-actions">
+                  <button type="button" data-download disabled>Download JSON</button>
+                  <button type="button" data-print>Print</button>
+                </div>
+                <pre data-result-output>{}</pre>
+              </section>
+            </div>
+          </section>
+        </div>
       </section>
     </main>
 
     <footer class="footer">
-      <div>EA Suys Structural Tools</div>
-      <div><a href="https://www.easuys.be/index-en.html">EA Suys bv</a></div>
+      <div>EA Suys bv — Kapelle-op-den-Bos, BE</div>
+      <div><a href="mailto:info@easuys.be">info@easuys.be</a></div>
     </footer>
   </div>
 
