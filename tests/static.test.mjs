@@ -75,6 +75,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "beam_simple_diagrams",
     "composite_embedded_profile_bearing",
     "ec1_roof_loads",
+    "ec2_rectangular_section_capacity",
     "ec3_bolt_group_torsion",
     "ec3_bolted_lap_joint",
     "ec3_bolted_moment_connection",
@@ -137,6 +138,88 @@ test("EC1 roof loads form metadata builds the API payload", () => {
     ce_exposure: 1,
     ct_thermal: 1,
     maintenance_category_h_kn_m2: 0.4,
+  });
+});
+
+test("EC2 rectangular section form metadata builds the API payload", () => {
+  const payload = buildPayloadFromFormValues("ec2_rectangular_section_capacity", {
+    fck_mpa: "35",
+    gamma_c: "1.5",
+    alpha_cc: "0.85",
+    fyk_mpa: "500",
+    gamma_s: "1.15",
+    h_mm: "400",
+    b_mm: "400",
+    c1_mm: "40",
+    n1: "4",
+    phi1_mm: "25",
+    c6_mm: "40",
+    n6: "4",
+    phi6_mm: "25",
+    d5_mm: "0",
+    n5: "0",
+    phi5_mm: "0",
+    d4_mm: "0",
+    n4: "0",
+    phi4_mm: "0",
+    d3_mm: "0",
+    n3: "0",
+    phi3_mm: "0",
+    d2_mm: "0",
+    n2: "0",
+    phi2_mm: "0",
+    n_ed_kn: "-1200",
+    alpha_car: "12",
+    n_car_kn: "-1140",
+    s_car_max: "0.6",
+    alpha_freq: "15",
+    n_freq_kn: "-1100",
+    s_freq_max: "0.45",
+    c_crack_mm: "40",
+    k3: "3.4",
+    kt: "0.4",
+    wmax_mm: "0.3",
+    applied_moment_knm: "210",
+  });
+
+  assert.deepEqual(payload, {
+    fck_mpa: 35,
+    gamma_c: 1.5,
+    alpha_cc: 0.85,
+    fyk_mpa: 500,
+    gamma_s: 1.15,
+    h_mm: 400,
+    b_mm: 400,
+    c1_mm: 40,
+    n1: 4,
+    phi1_mm: 25,
+    c6_mm: 40,
+    n6: 4,
+    phi6_mm: 25,
+    d5_mm: 0,
+    n5: 0,
+    phi5_mm: 0,
+    d4_mm: 0,
+    n4: 0,
+    phi4_mm: 0,
+    d3_mm: 0,
+    n3: 0,
+    phi3_mm: 0,
+    d2_mm: 0,
+    n2: 0,
+    phi2_mm: 0,
+    n_ed_kn: -1200,
+    alpha_car: 12,
+    n_car_kn: -1140,
+    s_car_max: 0.6,
+    alpha_freq: 15,
+    n_freq_kn: -1100,
+    s_freq_max: 0.45,
+    c_crack_mm: 40,
+    k3: 3.4,
+    kt: 0.4,
+    wmax_mm: 0.3,
+    applied_moment_knm: 210,
   });
 });
 
@@ -1432,6 +1515,34 @@ test("EC1 result summaries format returned API fields only", () => {
     { label: "Maintenance formula", value: "0.731 kN/m2" },
     { label: "mu1", value: "0.533" },
     { label: "Warnings", value: "MAINTENANCE_FORMULA_GOVERNS" },
+  ]);
+});
+
+test("EC2 result summaries format returned API fields only", () => {
+  const section = buildResultSummaryItems({
+    calculator_id: "ec2_rectangular_section_capacity",
+    result: {
+      overall_status: "FAIL",
+      governing_capacity_knm: 205.936941,
+      uls_capacity_knm: 394.46376,
+      sls_characteristic_capacity_knm: 205.936941,
+      sls_frequent_capacity_knm: 208.101957,
+      max_utilization: 1.01973,
+      warning_codes: [
+        "SLS_CHARACTERISTIC_MOMENT_CHECK_FAILED",
+        "SLS_FREQUENT_MOMENT_CHECK_FAILED",
+      ],
+    },
+  }, "en");
+
+  assert.deepEqual(section, [
+    { label: "Status", value: "FAIL" },
+    { label: "Governing capacity", value: "205.9 kNm" },
+    { label: "ULS capacity", value: "394.5 kNm" },
+    { label: "SLS characteristic", value: "205.9 kNm" },
+    { label: "SLS frequent", value: "208.1 kNm" },
+    { label: "Max utilization", value: "1.02" },
+    { label: "Warnings", value: "SLS_CHARACTERISTIC_MOMENT_CHECK_FAILED, SLS_FREQUENT_MOMENT_CHECK_FAILED" },
   ]);
 });
 
