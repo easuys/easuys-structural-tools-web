@@ -60,6 +60,7 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /class="hero"/);
   assert.match(html, /class="hero-meta"/);
   assert.match(html, /class="contact-card"/);
+  assert.match(html, /https:\/\/retaining\.easuys\.com\//);
   assert.match(html, /class="section" id="calculators"/);
   assert.match(html, /EA Suys bv — Kapelle-op-den-Bos, BE/);
   assert.match(mainHtml, /class="contact-card"/);
