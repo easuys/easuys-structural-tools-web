@@ -277,6 +277,21 @@ test("beam and EC2 visualization helpers render SVG output from returned API fie
       ultimate_utilization: 0.456,
       sls_characteristic_utilization: 0.874,
       sls_frequent_utilization: 0.865,
+      strain_profiles: {
+        ultimate: {
+          points: [
+            { height_mm_from_top: 0, epsilon_permille: -2.5 },
+            { height_mm_from_top: 400, epsilon_permille: 3.5 },
+          ],
+        },
+        sls_characteristic: {
+          points: [
+            { height_mm_from_top: 0, epsilon_permille: -1.1 },
+            { height_mm_from_top: 400, epsilon_permille: 1.3 },
+          ],
+        },
+        sls_frequent: null,
+      },
     },
   }, "en");
 
@@ -284,6 +299,10 @@ test("beam and EC2 visualization helpers render SVG output from returned API fie
   assert.match(beamHtml, /MEd/);
   assert.match(ec2Html, /circle/);
   assert.match(ec2Html, /ULS/);
+  assert.match(ec2Html, /Strain profile ε/);
+  assert.match(ec2Html, /SLS char\./);
+  assert.doesNotMatch(ec2Html, /stroke="#c36a2d"/);
+  assert.match(ec2Html, /stroke-dasharray="4 4"/);
 });
 
 test("expanded EC3, EC5, and EC6 visualization helpers render output from returned API fields", () => {
@@ -1931,6 +1950,8 @@ test("EC2 result summaries format returned API fields only", () => {
       sls_characteristic_capacity_knm: 205.936941,
       sls_frequent_capacity_knm: 208.101957,
       max_utilization: 1.01973,
+      governing_curvature_per_m: -0.007912,
+      governing_curvature_abs_per_m: 0.007912,
       warning_codes: [
         "SLS_CHARACTERISTIC_MOMENT_CHECK_FAILED",
         "SLS_FREQUENT_MOMENT_CHECK_FAILED",
@@ -1945,6 +1966,8 @@ test("EC2 result summaries format returned API fields only", () => {
     { label: "SLS characteristic", value: "205.9 kNm" },
     { label: "SLS frequent", value: "208.1 kNm" },
     { label: "Max utilization", value: "1.02" },
+    { label: "Governing kappa", value: "-0.008 1/m" },
+    { label: "|kappa|", value: "0.008 1/m" },
     { label: "Warnings", value: "SLS_CHARACTERISTIC_MOMENT_CHECK_FAILED, SLS_FREQUENT_MOMENT_CHECK_FAILED" },
   ]);
 });
@@ -2553,6 +2576,64 @@ test("html report model exposes returned API metadata", () => {
         { label: "Reduction", value: "13.043 %" },
       ],
     },
+  ]);
+});
+
+test("EC2 report model includes curvature summary fields and a strain section", () => {
+  const report = buildReportModel({
+    calculator_id: "ec2_rectangular_section_capacity",
+    formula_version: "ea-suys-structural-formulas-2026-06-11.36",
+    status: "ok",
+    result: {
+      overall_status: "PASS",
+      section_width_mm: 1050,
+      section_height_mm: 500,
+      concrete_cover_bottom_mm: 76,
+      concrete_cover_top_mm: 76,
+      axial_force_uls_kn: 0,
+      applied_moment_knm: 180,
+      uls_capacity_knm: 557.97311,
+      sls_characteristic_capacity_knm: 536.870912,
+      sls_frequent_capacity_knm: 310.988145,
+      governing_capacity_case: "sls_frequent",
+      governing_capacity_knm: 310.988145,
+      ultimate_utilization: 0.322596,
+      sls_characteristic_utilization: 0.335276,
+      sls_frequent_utilization: 0.5788,
+      max_utilization: 0.5788,
+      governing_curvature_per_m: 0.003082,
+      governing_curvature_abs_per_m: 0.003082,
+      ultimate_curvature_per_m: 0.031191,
+      ultimate_curvature_abs_per_m: 0.031191,
+      sls_characteristic_curvature_per_m: 0.005977,
+      sls_characteristic_curvature_abs_per_m: 0.005977,
+      sls_frequent_curvature_per_m: 0.003082,
+      sls_frequent_curvature_abs_per_m: 0.003082,
+      warning_codes: ["SLS_FORCE_COMPATIBILITY_OUT_OF_RANGE"],
+    },
+    assumptions: ["Rectangular EC2 section helper."],
+    source_refs: ["/home/user/scripts/ConcreteSection/capestim.hpp"],
+  }, "en", new Date("2026-06-11T21:30:00.000Z"));
+
+  assert.deepEqual(report.summaryItems.slice(0, 8), [
+    { label: "Status", value: "PASS" },
+    { label: "Governing capacity", value: "311 kNm" },
+    { label: "ULS capacity", value: "558 kNm" },
+    { label: "SLS characteristic", value: "536.9 kNm" },
+    { label: "SLS frequent", value: "311 kNm" },
+    { label: "Max utilization", value: "0.579" },
+    { label: "Governing kappa", value: "0.003 1/m" },
+    { label: "|kappa|", value: "0.003 1/m" },
+  ]);
+  assert.ok(report.sections.some((section) => section.heading === "Strain and curvature"));
+  const strainSection = report.sections.find((section) => section.heading === "Strain and curvature");
+  assert.deepEqual(strainSection.items, [
+    { label: "ULS kappa", value: "0.031 1/m" },
+    { label: "ULS |kappa|", value: "0.031 1/m" },
+    { label: "SLS characteristic kappa", value: "0.006 1/m" },
+    { label: "SLS characteristic |kappa|", value: "0.006 1/m" },
+    { label: "SLS frequent kappa", value: "0.003 1/m" },
+    { label: "SLS frequent |kappa|", value: "0.003 1/m" },
   ]);
 });
 

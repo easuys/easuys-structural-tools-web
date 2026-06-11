@@ -5175,6 +5175,8 @@ const RESULT_SUMMARY_FIELDS = {
     { path: ["result", "sls_characteristic_capacity_knm"], label: { nl: "SLS karakteristiek", en: "SLS characteristic", fr: "ELS caracteristique" }, unit: "kNm" },
     { path: ["result", "sls_frequent_capacity_knm"], label: { nl: "SLS frequent", en: "SLS frequent", fr: "ELS frequent" }, unit: "kNm" },
     { path: ["result", "max_utilization"], label: { nl: "Max benutting", en: "Max utilization", fr: "Utilisation max" } },
+    { path: ["result", "governing_curvature_per_m"], label: { nl: "Maatgevende kappa", en: "Governing kappa", fr: "Courbure determinante" }, unit: "1/m" },
+    { path: ["result", "governing_curvature_abs_per_m"], label: { nl: "|kappa|", en: "|kappa|", fr: "|kappa|" }, unit: "1/m" },
     { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
   ],
   ec3_bolt_group_torsion: [
@@ -6030,6 +6032,17 @@ const REPORT_SECTION_FIELDS = {
         { path: ["result", "max_utilization"], label: { nl: "Max benutting", en: "Max utilization", fr: "Utilisation max" } },
       ],
     },
+    {
+      heading: { nl: "Vervorming en kromming", en: "Strain and curvature", fr: "Deformation et courbure" },
+      fields: [
+        { path: ["result", "ultimate_curvature_per_m"], label: { nl: "kappa ULS", en: "ULS kappa", fr: "kappa ELU" }, unit: "1/m" },
+        { path: ["result", "ultimate_curvature_abs_per_m"], label: { nl: "|kappa| ULS", en: "ULS |kappa|", fr: "|kappa| ELU" }, unit: "1/m" },
+        { path: ["result", "sls_characteristic_curvature_per_m"], label: { nl: "kappa SLS karakteristiek", en: "SLS characteristic kappa", fr: "kappa ELS caracteristique" }, unit: "1/m" },
+        { path: ["result", "sls_characteristic_curvature_abs_per_m"], label: { nl: "|kappa| SLS karakteristiek", en: "SLS characteristic |kappa|", fr: "|kappa| ELS caracteristique" }, unit: "1/m" },
+        { path: ["result", "sls_frequent_curvature_per_m"], label: { nl: "kappa SLS frequent", en: "SLS frequent kappa", fr: "kappa ELS frequent" }, unit: "1/m" },
+        { path: ["result", "sls_frequent_curvature_abs_per_m"], label: { nl: "|kappa| SLS frequent", en: "SLS frequent |kappa|", fr: "|kappa| ELS frequent" }, unit: "1/m" },
+      ],
+    },
   ],
   ec5_timber_contact_moment_joint: [
     {
@@ -6828,12 +6841,13 @@ function buildEc2VisualizationCard(response: any, lang: keyof typeof TEXT) {
   const layers = Array.isArray(response.result.reinforcement_layers) ? response.result.reinforcement_layers : [];
   const bars = layers.flatMap((layer: any) => distributeLayerBars(layer.n_bars, layer.depth_mm, width, layer.phi_mm));
   const svg = buildEc2SectionSvg(width, height, bars);
+  const strainSvg = buildEc2StrainProfileSvg(response.result.strain_profiles, lang);
   const metrics = buildMetricBars([
     { label: "ULS", value: ratioPercent(response.result.applied_moment_knm, response.result.uls_capacity_knm), display: formatVisualizationRatio(response.result.ultimate_utilization) },
     { label: "SLS char.", value: ratioPercent(response.result.applied_moment_knm, response.result.sls_characteristic_capacity_knm), display: formatVisualizationRatio(response.result.sls_characteristic_utilization) },
     { label: "SLS freq.", value: ratioPercent(response.result.applied_moment_knm, response.result.sls_frequent_capacity_knm), display: formatVisualizationRatio(response.result.sls_frequent_utilization) },
   ]);
-  return `<article class="visual-card">${svg}${metrics}</article>`;
+  return `<article class="visual-card">${svg}${strainSvg}${metrics}</article>`;
 }
 
 function buildEc3VisualizationCard(response: any, lang: keyof typeof TEXT) {
@@ -7232,6 +7246,84 @@ function buildEc2SectionSvg(widthMm: number, heightMm: number, bars: Array<{ x: 
         const cx = x + bar.x * scale;
         const cy = y + (heightMm - bar.y) * scale;
         return `<circle cx="${cx}" cy="${cy}" r="${Math.max(4, bar.r * scale * 0.5)}" fill="#a5513d"></circle>`;
+      }).join("")}
+    </svg>`;
+}
+
+function buildEc2StrainProfileSvg(strainProfiles: any, lang: keyof typeof TEXT) {
+  const profileSpecs = [
+    { key: "ultimate", label: "ULS", color: "#2f8a53" },
+    { key: "sls_characteristic", label: "SLS char.", color: "#2b5f9e" },
+    { key: "sls_frequent", label: "SLS freq.", color: "#c36a2d" },
+  ];
+  const traces = profileSpecs.flatMap((spec) => {
+    const profile = strainProfiles?.[spec.key];
+    const points = Array.isArray(profile?.points) ? profile.points : [];
+    if (points.length !== 2) return [];
+    const parsed = points.map((point: any) => ({
+      epsilon: numberOrNull(point?.epsilon_permille),
+      height: numberOrNull(point?.height_mm_from_top),
+    }));
+    if (parsed.some((point) => point.epsilon === null || point.height === null)) return [];
+    return [{
+      ...spec,
+      points: parsed as Array<{ epsilon: number; height: number }>,
+    }];
+  });
+  if (!traces.length) return "";
+
+  const width = 280;
+  const height = 220;
+  const padLeft = 54;
+  const padRight = 22;
+  const padTop = 34;
+  const padBottom = 28;
+  const sectionHeight = Math.max(...traces.flatMap((trace) => trace.points.map((point) => point.height)), 1);
+  const epsilonMax = Math.max(...traces.flatMap((trace) => trace.points.map((point) => Math.abs(point.epsilon))), 0.25);
+  const epsilonLimit = Math.max(0.25, epsilonMax * 1.15);
+  const xMin = -epsilonLimit;
+  const xMax = epsilonLimit;
+  const xSpan = xMax - xMin || 1;
+  const ySpan = sectionHeight || 1;
+  const mapX = (epsilon: number) => padLeft + ((epsilon - xMin) / xSpan) * (width - padLeft - padRight);
+  const mapY = (sectionY: number) => padTop + (sectionY / ySpan) * (height - padTop - padBottom);
+  const zeroX = mapX(0);
+  const axisBottomY = height - padBottom;
+  const legendX = width - padRight - 74;
+  const title = (
+    lang === "nl" ? "Rekprofiel ε (‰)"
+      : lang === "fr" ? "Profil de deformation ε (‰)"
+      : "Strain profile ε (‰)"
+  );
+
+  return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <rect x="${padLeft}" y="${padTop}" width="${width - padLeft - padRight}" height="${height - padTop - padBottom}" fill="#faf7f1" stroke="#ddd2c2"></rect>
+      <line x1="${zeroX}" y1="${padTop}" x2="${zeroX}" y2="${axisBottomY}" stroke="#b98b4d" stroke-width="1.25" stroke-dasharray="4 4"></line>
+      <line x1="${padLeft}" y1="${padTop}" x2="${padLeft}" y2="${axisBottomY}" stroke="#7f8b94" stroke-width="1"></line>
+      <line x1="${padLeft}" y1="${axisBottomY}" x2="${width - padRight}" y2="${axisBottomY}" stroke="#7f8b94" stroke-width="1"></line>
+      ${traces.map((trace) => {
+        const points = trace.points
+          .map((point) => `${roundVisual(mapX(point.epsilon), 2)},${roundVisual(mapY(point.height), 2)}`)
+          .join(" ");
+        return `<polyline fill="none" stroke="${trace.color}" stroke-width="2.5" points="${points}"></polyline>`;
+      }).join("")}
+      ${traces.flatMap((trace) => trace.points.map((point) => (
+        `<circle cx="${roundVisual(mapX(point.epsilon), 2)}" cy="${roundVisual(mapY(point.height), 2)}" r="3.2" fill="${trace.color}"></circle>`
+      ))).join("")}
+      <text x="${padLeft}" y="16" font-size="11" fill="#5a6772">${escapeHtml(title)}</text>
+      <text x="${padLeft}" y="${padTop - 8}" font-size="10" fill="#5a6772">h = 0 mm</text>
+      <text x="${padLeft}" y="${height - 8}" font-size="10" fill="#5a6772">h = ${escapeHtml(formatSummaryNumber(sectionHeight))} mm</text>
+      <text x="${roundVisual(mapX(xMin), 2)}" y="${height - 8}" font-size="10" fill="#5a6772">${escapeHtml(formatSummaryNumber(xMin))}</text>
+      <text x="${roundVisual(zeroX, 2)}" y="${height - 8}" text-anchor="middle" font-size="10" fill="#5a6772">0</text>
+      <text x="${roundVisual(mapX(xMax), 2)}" y="${height - 8}" text-anchor="end" font-size="10" fill="#5a6772">${escapeHtml(formatSummaryNumber(xMax))}</text>
+      ${traces.map((trace, index) => {
+        const y = 18 + index * 14;
+        return `<g>
+          <line x1="${legendX}" y1="${y}" x2="${legendX + 14}" y2="${y}" stroke="${trace.color}" stroke-width="2.5"></line>
+          <text x="${legendX + 18}" y="${y + 3}" font-size="10" fill="#33424d">${escapeHtml(trace.label)}</text>
+        </g>`;
       }).join("")}
     </svg>`;
 }
