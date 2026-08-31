@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 
@@ -21,6 +22,11 @@ import {
   formatJson,
 } from "../app.js";
 
+const STRUCTURAL_APP_CSS_MARKER =
+  "/* Structural tools app: scoped additions after the copied www.easuys.be base CSS. */";
+const COPIED_BASE_CSS_SHA256 =
+  "b7111cfd5d06fbd622f13208e6e80ebbae1d9ab7fabf52aaddb78bc55fcb2d1c";
+
 function extractBlock(source, startMarker, endMarker) {
   const start = source.indexOf(startMarker);
   const end = source.indexOf(endMarker, start);
@@ -41,8 +47,6 @@ test("frontend is configured for structural subdomain and private API", async ()
   const cname = await readFile(new URL("../CNAME", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
   const css = await readFile(new URL("../styles.css", import.meta.url), "utf8");
-  const mainCss = await readFile(new URL("../../easuys.github.io/styles.css", import.meta.url), "utf8");
-  const mainHtml = await readFile(new URL("../../easuys.github.io/index-en.html", import.meta.url), "utf8");
   const favicon = await readFile(new URL("../favicon.ico", import.meta.url));
   const logo = await readFile(new URL("../images/logo.jpg", import.meta.url));
   const spacingImage = await readFile(new URL("../images/calculators/ec5-spacing-requirements.png", import.meta.url));
@@ -60,10 +64,11 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /class="hero"/);
   assert.match(html, /class="hero-meta"/);
   assert.match(html, /class="contact-card"/);
-  assert.match(html, /https:\/\/retaining\.easuys\.com\//);
+  assert.doesNotMatch(html, /https:\/\/retaining\.easuys\.com\//);
+  assert.match(html, /Retaining wall workspace — engineering validation pending/);
+  assert.match(html, /class="pending-tool-link" role="status"/);
   assert.match(html, /class="section" id="calculators"/);
   assert.match(html, /EA Suys bv — Kapelle-op-den-Bos, BE/);
-  assert.match(mainHtml, /class="contact-card"/);
   assert.match(html, /<img class="logo" src="images\/logo\.jpg" alt="EA Suys logo">/);
   assert.match(html, /<link rel="icon" href="favicon\.ico" sizes="any">/);
   assert.match(html, /<a href="#en" data-lang="en" aria-current="page">EN<\/a>/);
@@ -93,7 +98,12 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(css, /\.result-visual\s*{/);
   assert.match(css, /\.result-contact\s*{/);
   assert.match(css, /\.result-actions\s*{/);
-  assert.equal(css.split("/* Structural tools app: scoped additions after the copied www.easuys.be base CSS. */")[0].trim(), mainCss.trim());
+  assert.match(css, /\.pending-tool-link\s*{/);
+  const copiedBaseCss = css.split(STRUCTURAL_APP_CSS_MARKER)[0].trim();
+  assert.equal(
+    createHash("sha256").update(copiedBaseCss).digest("hex"),
+    COPIED_BASE_CSS_SHA256
+  );
   assert.ok(favicon.byteLength > 0);
   assert.ok(logo.byteLength > 0);
   assert.ok(spacingImage.byteLength > 0);
@@ -107,6 +117,32 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(packageJson.scripts.test, /npm run build/);
   assert.match(packageJson.devDependencies.typescript, /^\^6\./);
   assert.deepEqual(tsconfig.include, ["app.ts"]);
+});
+
+test("pull-request CI is read-only and cannot deploy", async () => {
+  const workflow = await readFile(
+    new URL("../.github/workflows/pr-ci.yml", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(workflow, /^on:\n  pull_request:\s*$/m);
+  assert.match(workflow, /^permissions:\n  contents: read$/m);
+  assert.match(workflow, /cancel-in-progress: true/);
+  assert.match(workflow, /runs-on: ubuntu-24\.04/);
+  assert.match(workflow, /timeout-minutes: 10/);
+  assert.match(
+    workflow,
+    /actions\/checkout@11bd71901bbe5b1630ceea73d27597364c9af683/
+  );
+  assert.match(
+    workflow,
+    /actions\/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020/
+  );
+  assert.match(workflow, /node-version: 22/);
+  assert.match(workflow, /npm ci --ignore-scripts --no-audit --no-fund/);
+  assert.match(workflow, /npm test/);
+  assert.doesNotMatch(workflow, /^  (push|workflow_dispatch|schedule):/m);
+  assert.doesNotMatch(workflow, /\b(secrets|deploy|pages: write|id-token: write)\b/i);
 });
 
 test("frontend catalog has all first-wave tools and contains no formulas", async () => {

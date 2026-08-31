@@ -383,6 +383,11 @@ a:hover {
 }
 
 /* Structural tools app: scoped additions after the copied www.easuys.be base CSS. */
+
+.pending-tool-link {
+    color: var(--muted);
+    font-weight: 700;
+}
 .tool-shell {
     margin-top: 32px;
     background: var(--paper-bright);
