@@ -4708,6 +4708,7 @@ export const TOOL_CATALOG = {
 const CONTACT_ENDPOINT = "/lead/study-request";
 const TURNSTILE_SITE_KEY = "0x4AAAAAADYeVJCZgqihubKs";
 const TURNSTILE_SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+export const TURNSTILE_ENABLED = false;
 
 export const TOOL_GROUP_ORDER = ["beam", "ec1", "ec2", "ec3", "ec5", "ec6", "composite"] as const;
 
@@ -5017,6 +5018,11 @@ const TEXT = {
     status: "Indicatief rekenrecord.",
     requiredLabel: "Verplicht",
     defaultLabel: "Standaard",
+    relatedLinks: "Verwante links",
+    companyLink: "EA Suys bv",
+    retainingWorkspaceLink: "Werkruimte keermuren (technische preview)",
+    contactLink: "Contact",
+    resultPlaceholder: "Voer de berekening uit om het resultaat te zien.",
   },
   en: {
     form: "Input form",
@@ -5061,50 +5067,60 @@ const TEXT = {
     status: "Indicative calculation record.",
     requiredLabel: "Required",
     defaultLabel: "Default",
+    relatedLinks: "Related EA Suys links",
+    companyLink: "EA Suys bv",
+    retainingWorkspaceLink: "Retaining wall workspace (technical preview)",
+    contactLink: "Contact",
+    resultPlaceholder: "Run the calculation to see the result record.",
   },
   fr: {
     form: "Formulaire",
-    input: "JSON d'entree",
-    result: "Resultat",
+    input: "JSON d'entrée",
+    result: "Résultat",
     findCalculator: "Trouver un calculateur",
     calculatorCount: "calculateurs",
-    scope: "Portee",
+    scope: "Portée",
     limitations: "Limites",
     route: "Route",
-    contactTitle: "Besoin d'une revue specifique au projet ?",
-    contactIntro: "Utilisez ce resultat comme point de depart et ouvrez une demande de projet pre-remplie pour une etude revue ou une question d'ingenierie ciblee.",
+    contactTitle: "Besoin d'une revue spécifique au projet ?",
+    contactIntro: "Utilisez ce résultat comme point de départ et ouvrez une demande de projet préremplie pour une étude revue ou une question d'ingénierie ciblée.",
     contactProject: "Nom du projet",
     contactEmail: "E-mail",
     contactMessage: "Question ou contexte",
     contactConsent: "EA Suys peut me contacter au sujet de cette demande.",
-    contactSummary: "Synthese du resultat",
-    contactSubmit: "Preparer la demande",
+    contactSummary: "Synthèse du résultat",
+    contactSubmit: "Préparer la demande",
     contactFallback: "Ouvrir l'e-mail directement",
-    contactStatusIdle: "Cela ouvre un brouillon d'e-mail avec le calculateur et la synthese du resultat.",
+    contactStatusIdle: "Cela ouvre un brouillon d'e-mail avec le calculateur et la synthèse du résultat.",
     contactStatusSubmitted: "Ouverture du brouillon d'e-mail.",
-    contactStatusVerification: "La verification humaine se charge si disponible.",
-    contactVerificationUnavailable: "Verification humaine indisponible ; la solution e-mail reste disponible.",
+    contactStatusVerification: "La vérification humaine se charge si elle est disponible.",
+    contactVerificationUnavailable: "Vérification humaine indisponible ; la solution par e-mail reste disponible.",
     noSearchResults: "Aucun calculateur ne correspond a cette recherche.",
     visuals: "Sortie visuelle",
     calculate: "Calculer",
     save: "Enregistrer",
     load: "Charger",
-    download: "Telecharger JSON",
-    downloadHtml: "Telecharger HTML",
+    download: "Télécharger JSON",
+    downloadHtml: "Télécharger HTML",
     print: "Imprimer",
-    reportTitle: "Releve de calcul",
-    generatedAt: "Genere",
+    reportTitle: "Relevé de calcul",
+    generatedAt: "Généré",
     calculator: "Calculateur",
     formulaVersion: "Version formule",
-    summary: "Synthese",
+    summary: "Synthèse",
     assumptions: "Hypotheses",
-    sourceRefs: "References",
+    sourceRefs: "Références",
     warnings: "Avertissements",
     none: "Aucun",
-    notProvided: "Non indique",
-    status: "Releve de calcul indicatif.",
+    notProvided: "Non indiqué",
+    status: "Relevé de calcul indicatif.",
     requiredLabel: "Requis",
-    defaultLabel: "Defaut",
+    defaultLabel: "Défaut",
+    relatedLinks: "Liens EA Suys associés",
+    companyLink: "EA Suys bv",
+    retainingWorkspaceLink: "Espace de travail murs de soutènement (aperçu technique)",
+    contactLink: "Contact",
+    resultPlaceholder: "Lancez le calcul pour afficher le résultat.",
   },
 };
 
@@ -6558,8 +6574,14 @@ export function buildFilteredToolGroups(query = "", lang: keyof typeof TEXT = "e
   );
 
   return TOOL_GROUP_ORDER.map((groupId) => {
-    const items = entries
+    const groupEntries = entries
       .filter(([toolId]) => toolGroupId(toolId) === groupId)
+      .sort(([firstId], [secondId]) =>
+        groupId === "beam"
+          ? Number(secondId === "beam_simple_diagrams") - Number(firstId === "beam_simple_diagrams")
+          : 0
+      );
+    const items = groupEntries
       .map(([toolId, tool]) => ({
         toolId,
         title: tool.title[lang] || tool.title.en,
@@ -6573,7 +6595,30 @@ export function buildFilteredToolGroups(query = "", lang: keyof typeof TEXT = "e
   }).filter((group) => group.items.length > 0);
 }
 
-function buildToolOverviewHtml(query: string, lang: keyof typeof TEXT) {
+export function buildCrossLinkItems(lang: keyof typeof TEXT = "en") {
+  const companyHref = lang === "nl"
+    ? "https://www.easuys.be/"
+    : lang === "fr"
+      ? "https://www.easuys.be/index-fr.html"
+      : "https://www.easuys.be/index-en.html";
+  return [
+    { id: "company", label: TEXT[lang].companyLink, href: companyHref },
+    {
+      id: "retaining",
+      label: TEXT[lang].retainingWorkspaceLink,
+      href: "https://www.easuys.be/easuys-retaining-tools-web/",
+    },
+    { id: "contact", label: TEXT[lang].contactLink, href: "mailto:info@easuys.be" },
+  ];
+}
+
+export function buildCrossLinkHtml(lang: keyof typeof TEXT = "en") {
+  return buildCrossLinkItems(lang).map((link) =>
+    `<a href="${escapeHtml(link.href)}" data-cross-link="${link.id}">${escapeHtml(link.label)}</a>`
+  ).join("");
+}
+
+export function buildToolOverviewHtml(query: string, lang: keyof typeof TEXT, activeToolId = "") {
   const groups = buildFilteredToolGroups(query, lang);
   const total = groups.reduce((sum, group) => sum + group.items.length, 0);
   return [
@@ -6582,10 +6627,38 @@ function buildToolOverviewHtml(query: string, lang: keyof typeof TEXT) {
       `<article class="tool-overview-card">
         <h3>${escapeHtml(group.label)}</h3>
         <p>${escapeHtml(group.summary)}</p>
-        <button type="button" data-group-jump="${group.groupId}">${escapeHtml(group.items[0]?.title || group.label)}</button>
+        <div class="tool-overview-items">${group.items.map((item) => (
+          `<button type="button" class="tool-overview-item" data-tool-id="${item.toolId}" ${item.toolId === activeToolId ? 'aria-current="true"' : ""}>${escapeHtml(item.title)}</button>`
+        )).join("")}</div>
       </article>`
     )).join("")}</div>`,
   ].join("");
+}
+
+function toolIdFromHash(hash: string) {
+  const fragment = String(hash || "").replace(/^#/, "").trim();
+  if (!fragment) return "";
+  const query = fragment.includes("?") ? fragment.slice(fragment.lastIndexOf("?") + 1) : fragment;
+  const params = new URLSearchParams(query.replace(/^\?/, ""));
+  const queryToolId = params.get("tool") || params.get("toolId") || "";
+  if (TOOL_CATALOG[queryToolId]) return queryToolId;
+  let directValue = fragment;
+  try {
+    directValue = decodeURIComponent(directValue);
+  } catch {
+    // Keep the original fragment if it contains malformed escaping.
+  }
+  if (TOOL_CATALOG[directValue]) return directValue;
+  const route = directValue.startsWith("/") ? directValue : `/${directValue.replace(/^\/+/, "")}`;
+  return Object.entries(TOOL_CATALOG).find(([, tool]) => tool.endpoint === route)?.[0] || "";
+}
+
+export function resolveInitialToolId(urlToolId = "", hash = "", storedToolId = "") {
+  const hashToolId = toolIdFromHash(hash);
+  const selectedToolId = [urlToolId, hashToolId, storedToolId]
+    .find((toolId) => Boolean(TOOL_CATALOG[toolId]));
+  if (selectedToolId) return selectedToolId;
+  return buildFilteredToolGroups("", "en")[0]?.items[0]?.toolId || Object.keys(TOOL_CATALOG)[0];
 }
 
 function renderToolTabs(toolId: string, query: string, lang: keyof typeof TEXT) {
@@ -6645,9 +6718,13 @@ function renderToolContext(container: HTMLElement, toolId: string, lang: keyof t
 
 function readUrlState() {
   const params = new URLSearchParams(globalThis.location?.search || "");
+  const hash = globalThis.location?.hash || "";
+  const hashValue = hash.replace(/^#/, "");
+  const hashParams = new URLSearchParams(hashValue.includes("?") ? hashValue.slice(hashValue.lastIndexOf("?") + 1) : hashValue);
   return {
     toolId: params.get("tool") || "",
-    lang: params.get("lang") || "",
+    hashToolId: toolIdFromHash(hash),
+    lang: params.get("lang") || hashParams.get("lang") || (hashValue in TEXT ? hashValue : ""),
     query: params.get("q") || "",
   };
 }
@@ -6662,8 +6739,17 @@ function writeUrlState(state: { toolId: string; lang: string; query: string }) {
   } else {
     params.delete("q");
   }
-  const url = `${globalThis.location.pathname}?${params.toString()}`;
+  const url = `${globalThis.location.pathname}?${params.toString()}${globalThis.location.hash || ""}`;
   globalThis.history.replaceState({}, "", url);
+}
+
+function readStoredToolSelection() {
+  try {
+    const value = JSON.parse(globalThis.localStorage?.getItem(STORAGE_KEY) || "null");
+    return typeof value?.toolId === "string" ? value.toolId : "";
+  } catch {
+    return "";
+  }
 }
 
 type ContactState = {
@@ -6701,6 +6787,12 @@ function buildContactSummaryLines(response: any, lang: keyof typeof TEXT) {
   return buildResultSummaryItems(response, lang)
     .slice(0, 6)
     .map((item) => `${item.label}: ${item.value}`);
+}
+
+export function buildResultContactSummaryHtml(response: any, lang: keyof typeof TEXT = "en") {
+  if (!hasCalculationResult(response)) return "";
+  const summaryLines = buildContactSummaryLines(response, lang);
+  return `<div class="result-contact-summary"><strong>${escapeHtml(TEXT[lang].contactSummary)}</strong><ul>${summaryLines.length ? summaryLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("") : `<li>${escapeHtml(TEXT[lang].none)}</li>`}</ul></div>`;
 }
 
 export function buildDirectMailto(toolId: string, lang: keyof typeof TEXT, contact: ContactState, response: any = null) {
@@ -6759,11 +6851,49 @@ export function buildFriendlyFieldHelp(toolId: string, tool: any, field: any, la
   }
   const schemaDefault = schemaField?.default;
   if (schemaDefault !== undefined && schemaDefault !== null && schemaDefault !== "") {
-    const defaultValue = typeof schemaDefault === "number" ? formatSummaryNumber(schemaDefault) : String(schemaDefault);
+    const defaultValue = formatSchemaDefault(schemaDefault);
     const unitSuffix = schemaField?.unit ? ` ${schemaField.unit}` : "";
-    parts.push(`${TEXT[lang].defaultLabel}: ${defaultValue}${unitSuffix}`);
+    if (defaultValue) parts.push(`${TEXT[lang].defaultLabel}: ${defaultValue}${unitSuffix}`);
   }
   return parts.join(" ");
+}
+
+export function formatSchemaDefault(value: any): string {
+  if (typeof value === "number" && Number.isFinite(value)) return formatSummaryNumber(value);
+  if (typeof value === "string") return value;
+  if (typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) {
+    return value.map((item) => formatSchemaDefault(item)).filter(Boolean).join(", ");
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .map(([key, item]) => {
+        const formatted = formatSchemaDefault(item);
+        return formatted ? `${key} = ${formatted}` : "";
+      })
+      .filter(Boolean)
+      .join(", ");
+  }
+  return "";
+}
+
+export function buildResultDisplayState(response: any, lang: keyof typeof TEXT = "en") {
+  const hasResult = hasCalculationResult(response);
+  return {
+    hasResult,
+    placeholder: TEXT[lang].resultPlaceholder,
+    output: hasResult ? formatJson(response) : "",
+  };
+}
+
+function hasCalculationResult(response: any) {
+  return Boolean(
+    response
+    && typeof response === "object"
+    && typeof response.calculator_id === "string"
+    && response.result
+    && typeof response.result === "object"
+  );
 }
 
 function loadTurnstileScript(documentRef = globalThis.document) {
@@ -7743,7 +7873,7 @@ export function initApp(documentRef = globalThis.document) {
   const storedContactState = readStoredContactState();
   const state = {
     lang: (urlState.lang && urlState.lang in TEXT ? urlState.lang : "en") as keyof typeof TEXT,
-    toolId: TOOL_CATALOG[urlState.toolId] ? urlState.toolId : "ec5_timber_contact_moment_joint",
+    toolId: resolveInitialToolId(urlState.toolId, urlState.hashToolId, readStoredToolSelection()),
     query: urlState.query || "",
     contact: storedContactState,
     turnstileToken: "",
@@ -7755,6 +7885,7 @@ export function initApp(documentRef = globalThis.document) {
   const searchInput = documentRef.querySelector("[data-tool-search]") as HTMLInputElement;
   const input = documentRef.querySelector("[data-json-input]") as HTMLTextAreaElement;
   const output = documentRef.querySelector("[data-result-output]") as HTMLElement;
+  const outputPlaceholder = documentRef.querySelector("[data-result-placeholder]") as HTMLElement;
   const resultSummary = documentRef.querySelector("[data-result-summary]") as HTMLElement;
   const report = documentRef.querySelector("[data-report]") as HTMLElement;
   const context = documentRef.querySelector("[data-tool-context]") as HTMLElement;
@@ -7765,6 +7896,8 @@ export function initApp(documentRef = globalThis.document) {
   const printButton = documentRef.querySelector("[data-print]") as HTMLButtonElement;
   const form = documentRef.querySelector("[data-calculator-form]") as HTMLFormElement;
   const friendlyForm = documentRef.querySelector("[data-friendly-form]") as HTMLElement;
+  const crossLinks = documentRef.querySelector("[data-cross-links]") as HTMLElement;
+  const workspace = documentRef.querySelector("[data-workspace]") as HTMLElement;
   let lastResponse = null as any;
 
   function renderNavigation() {
@@ -7775,7 +7908,7 @@ export function initApp(documentRef = globalThis.document) {
     searchInput.value = state.query;
     tabsMeta.textContent = `${total} ${TEXT[state.lang].calculatorCount}`;
     tabs.innerHTML = renderToolTabs(state.toolId, state.query, state.lang);
-    overview.innerHTML = buildToolOverviewHtml(state.query, state.lang);
+    overview.innerHTML = buildToolOverviewHtml(state.query, state.lang, state.toolId);
   }
 
   function renderVisuals(response: any) {
@@ -7833,6 +7966,7 @@ export function initApp(documentRef = globalThis.document) {
   }
 
   function activateTurnstile() {
+    if (!TURNSTILE_ENABLED) return;
     const target = contact.querySelector("[data-contact-turnstile]") as HTMLElement | null;
     const status = contact.querySelector("[data-contact-status]") as HTMLElement | null;
     if (!target || !status || target.dataset.loaded === "true") return;
@@ -7863,12 +7997,11 @@ export function initApp(documentRef = globalThis.document) {
   }
 
   function renderContactPanel(response: any) {
-    const summaryLines = buildContactSummaryLines(response, state.lang);
     const fallbackMailto = buildDirectMailto(state.toolId, state.lang, state.contact, response);
     contact.innerHTML = [
       `<h3>${escapeHtml(TEXT[state.lang].contactTitle)}</h3>`,
       `<p>${escapeHtml(TEXT[state.lang].contactIntro)}</p>`,
-      `<div class="result-contact-summary"><strong>${escapeHtml(TEXT[state.lang].contactSummary)}</strong><ul>${summaryLines.length ? summaryLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("") : `<li>${escapeHtml(TEXT[state.lang].none)}</li>`}</ul></div>`,
+      buildResultContactSummaryHtml(response, state.lang),
       `<form class="result-contact-form" data-contact-form>`,
       `<div class="result-contact-grid">`,
       `<label class="result-contact-field"><span>${escapeHtml(TEXT[state.lang].contactProject)}</span><input data-contact-project type="text" value="${escapeHtml(state.contact.projectName)}"></label>`,
@@ -7876,7 +8009,7 @@ export function initApp(documentRef = globalThis.document) {
       `<label class="result-contact-field result-contact-field--full"><span>${escapeHtml(TEXT[state.lang].contactMessage)}</span><textarea data-contact-message>${escapeHtml(state.contact.message)}</textarea></label>`,
       `</div>`,
       `<label class="result-contact-consent"><input data-contact-consent type="checkbox" ${state.contact.consent ? "checked" : ""}><span>${escapeHtml(TEXT[state.lang].contactConsent)}</span></label>`,
-      `<div data-contact-turnstile></div>`,
+      TURNSTILE_ENABLED ? `<div data-contact-turnstile></div>` : "",
       `<div class="result-contact-actions">`,
       `<button type="submit" class="primary" data-contact-submit>${escapeHtml(TEXT[state.lang].contactSubmit)}</button>`,
       `<a data-contact-fallback href="${escapeHtml(fallbackMailto)}">${escapeHtml(TEXT[state.lang].contactFallback)}</a>`,
@@ -7928,9 +8061,13 @@ export function initApp(documentRef = globalThis.document) {
     downloadHtmlButton.textContent = text.downloadHtml;
     downloadHtmlButton.disabled = true;
     printButton.textContent = text.print;
+    printButton.disabled = true;
+    crossLinks.setAttribute("aria-label", text.relatedLinks);
+    crossLinks.innerHTML = buildCrossLinkHtml(state.lang);
     renderToolContext(context, state.toolId, state.lang);
     renderFriendlyForm(friendlyForm, state.toolId, activeTool, state.lang, text.form);
     renderResultSummary(resultSummary, null, state.lang);
+    renderResultOutput(outputPlaceholder, output, null, state.lang);
     renderReport(report, null, state.lang);
     renderVisuals(null);
     renderContactPanel(null);
@@ -7954,13 +8091,13 @@ export function initApp(documentRef = globalThis.document) {
   });
 
   overview.addEventListener("click", (event) => {
-    const groupId = (event.target as HTMLElement | null)?.dataset?.groupJump as ToolGroupId | undefined;
-    if (!groupId) return;
-    const first = Object.keys(TOOL_CATALOG).find((toolId) => toolGroupId(toolId) === groupId);
-    if (!first) return;
-    state.toolId = first;
+    const button = (event.target as HTMLElement | null)?.closest("[data-tool-id]") as HTMLButtonElement | null;
+    const toolId = button?.dataset.toolId;
+    if (!toolId || !TOOL_CATALOG[toolId]) return;
+    state.toolId = toolId;
     state.query = "";
     render();
+    workspace.scrollIntoView?.({ behavior: "smooth", block: "start" });
   });
 
   documentRef.querySelectorAll("[data-lang]").forEach((button) => {
@@ -7987,12 +8124,13 @@ export function initApp(documentRef = globalThis.document) {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    output.textContent = "";
+    renderResultOutput(outputPlaceholder, output, null, state.lang);
     renderResultSummary(resultSummary, null, state.lang);
     renderReport(report, null, state.lang);
     lastResponse = null;
     downloadButton.disabled = true;
     downloadHtmlButton.disabled = true;
+    printButton.disabled = true;
     try {
       const payload = JSON.parse(input.value);
       const response = await fetch(`${API_BASE_URL}${TOOL_CATALOG[state.toolId].endpoint}`, {
@@ -8001,22 +8139,27 @@ export function initApp(documentRef = globalThis.document) {
         body: JSON.stringify(payload),
       });
       const result = await response.json();
+      if (!response.ok || !hasCalculationResult(result)) {
+        throw new Error(result?.error || "The calculation did not return a result record.");
+      }
       renderResultSummary(resultSummary, result, state.lang);
       renderReport(report, result, state.lang);
       renderVisuals(result);
-      output.textContent = formatJson(result);
+      renderResultOutput(outputPlaceholder, output, result, state.lang);
       lastResponse = result;
       downloadButton.disabled = false;
       downloadHtmlButton.disabled = false;
+      printButton.disabled = false;
       renderContactPanel(result);
     } catch (error) {
       renderResultSummary(resultSummary, null, state.lang);
       renderReport(report, null, state.lang);
       renderVisuals(null);
-      output.textContent = formatJson({ error: error.message });
+      renderResultOutput(outputPlaceholder, output, null, state.lang);
       lastResponse = null;
       downloadButton.disabled = true;
       downloadHtmlButton.disabled = true;
+      printButton.disabled = true;
       renderContactPanel(null);
     }
   });
@@ -8118,6 +8261,14 @@ function renderResultSummary(container, response, lang) {
   container.innerHTML = `<dl>${items.map((item) =>
     `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`
   ).join("")}</dl>`;
+}
+
+function renderResultOutput(placeholder, output, response, lang) {
+  const display = buildResultDisplayState(response, lang);
+  placeholder.textContent = display.placeholder;
+  placeholder.hidden = display.hasResult;
+  output.textContent = display.output;
+  output.hidden = !display.hasResult;
 }
 
 function renderReport(container, response, lang) {

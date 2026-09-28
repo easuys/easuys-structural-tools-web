@@ -7,10 +7,15 @@ import {
   API_BASE_URL,
   TOOL_CATALOG,
   TOOL_GROUP_ORDER,
+  TURNSTILE_ENABLED,
   buildFriendlyFieldHelp,
+  buildCrossLinkHtml,
+  buildCrossLinkItems,
   buildDirectMailto,
   buildFilteredToolGroups,
   buildPayloadFromFormValues,
+  buildResultContactSummaryHtml,
+  buildResultDisplayState,
   buildReportFilename,
   buildReportHtml,
   buildReportModel,
@@ -18,8 +23,11 @@ import {
   buildResultFilename,
   buildResultSummaryItems,
   buildToolContextModel,
+  buildToolOverviewHtml,
   buildVisualizationHtml,
+  formatSchemaDefault,
   formatJson,
+  resolveInitialToolId,
 } from "../app.js";
 
 const STRUCTURAL_APP_CSS_MARKER =
@@ -49,6 +57,7 @@ test("frontend is configured for structural subdomain and private API", async ()
   const css = await readFile(new URL("../styles.css", import.meta.url), "utf8");
   const favicon = await readFile(new URL("../favicon.ico", import.meta.url));
   const logo = await readFile(new URL("../images/logo.jpg", import.meta.url));
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
   const spacingImage = await readFile(new URL("../images/calculators/ec5-spacing-requirements.png", import.meta.url));
   const groupBoltsImage = await readFile(new URL("../images/calculators/ec5-group-effect-bolts.png", import.meta.url));
   const groupConnectorsImage = await readFile(new URL("../images/calculators/ec5-group-effect-connectors.png", import.meta.url));
@@ -59,14 +68,16 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /EA Suys Structural Tools/);
   assert.match(html, /class="site-header"/);
   assert.match(html, /class="brand"/);
-  assert.match(html, /class="brand-name"/);
+  assert.match(html, /class="brand-name visually-hidden"/);
   assert.match(html, /class="brand-tagline"/);
   assert.match(html, /class="hero"/);
   assert.match(html, /class="hero-meta"/);
   assert.match(html, /class="contact-card"/);
   assert.doesNotMatch(html, /https:\/\/retaining\.easuys\.com\//);
-  assert.match(html, /Retaining wall workspace — engineering validation pending/);
-  assert.match(html, /class="pending-tool-link" role="status"/);
+  assert.match(html, /data-cross-links/);
+  assert.match(html, /https:\/\/www\.easuys\.be\/easuys-retaining-tools-web\//);
+  assert.match(html, /data-cross-link="contact"/);
+  assert.doesNotMatch(html, /engineering validation pending/);
   assert.match(html, /class="section" id="calculators"/);
   assert.match(html, /EA Suys bv — Kapelle-op-den-Bos, BE/);
   assert.match(html, /<img class="logo" src="images\/logo\.jpg" alt="EA Suys logo">/);
@@ -80,11 +91,17 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(html, /data-tool-context/);
   assert.match(html, /data-result-visual/);
   assert.match(html, /data-result-contact/);
+  assert.match(html, /data-result-placeholder/);
+  assert.match(html, /data-result-output hidden/);
+  assert.match(html, /data-print disabled/);
+  assert.match(readme, /TURNSTILE_SECRET_KEY/);
+  assert.match(readme, /TURNSTILE_ENABLED/);
   assert.match(html, /downloadable JSON or HTML output/);
   assert.match(html, /data-download/);
   assert.match(html, /data-download-html/);
   assert.match(html, /data-print/);
   assert.match(css, /\.page\s*{\s*max-width: 1140px;/);
+  assert.match(css, /\.page\s*{\s*max-width: 1440px;\s*}/);
   assert.match(css, /\.lang-switch a\s*{/);
   assert.match(css, /\.tool-shell button\s*{/);
   assert.match(css, /\.tool-nav-search\s*{/);
@@ -98,7 +115,8 @@ test("frontend is configured for structural subdomain and private API", async ()
   assert.match(css, /\.result-visual\s*{/);
   assert.match(css, /\.result-contact\s*{/);
   assert.match(css, /\.result-actions\s*{/);
-  assert.match(css, /\.pending-tool-link\s*{/);
+  assert.match(css, /\.tool-overview-items\s*{/);
+  assert.match(css, /min\(100%, 200px\)/);
   const copiedBaseCss = css.split(STRUCTURAL_APP_CSS_MARKER)[0].trim();
   assert.equal(
     createHash("sha256").update(copiedBaseCss).digest("hex"),
@@ -194,6 +212,11 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
   assert.match(appTs, /const TURNSTILE_SITE_KEY = "0x4AAAAAADYeVJCZgqihubKs"/);
   assert.match(appTs, /const TURNSTILE_SCRIPT_URL = "https:\/\/challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit"/);
   assert.match(appTs, /data-contact-turnstile/);
+  assert.equal(TURNSTILE_ENABLED, false);
+  assert.match(appTs, /export const TURNSTILE_ENABLED = false/);
+  assert.match(appTs, /if \(!TURNSTILE_ENABLED\) return/);
+  assert.match(appTs, /function loadTurnstileScript\(/);
+  assert.match(appTs, /data-contact-fallback/);
   for (const app of [appJs, appTs]) {
     assert.doesNotMatch(app, /function calculate/i);
     assert.doesNotMatch(app, /fk = K/i);
@@ -207,6 +230,105 @@ test("tool groups and search build a grouped calculator library view", () => {
   assert.ok(filtered.length >= 1);
   assert.ok(filtered.some((group) => group.groupId === "ec3"));
   assert.ok(filtered.flatMap((group) => group.items).some((item) => item.toolId === "ec3_bolt_group_torsion"));
+});
+
+test("cross-link bar has localized destinations and labels", () => {
+  assert.deepEqual(buildCrossLinkItems("nl"), [
+    { id: "company", label: "EA Suys bv", href: "https://www.easuys.be/" },
+    { id: "retaining", label: "Werkruimte keermuren (technische preview)", href: "https://www.easuys.be/easuys-retaining-tools-web/" },
+    { id: "contact", label: "Contact", href: "mailto:info@easuys.be" },
+  ]);
+  assert.deepEqual(buildCrossLinkItems("en").map((item) => item.href), [
+    "https://www.easuys.be/index-en.html",
+    "https://www.easuys.be/easuys-retaining-tools-web/",
+    "mailto:info@easuys.be",
+  ]);
+  assert.deepEqual(buildCrossLinkItems("fr").map((item) => item.href), [
+    "https://www.easuys.be/index-fr.html",
+    "https://www.easuys.be/easuys-retaining-tools-web/",
+    "mailto:info@easuys.be",
+  ]);
+  assert.match(buildCrossLinkHtml("fr"), /Espace de travail murs de soutènement/);
+});
+
+test("schema defaults render primitives, objects and arrays without object coercion", () => {
+  assert.equal(formatSchemaDefault({ d_mm: 8, spacing_mm: 50.25, unused: null }), "d_mm = 8, spacing_mm = 50.25");
+  assert.equal(formatSchemaDefault([1.25, false, { count: 0 }]), "1.25, false, count = 0");
+  assert.equal(formatSchemaDefault({}), "");
+  assert.equal(formatSchemaDefault([]), "");
+
+  const help = buildFriendlyFieldHelp(
+    "test_tool",
+    { endpoint: "/calculate/test" },
+    { name: "screw_defaults" },
+    "fr",
+    { schemas: { "/calculate/test": { fields: { screw_defaults: { default: { d_mm: 8, spacing_mm: 50.25 } } } } } }
+  );
+  assert.equal(help, "Défaut: d_mm = 8, spacing_mm = 50.25");
+});
+
+test("result panel starts with a localized placeholder and reveals result content only after a result", async () => {
+  assert.deepEqual(buildResultDisplayState(null, "nl"), {
+    hasResult: false,
+    placeholder: "Voer de berekening uit om het resultaat te zien.",
+    output: "",
+  });
+  assert.deepEqual(buildResultDisplayState(undefined, "fr"), {
+    hasResult: false,
+    placeholder: "Lancez le calcul pour afficher le résultat.",
+    output: "",
+  });
+  assert.equal(buildResultDisplayState({ error: "calculation failed" }, "en").hasResult, false);
+  const result = { calculator_id: "ec5_timber_floor_vibration", result: { f1_hz: 12.5 } };
+  assert.deepEqual(buildResultDisplayState(result, "en"), {
+    hasResult: true,
+    placeholder: "Run the calculation to see the result record.",
+    output: formatJson(result),
+  });
+  assert.equal(buildResultContactSummaryHtml(null, "en"), "");
+  assert.match(buildResultContactSummaryHtml(result, "en"), /Result summary/);
+  const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(html, /data-result-summary hidden/);
+  assert.match(html, /data-result-output hidden/);
+  assert.match(html, /data-download disabled/);
+  assert.match(html, /data-download-html disabled/);
+  assert.match(html, /data-print disabled/);
+  assert.ok(html.indexOf("data-result-placeholder") < html.indexOf("data-download"));
+});
+
+test("fresh visits use the first navigation calculator unless a URL or saved choice overrides it", () => {
+  const firstNavigationTool = buildFilteredToolGroups("", "en")[0].items[0].toolId;
+  assert.equal(firstNavigationTool, "beam_simple_diagrams");
+  assert.equal(resolveInitialToolId("", "", ""), firstNavigationTool);
+  assert.equal(resolveInitialToolId("", "", "ec5_timber_contact_moment_joint"), "ec5_timber_contact_moment_joint");
+  assert.equal(resolveInitialToolId("", "#tool=ec1_roof_loads", "ec5_timber_contact_moment_joint"), "ec1_roof_loads");
+  assert.equal(resolveInitialToolId("ec6_masonry_strength", "#tool=ec1_roof_loads", "ec5_timber_contact_moment_joint"), "ec6_masonry_strength");
+  assert.equal(resolveInitialToolId("", "#/calculate/ec3/bolt-group-torsion", ""), "ec3_bolt_group_torsion");
+});
+
+test("category overview renders a selectable chip for every calculator", async () => {
+  const expectedIds = buildFilteredToolGroups("", "en").flatMap((group) => group.items.map((item) => item.toolId));
+  const html = buildToolOverviewHtml("", "en", "ec3_bolt_group_torsion");
+  const renderedIds = [...html.matchAll(/data-tool-id="([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(renderedIds, expectedIds);
+  assert.equal(
+    renderedIds.filter((toolId) => toolId.startsWith("ec3_")).length,
+    expectedIds.filter((toolId) => toolId.startsWith("ec3_")).length
+  );
+  assert.match(html, /data-tool-id="ec3_bolt_group_torsion" aria-current="true"/);
+  const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
+  assert.match(appTs, /workspace\.scrollIntoView\?\./);
+});
+
+test("Turnstile stays disabled while the direct email fallback remains available", async () => {
+  assert.equal(TURNSTILE_ENABLED, false);
+  const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
+  const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(appTs, /if \(!TURNSTILE_ENABLED\) return/);
+  assert.match(appTs, /TURNSTILE_ENABLED \? `<div data-contact-turnstile><\/div>` : ""/);
+  assert.match(appTs, /function loadTurnstileScript\(/);
+  assert.match(appTs, /mailto:info@easuys\.be\?subject/);
+  assert.match(html, /href="mailto:info@easuys\.be" data-cross-link="contact"/);
 });
 
 test("tool context exposes route and bounded-scope guidance", () => {

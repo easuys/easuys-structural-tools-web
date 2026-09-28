@@ -15,7 +15,7 @@
       <div class="brand">
         <img class="logo" src="images/logo.jpg" alt="EA Suys logo">
         <div>
-          <div class="brand-name">EA Suys</div>
+          <div class="brand-name visually-hidden">EA Suys</div>
           <div class="brand-tagline">Structural tools</div>
         </div>
       </div>
@@ -41,13 +41,11 @@
       </section>
 
       <section class="contact-card">
-        <div>
-          <h2>Calculation tools</h2>
-        </div>
-        <div>
-          <p><a href="https://www.easuys.be/index-en.html">EA Suys bv</a></p>
-          <p><span class="pending-tool-link" role="status">Retaining wall workspace — engineering validation pending</span></p>
-        </div>
+        <nav class="contact-links" aria-label="Related EA Suys links" data-cross-links>
+          <a href="https://www.easuys.be/index-en.html" data-cross-link="company">EA Suys bv</a>
+          <a href="https://www.easuys.be/easuys-retaining-tools-web/" data-cross-link="retaining">Retaining wall workspace (technical preview)</a>
+          <a href="mailto:info@easuys.be" data-cross-link="contact">Contact</a>
+        </nav>
       </section>
 
       <section class="section" id="calculators">
@@ -63,7 +61,7 @@
             </div>
             <div data-tool-tabs></div>
           </aside>
-          <section class="workspace">
+          <section class="workspace" data-workspace>
             <header class="workspace-header">
               <p class="eyebrow">Calculator</p>
               <h2 data-tool-title>EA Suys Structural Tools</h2>
@@ -88,13 +86,14 @@
                 <div class="result-summary" data-result-summary hidden></div>
                 <div class="report-view" data-report hidden></div>
                 <div class="result-visual" data-result-visual hidden></div>
+                <p class="result-placeholder" data-result-placeholder>Run the calculation to see the result record.</p>
                 <div class="actions result-actions">
                   <button type="button" data-download disabled>Download JSON</button>
                   <button type="button" data-download-html disabled>Download HTML</button>
-                  <button type="button" data-print>Print</button>
+                  <button type="button" data-print disabled>Print</button>
                 </div>
                 <section class="result-contact" data-result-contact></section>
-                <pre data-result-output>{}</pre>
+                <pre data-result-output hidden>{}</pre>
               </section>
             </div>
           </section>
