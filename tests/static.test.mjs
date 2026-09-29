@@ -519,7 +519,7 @@ test("screenshot preview pages and captured PNGs exist", async () => {
   }
 });
 
-test("frontend does not expose internal utilities or Code_Aster parser workflows", async () => {
+test("frontend does not expose internal utilities or finite-element parser workflows", async () => {
   const appJs = await readFile(new URL("../app.js", import.meta.url), "utf8");
   const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
   const payload = JSON.stringify({
