@@ -4223,12 +4223,11 @@ export const TOOL_CATALOG = {
         sample: {
             fd_mpa: 3,
             unit_group: "group_1",
-            n_edc_kn: 80,
+            n_edc_kn: 75,
             bearing_length_mm: 160,
             bearing_width_mm: 140,
             edge_distance_a1_mm: 120,
             wall_height_below_hc_mm: 600,
-            top_of_wall: false,
         },
         form: {
             fields: [
@@ -4286,12 +4285,6 @@ export const TOOL_CATALOG = {
                     step: "1",
                     label: { nl: "Wandhoogte hc", en: "Wall height hc", fr: "Hauteur du mur hc" },
                     unit: "mm",
-                },
-                {
-                    name: "top_of_wall",
-                    value_type: "boolean",
-                    control: "checkbox",
-                    label: { nl: "Bovenaan wand", en: "Top of wall", fr: "Haut du mur" },
                 },
             ],
         },
@@ -4614,13 +4607,13 @@ export const TOOL_CATALOG = {
         sample: {
             height_m: 3,
             length_m: 4,
-            thickness_mm: 140,
+            thickness_mm: 190,
             support_case: "four_sides",
-            material_type: "clay_abs_lt_7",
-            mortar_class: "M6_M4",
+            fxk1_mpa: 0.2,
+            fxk2_mpa: 0.4,
             n_ed_line_kn_per_m: 60,
-            w_ed_kn_per_m2: 1.2,
-            gamma_m: 2,
+            w_ed_kn_per_m2: 0.6,
+            gamma_m: 2.5,
         },
         form: {
             fields: [
@@ -4656,32 +4649,35 @@ export const TOOL_CATALOG = {
                     options: ["four_sides", "top_bottom", "left_right"],
                 },
                 {
-                    name: "material_type",
-                    value_type: "string",
-                    control: "select",
-                    label: { nl: "Materiaal", en: "Material", fr: "Materiau" },
-                    options: [
-                        "clay_abs_lt_7",
-                        "clay_abs_7_12",
-                        "clay_abs_gt_12",
-                        "calcium_silicate",
-                        "concrete_aac_fb_lt_5",
-                        "concrete_aac_fb_ge_5",
-                    ],
+                    name: "fxk1_mpa",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.05",
+                    label: {
+                        nl: "fxk1 (breukvlak evenwijdig aan lintvoegen, ANB tabel 3.10-ANB)",
+                        en: "fxk1 (failure plane parallel to bed joints, ANB Table 3.10-ANB)",
+                        fr: "fxk1 (plan de rupture parallele aux joints d'assise, ANB tableau 3.10-ANB)",
+                    },
+                    unit: "MPa",
                 },
                 {
-                    name: "mortar_class",
-                    value_type: "string",
-                    control: "select",
-                    label: { nl: "Mortelklasse", en: "Mortar class", fr: "Classe de mortier" },
-                    options: ["M12", "M6_M4", "M2"],
+                    name: "fxk2_mpa",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.05",
+                    label: {
+                        nl: "fxk2 (breukvlak loodrecht op lintvoegen, ANB tabel 3.10-ANB)",
+                        en: "fxk2 (failure plane perpendicular to bed joints, ANB Table 3.10-ANB)",
+                        fr: "fxk2 (plan de rupture perpendiculaire aux joints d'assise, ANB tableau 3.10-ANB)",
+                    },
+                    unit: "MPa",
                 },
                 {
                     name: "n_ed_line_kn_per_m",
                     value_type: "number",
                     control: "number",
                     step: "0.1",
-                    label: { nl: "NEd lijnlast", en: "NEd line load", fr: "Charge lineaire NEd" },
+                    label: { nl: "NEd lijnlast (minimum)", en: "NEd line load (minimum)", fr: "Charge lineaire NEd (minimum)" },
                     unit: "kN/m",
                 },
                 {
@@ -4697,7 +4693,11 @@ export const TOOL_CATALOG = {
                     value_type: "number",
                     control: "number",
                     step: "0.05",
-                    label: { nl: "gamma_M", en: "gamma_M", fr: "gamma_M" },
+                    label: {
+                        nl: "gamma_M (ANB tabel 2.1-ANB)",
+                        en: "gamma_M (ANB Table 2.1-ANB)",
+                        fr: "gamma_M (ANB tableau 2.1-ANB)",
+                    },
                 },
             ],
         },
@@ -4808,9 +4808,6 @@ const TOOL_GROUP_TEXT = {
 // Mirrors ROUTE_AVAILABILITY in the structural API (src/availability.ts): a withdrawn tool cannot be
 // calculated, a tool under review calculates but every view and report carries the notice.
 export const TOOL_AVAILABILITY = {
-    ec6_lateral_wall_resistance: { state: "withdrawn", since: "2026-10-18" },
-    ec5_timber_beam_fire_check: { state: "withdrawn", since: "2026-10-18" },
-    ec6_beam_bearing: { state: "under_review", since: "2026-10-18" },
     ec3_bolted_moment_connection: { state: "under_review", since: "2026-10-18" },
     ec3_splice_moment_connection: { state: "under_review", since: "2026-10-18" },
 };
@@ -5358,6 +5355,7 @@ const RESULT_SUMMARY_FIELDS = {
     ],
     ec5_timber_beam_fire_check: [
         { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+        { path: ["result", "d_eff_mm"], label: { nl: "Effectieve inbranddiepte", en: "Effective char depth", fr: "Profondeur de carbonisation effective" }, unit: "mm" },
         { path: ["result", "b_fi_mm"], label: { nl: "Restbreedte", en: "Residual width", fr: "Largeur residuelle" }, unit: "mm" },
         { path: ["result", "h_fi_mm"], label: { nl: "Resthoogte", en: "Residual height", fr: "Hauteur residuelle" }, unit: "mm" },
         { path: ["result", "uc_bending_fire"], label: { nl: "Brand buiging", en: "Fire bending UC", fr: "Taux flexion feu" } },
@@ -5443,7 +5441,8 @@ const RESULT_SUMMARY_FIELDS = {
     ec6_beam_bearing: [
         { path: ["status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
         { path: ["result", "contact_pressure_mpa"], label: { nl: "Contactspanning", en: "Contact pressure", fr: "Contrainte contact" }, unit: "MPa" },
-        { path: ["result", "design_bearing_resistance_mpa"], label: { nl: "Ontwerpweerstand", en: "Design resistance", fr: "Resistance de calcul" }, unit: "MPa" },
+        { path: ["result", "beta"], label: { nl: "beta", en: "beta", fr: "beta" } },
+        { path: ["result", "n_rdc_kn"], label: { nl: "NRdc", en: "NRdc", fr: "NRdc" }, unit: "kN" },
         { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
         { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
     ],
@@ -5896,6 +5895,11 @@ const REPORT_SECTION_FIELDS = {
         {
             heading: { nl: "Restsectie en controle", en: "Residual section and check", fr: "Section residuelle et verification" },
             fields: [
+                { path: ["result", "beta_n_mm_per_min"], label: { nl: "beta_n", en: "beta_n", fr: "beta_n" }, unit: "mm/min" },
+                { path: ["result", "k0"], label: { nl: "k0", en: "k0", fr: "k0" } },
+                { path: ["result", "d_eff_mm"], label: { nl: "d_ef = d_char,n + k0 d0", en: "d_ef = d_char,n + k0 d0", fr: "d_ef = d_char,n + k0 d0" }, unit: "mm" },
+                { path: ["result", "k_fi"], label: { nl: "k_fi", en: "k_fi", fr: "k_fi" } },
+                { path: ["result", "f_m_d_fi_mpa"], label: { nl: "f_m,d,fi", en: "f_m,d,fi", fr: "f_m,d,fi" }, unit: "MPa" },
                 { path: ["result", "b_fi_mm"], label: { nl: "Restbreedte", en: "Residual width", fr: "Largeur residuelle" }, unit: "mm" },
                 { path: ["result", "h_fi_mm"], label: { nl: "Resthoogte", en: "Residual height", fr: "Hauteur residuelle" }, unit: "mm" },
                 { path: ["result", "uc_bending_fire"], label: { nl: "Brand buiging UC", en: "Fire bending UC", fr: "Taux flexion feu" } },
@@ -6448,10 +6452,13 @@ const REPORT_SECTION_FIELDS = {
         {
             heading: { nl: "Opleg", en: "Bearing", fr: "Appui" },
             fields: [
-                { path: ["result", "effective_length_mm"], label: { nl: "Effectieve lengte", en: "Effective length", fr: "Longueur efficace" }, unit: "mm" },
-                { path: ["result", "bearing_area_mm2"], label: { nl: "Oplegoppervlak", en: "Bearing area", fr: "Surface d'appui" }, unit: "mm2" },
-                { path: ["result", "effective_area_mm2"], label: { nl: "Effectieve oppervlakte", en: "Effective area", fr: "Surface efficace" }, unit: "mm2" },
-                { path: ["result", "beta"], label: { nl: "Beta", en: "Beta", fr: "Beta" } },
+                { path: ["result", "spread_per_side_mm"], label: { nl: "Spreiding per zijde hc/(2 sqrt 3)", en: "Spread per side hc/(2 sqrt 3)", fr: "Diffusion par cote hc/(2 sqrt 3)" }, unit: "mm" },
+                { path: ["result", "effective_length_mm"], label: { nl: "Effectieve lengte l_efm", en: "Effective length l_efm", fr: "Longueur efficace l_efm" }, unit: "mm" },
+                { path: ["result", "bearing_area_mm2"], label: { nl: "Oplegoppervlak Ab", en: "Bearing area Ab", fr: "Surface d'appui Ab" }, unit: "mm2" },
+                { path: ["result", "effective_area_mm2"], label: { nl: "Effectieve oppervlakte Aef", en: "Effective area Aef", fr: "Surface efficace Aef" }, unit: "mm2" },
+                { path: ["result", "ab_over_aef"], label: { nl: "Ab/Aef (max 0,45)", en: "Ab/Aef (max 0.45)", fr: "Ab/Aef (max 0,45)" } },
+                { path: ["result", "beta_upper_limit"], label: { nl: "Bovengrens beta", en: "Beta upper limit", fr: "Limite superieure beta" } },
+                { path: ["result", "beta"], label: { nl: "Beta (6.11)", en: "Beta (6.11)", fr: "Beta (6.11)" } },
             ],
         },
         {
@@ -6459,6 +6466,7 @@ const REPORT_SECTION_FIELDS = {
             fields: [
                 { path: ["result", "contact_pressure_mpa"], label: { nl: "Contactspanning", en: "Contact pressure", fr: "Contrainte de contact" }, unit: "MPa" },
                 { path: ["result", "design_bearing_resistance_mpa"], label: { nl: "Oplegweerstand", en: "Bearing resistance", fr: "Resistance d'appui" }, unit: "MPa" },
+                { path: ["result", "n_rdc_kn"], label: { nl: "NRdc (6.10)", en: "NRdc (6.10)", fr: "NRdc (6.10)" }, unit: "kN" },
                 { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
                 { path: ["result", "check_passed"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
             ],
@@ -6551,6 +6559,12 @@ const REPORT_SECTION_FIELDS = {
             fields: [
                 { path: ["result", "actions", "n_ed_line_kn_per_m"], label: { nl: "NEd lijn", en: "Line NEd", fr: "NEd lineique" }, unit: "kN/m" },
                 { path: ["result", "actions", "w_ed_kn_per_m2"], label: { nl: "wEd", en: "wEd", fr: "wEd" }, unit: "kN/m2" },
+                { path: ["result", "fxk1_mpa"], label: { nl: "fxk1", en: "fxk1", fr: "fxk1" }, unit: "MPa" },
+                { path: ["result", "fxk2_mpa"], label: { nl: "fxk2", en: "fxk2", fr: "fxk2" }, unit: "MPa" },
+                { path: ["result", "material", "gamma_m"], label: { nl: "gamma_M", en: "gamma_M", fr: "gamma_M" } },
+                { path: ["result", "alpha2"], label: { nl: "alpha2 (geinterpoleerd)", en: "alpha2 (interpolated)", fr: "alpha2 (interpole)" } },
+                { path: ["result", "m_ed1_nmm_per_mm"], label: { nl: "MEd as 1 (verticaal)", en: "Axis 1 MEd (vertical)", fr: "MEd axe 1 (vertical)" }, unit: "Nmm/mm" },
+                { path: ["result", "m_ed2_nmm_per_mm"], label: { nl: "MEd as 2 (horizontaal)", en: "Axis 2 MEd (horizontal)", fr: "MEd axe 2 (horizontal)" }, unit: "Nmm/mm" },
                 { path: ["result", "m_rd1_nmm_per_mm"], label: { nl: "MRd as 1", en: "Axis 1 MRd", fr: "MRd axe 1" }, unit: "Nmm/mm" },
                 { path: ["result", "m_rd2_nmm_per_mm"], label: { nl: "MRd as 2", en: "Axis 2 MRd", fr: "MRd axe 2" }, unit: "Nmm/mm" },
                 { path: ["result", "axis_1_utilization_ratio"], label: { nl: "Benutting as 1", en: "Axis 1 utilization", fr: "Utilisation axe 1" } },

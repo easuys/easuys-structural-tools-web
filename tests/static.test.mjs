@@ -1319,16 +1319,15 @@ test("masonry strength form metadata builds the API payload", () => {
   });
 });
 
-test("beam bearing form metadata builds numeric and boolean API payload", () => {
+test("beam bearing form metadata builds the API payload without the retired top_of_wall flag", () => {
   const payload = buildPayloadFromFormValues("ec6_beam_bearing", {
     fd_mpa: "2.8",
     unit_group: "group_1",
     n_edc_kn: "95",
     bearing_length_mm: "180",
     bearing_width_mm: "140",
-    edge_distance_a1_mm: "90",
+    edge_distance_a1_mm: "0",
     wall_height_below_hc_mm: "450",
-    top_of_wall: true,
   });
 
   assert.deepEqual(payload, {
@@ -1337,10 +1336,11 @@ test("beam bearing form metadata builds numeric and boolean API payload", () => 
     n_edc_kn: 95,
     bearing_length_mm: 180,
     bearing_width_mm: 140,
-    edge_distance_a1_mm: 90,
+    edge_distance_a1_mm: 0,
     wall_height_below_hc_mm: 450,
-    top_of_wall: true,
   });
+  assert.ok(!TOOL_CATALOG.ec6_beam_bearing.form.fields.some((field) => field.name === "top_of_wall"));
+  assert.ok(!("top_of_wall" in TOOL_CATALOG.ec6_beam_bearing.sample));
 });
 
 test("masonry contact pressure form metadata builds the API payload", () => {
@@ -1400,11 +1400,11 @@ test("lateral wall resistance form metadata builds the API payload", () => {
     length_m: "5",
     thickness_mm: "190",
     support_case: "top_bottom",
-    material_type: "concrete_aac_fb_ge_5",
-    mortar_class: "M12",
+    fxk1_mpa: "0.2",
+    fxk2_mpa: "0.4",
     n_ed_line_kn_per_m: "75.5",
     w_ed_kn_per_m2: "1.8",
-    gamma_m: "2.2",
+    gamma_m: "2.5",
   });
 
   assert.deepEqual(payload, {
@@ -1412,12 +1412,17 @@ test("lateral wall resistance form metadata builds the API payload", () => {
     length_m: 5,
     thickness_mm: 190,
     support_case: "top_bottom",
-    material_type: "concrete_aac_fb_ge_5",
-    mortar_class: "M12",
+    fxk1_mpa: 0.2,
+    fxk2_mpa: 0.4,
     n_ed_line_kn_per_m: 75.5,
     w_ed_kn_per_m2: 1.8,
-    gamma_m: 2.2,
+    gamma_m: 2.5,
   });
+  const fieldNames = TOOL_CATALOG.ec6_lateral_wall_resistance.form.fields.map((field) => field.name);
+  assert.ok(!fieldNames.includes("material_type") && !fieldNames.includes("mortar_class"));
+  assert.match(TOOL_CATALOG.ec6_lateral_wall_resistance.form.fields.find((field) => field.name === "fxk1_mpa").label.nl, /3\.10-ANB/);
+  assert.match(TOOL_CATALOG.ec6_lateral_wall_resistance.form.fields.find((field) => field.name === "gamma_m").label.en, /2\.1-ANB/);
+  assert.equal(TOOL_CATALOG.ec6_lateral_wall_resistance.sample.gamma_m, 2.5);
 });
 
 test("masonry horizontal capacity form metadata builds the API payload", () => {
@@ -2157,7 +2162,7 @@ test("masonry result summaries format returned API fields only", () => {
       axis_1_utilization_ratio: 0.2223157894736842,
       axis_2_utilization_ratio: 0.6034285714285714,
       bending_model: "two_way",
-      warning_codes: ["ALPHA2_NEAREST_TABLE_VALUE"],
+      warning_codes: ["ALPHA2_CLAMPED_TO_TABLE_EDGE"],
     },
   }, "en");
 
@@ -2166,7 +2171,7 @@ test("masonry result summaries format returned API fields only", () => {
     { label: "Axis 1 utilization", value: "0.222" },
     { label: "Axis 2 utilization", value: "0.603" },
     { label: "Model", value: "two_way" },
-    { label: "Warnings", value: "ALPHA2_NEAREST_TABLE_VALUE" },
+    { label: "Warnings", value: "ALPHA2_CLAMPED_TO_TABLE_EDGE" },
   ]);
 
   const horizontal = buildResultSummaryItems({
@@ -3187,12 +3192,10 @@ test("ec3 bolted moment report helpers include detailed sections in standalone H
 });
 
 test("withdrawn and under-review tools carry localized notices, badges and a report notice", () => {
+  // EC6 lateral wall, EC6 beam bearing and EC5 fire returned on 2026-10-18 after their method fixes.
   assert.deepEqual(Object.keys(TOOL_AVAILABILITY).sort(), [
     "ec3_bolted_moment_connection",
     "ec3_splice_moment_connection",
-    "ec5_timber_beam_fire_check",
-    "ec6_beam_bearing",
-    "ec6_lateral_wall_resistance",
   ]);
   for (const [toolId, availability] of Object.entries(TOOL_AVAILABILITY)) {
     assert.ok(TOOL_CATALOG[toolId], `${toolId} must be a catalog tool`);
@@ -3202,20 +3205,21 @@ test("withdrawn and under-review tools carry localized notices, badges and a rep
       assert.ok(notice.message.length > 20);
     }
   }
-  assert.equal(TOOL_AVAILABILITY.ec6_lateral_wall_resistance.state, "withdrawn");
-  assert.equal(TOOL_AVAILABILITY.ec5_timber_beam_fire_check.state, "withdrawn");
+  for (const toolId of ["ec5_timber_beam_fire_check", "ec6_beam_bearing", "ec6_lateral_wall_resistance"]) {
+    assert.equal(buildAvailabilityNotice(toolId, "nl"), null, toolId);
+    assert.equal(buildToolContextModel(toolId, "en").availability, null, toolId);
+  }
   assert.equal(buildAvailabilityNotice("ec1_roof_loads", "nl"), null);
 
-  assert.match(buildAvailabilityNotice("ec6_lateral_wall_resistance", "nl").message, /Tijdelijk uit dienst/);
-  assert.match(buildAvailabilityNotice("ec6_beam_bearing", "nl").message, /Indicatief - in herziening/);
-  assert.equal(buildToolContextModel("ec5_timber_beam_fire_check", "en").availability.state, "withdrawn");
+  assert.match(buildAvailabilityNotice("ec3_splice_moment_connection", "nl").message, /Indicatief - in herziening/);
   assert.equal(buildToolContextModel("ec1_roof_loads", "en").availability, null);
 
   const overview = buildToolOverviewHtml("", "nl");
-  assert.match(overview, /data-tool-id="ec6_lateral_wall_resistance"[^>]*>[^<]*<span class="tool-availability-badge is-withdrawn">uit dienst<\/span>/);
+  assert.doesNotMatch(overview, /data-tool-id="ec6_lateral_wall_resistance"[^>]*>[^<]*<span class="tool-availability-badge/);
   assert.match(overview, /data-tool-id="ec3_bolted_moment_connection"[^>]*>[^<]*<span class="tool-availability-badge is-under_review">in herziening<\/span>/);
-  assert.equal(buildAvailabilityNotice("ec6_beam_bearing", "nl").status, "Indicatief rekenrecord - in herziening.");
-  assert.equal(buildAvailabilityNotice("ec6_lateral_wall_resistance", "fr").status, "Temporairement retiré.");
+  assert.equal(buildAvailabilityNotice("ec3_bolted_moment_connection", "nl").status, "Indicatief rekenrecord - in herziening.");
+  const withdrawnFromApi = buildAvailabilityNotice("ec6_lateral_wall_resistance", "fr", { state: "withdrawn", since: "2026-10-20", message: { nl: "x", en: "y", fr: "Notice API pour un retrait ulterieur" } });
+  assert.equal(withdrawnFromApi.status, "Temporairement retiré.");
 
   // The API's availability object wins over the local mirror (e.g. a route flagged later in the API only).
   const fromApi = buildAvailabilityNotice("ec1_roof_loads", "en", {
@@ -3230,7 +3234,7 @@ test("withdrawn and under-review tools carry localized notices, badges and a rep
     /class="availability-notice">Indicative - under review/
   );
 
-  const reviewed = buildReportHtml({ calculator_id: "ec6_beam_bearing", status: "pass", result: {} }, "nl");
+  const reviewed = buildReportHtml({ calculator_id: "ec3_splice_moment_connection", status: "pass", result: {} }, "nl");
   assert.match(reviewed, /class="availability-notice">Indicatief - in herziening/);
   const normal = buildReportHtml({ calculator_id: "ec1_roof_loads", status: "pass", result: {} }, "nl");
   assert.doesNotMatch(normal, /availability-notice">/);
