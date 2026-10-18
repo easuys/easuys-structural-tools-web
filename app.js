@@ -1314,7 +1314,7 @@ export const TOOL_CATALOG = {
             end_plate: {
                 thickness_mm: 30,
                 width_mm: 280,
-                height_mm: 750,
+                height_mm: 800,
                 steel_grade: "S355",
             },
             welds: {
@@ -1325,17 +1325,17 @@ export const TOOL_CATALOG = {
                 diameter_mm: 27,
                 bolt_class: "10.9",
                 rows: [
-                    { row_id: 1, vertical_position_mm: 500, number_of_bolts: 2 },
-                    { row_id: 2, vertical_position_mm: 600, number_of_bolts: 2 },
-                    { row_id: 3, vertical_position_mm: 680, number_of_bolts: 2 },
+                    { row_id: 1, vertical_position_mm: 750, number_of_bolts: 2 },
+                    { row_id: 2, vertical_position_mm: 621, number_of_bolts: 2 },
+                    { row_id: 3, vertical_position_mm: 521, number_of_bolts: 2 },
                 ],
                 horizontal_spacing_mm: 120,
-                edge_distance_horizontal_mm: 50,
-                edge_distance_vertical_top_mm: 70,
-                edge_distance_vertical_bottom_mm: 70,
+                edge_distance_horizontal_mm: 80,
+                edge_distance_vertical_top_mm: 50,
+                edge_distance_vertical_bottom_mm: 521,
             },
             loads: {
-                moment_knm: 500,
+                moment_knm: 600,
                 shear_kn: 200,
                 axial_kn: 0,
             },
@@ -4807,10 +4807,7 @@ const TOOL_GROUP_TEXT = {
 };
 // Mirrors ROUTE_AVAILABILITY in the structural API (src/availability.ts): a withdrawn tool cannot be
 // calculated, a tool under review calculates but every view and report carries the notice.
-export const TOOL_AVAILABILITY = {
-    ec3_bolted_moment_connection: { state: "under_review", since: "2026-10-18" },
-    ec3_splice_moment_connection: { state: "under_review", since: "2026-10-18" },
-};
+export const TOOL_AVAILABILITY = {};
 const AVAILABILITY_TEXT = {
     withdrawn: {
         badge: { nl: "uit dienst", en: "withdrawn", fr: "retiré" },

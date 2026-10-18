@@ -1246,6 +1246,17 @@ test("ec3 bolted lap joint form metadata builds the API payload", () => {
   });
 });
 
+test("ec3 bolted moment connection sample matches the API's hand-checked heavy fixture", () => {
+  // easuys-structural-tools-api data/fixtures/ec3_bolted_moment_connection_heavy_sample.json (EN 1993-1-8 hand case, PASS 96 %).
+  const sample = TOOL_CATALOG.ec3_bolted_moment_connection.sample;
+  assert.equal(sample.end_plate.height_mm, 800);
+  assert.deepEqual(sample.bolts.rows.map((row) => row.vertical_position_mm), [750, 621, 521]);
+  assert.equal(sample.bolts.edge_distance_horizontal_mm, 80);
+  assert.equal(sample.bolts.edge_distance_vertical_top_mm, 50);
+  assert.equal(sample.bolts.edge_distance_vertical_bottom_mm, 521);
+  assert.equal(sample.loads.moment_knm, 600);
+});
+
 test("ec3 bolted moment connection form metadata builds the API payload", () => {
   const payload = buildPayloadFromFormValues("ec3_bolted_moment_connection", {
     "column.steel_grade": "S355",
@@ -3192,32 +3203,26 @@ test("ec3 bolted moment report helpers include detailed sections in standalone H
 });
 
 test("withdrawn and under-review tools carry localized notices, badges and a report notice", () => {
-  // EC6 lateral wall, EC6 beam bearing and EC5 fire returned on 2026-10-18 after their method fixes.
-  assert.deepEqual(Object.keys(TOOL_AVAILABILITY).sort(), [
+  // EC6 lateral wall, EC6 beam bearing and EC5 fire returned on 2026-10-18, and the EC3 moment and splice joints on
+  // 2026-10-19 after their EN 1993-1-8 fix; the mirror is empty and the API's availability object drives any notice.
+  assert.deepEqual(Object.keys(TOOL_AVAILABILITY), []);
+  for (const toolId of [
     "ec3_bolted_moment_connection",
     "ec3_splice_moment_connection",
-  ]);
-  for (const [toolId, availability] of Object.entries(TOOL_AVAILABILITY)) {
-    assert.ok(TOOL_CATALOG[toolId], `${toolId} must be a catalog tool`);
-    for (const lang of ["nl", "en", "fr"]) {
-      const notice = buildAvailabilityNotice(toolId, lang);
-      assert.equal(notice.state, availability.state);
-      assert.ok(notice.message.length > 20);
-    }
-  }
-  for (const toolId of ["ec5_timber_beam_fire_check", "ec6_beam_bearing", "ec6_lateral_wall_resistance"]) {
+    "ec5_timber_beam_fire_check",
+    "ec6_beam_bearing",
+    "ec6_lateral_wall_resistance",
+  ]) {
     assert.equal(buildAvailabilityNotice(toolId, "nl"), null, toolId);
     assert.equal(buildToolContextModel(toolId, "en").availability, null, toolId);
   }
   assert.equal(buildAvailabilityNotice("ec1_roof_loads", "nl"), null);
-
-  assert.match(buildAvailabilityNotice("ec3_splice_moment_connection", "nl").message, /Indicatief - in herziening/);
   assert.equal(buildToolContextModel("ec1_roof_loads", "en").availability, null);
 
   const overview = buildToolOverviewHtml("", "nl");
-  assert.doesNotMatch(overview, /data-tool-id="ec6_lateral_wall_resistance"[^>]*>[^<]*<span class="tool-availability-badge/);
-  assert.match(overview, /data-tool-id="ec3_bolted_moment_connection"[^>]*>[^<]*<span class="tool-availability-badge is-under_review">in herziening<\/span>/);
-  assert.equal(buildAvailabilityNotice("ec3_bolted_moment_connection", "nl").status, "Indicatief rekenrecord - in herziening.");
+  assert.doesNotMatch(overview, /tool-availability-badge/);
+  const underReviewFromApi = buildAvailabilityNotice("ec3_bolted_moment_connection", "nl", { state: "under_review", since: "2026-10-20", message: { nl: "Indicatief - in herziening: x", en: "y", fr: "z" } });
+  assert.equal(underReviewFromApi.status, "Indicatief rekenrecord - in herziening.");
   const withdrawnFromApi = buildAvailabilityNotice("ec6_lateral_wall_resistance", "fr", { state: "withdrawn", since: "2026-10-20", message: { nl: "x", en: "y", fr: "Notice API pour un retrait ulterieur" } });
   assert.equal(withdrawnFromApi.status, "Temporairement retiré.");
 
@@ -3234,7 +3239,7 @@ test("withdrawn and under-review tools carry localized notices, badges and a rep
     /class="availability-notice">Indicative - under review/
   );
 
-  const reviewed = buildReportHtml({ calculator_id: "ec3_splice_moment_connection", status: "pass", result: {} }, "nl");
+  const reviewed = buildReportHtml({ calculator_id: "ec3_splice_moment_connection", status: "pass", result: {}, availability: { state: "under_review" } }, "nl");
   assert.match(reviewed, /class="availability-notice">Indicatief - in herziening/);
   const normal = buildReportHtml({ calculator_id: "ec1_roof_loads", status: "pass", result: {} }, "nl");
   assert.doesNotMatch(normal, /availability-notice">/);
