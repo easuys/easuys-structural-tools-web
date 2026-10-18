@@ -1241,3 +1241,42 @@ a:hover {
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 165px), 1fr));
     }
 }
+
+/* Route availability: withdrawn tools and tools under review (mirrors the API availability list). */
+.tool-availability-notice {
+    border: 2px solid #a5513d;
+    border-radius: 10px;
+    color: #7a2e1d;
+    font-weight: 700;
+    margin: 0 0 14px;
+    padding: 10px 12px;
+}
+
+.tool-availability-notice.is-under_review {
+    border-color: #8b5e00;
+    color: #6b4800;
+}
+
+.tool-availability-badge {
+    border-radius: 999px;
+    font-size: 0.72em;
+    font-weight: 700;
+    margin-left: 6px;
+    padding: 1px 7px;
+    vertical-align: middle;
+}
+
+.tool-availability-badge.is-withdrawn {
+    background: #f6e3de;
+    color: #7a2e1d;
+}
+
+.tool-availability-badge.is-under_review {
+    background: #f6ecd6;
+    color: #6b4800;
+}
+
+button[data-calculate]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}

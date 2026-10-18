@@ -4805,6 +4805,62 @@ const TOOL_GROUP_TEXT = {
         },
     },
 };
+// Mirrors ROUTE_AVAILABILITY in the structural API (src/availability.ts): a withdrawn tool cannot be
+// calculated, a tool under review calculates but every view and report carries the notice.
+export const TOOL_AVAILABILITY = {
+    ec6_lateral_wall_resistance: { state: "withdrawn", since: "2026-10-18" },
+    ec5_timber_beam_fire_check: { state: "withdrawn", since: "2026-10-18" },
+    ec6_beam_bearing: { state: "under_review", since: "2026-10-18" },
+    ec3_bolted_moment_connection: { state: "under_review", since: "2026-10-18" },
+    ec3_splice_moment_connection: { state: "under_review", since: "2026-10-18" },
+};
+const AVAILABILITY_TEXT = {
+    withdrawn: {
+        badge: { nl: "uit dienst", en: "withdrawn", fr: "retiré" },
+        status: { nl: "Tijdelijk uit dienst.", en: "Temporarily withdrawn.", fr: "Temporairement retiré." },
+        message: {
+            nl: "Tijdelijk uit dienst: deze berekening wordt herzien na een interne controle. Gebruik eerdere resultaten van deze tool niet zonder nazicht.",
+            en: "Temporarily withdrawn: this calculation is being revised after an internal check. Do not use earlier results of this tool without having them checked.",
+            fr: "Temporairement retiré : ce calcul est en cours de révision après un contrôle interne. N'utilisez pas les résultats antérieurs de cet outil sans vérification.",
+        },
+    },
+    under_review: {
+        badge: { nl: "in herziening", en: "under review", fr: "en révision" },
+        status: {
+            nl: "Indicatief rekenrecord - in herziening.",
+            en: "Indicative calculation record - under review.",
+            fr: "Relevé de calcul indicatif - en révision.",
+        },
+        message: {
+            nl: "Indicatief - in herziening: de rekenmethode van deze tool wordt nagekeken. Gebruik het resultaat enkel als eerste inschatting en laat het nazien.",
+            en: "Indicative - under review: the method of this tool is being checked. Use the result only as a first estimate and have it checked.",
+            fr: "Indicatif - en révision : la méthode de cet outil est en cours de vérification. Utilisez le résultat uniquement comme première estimation et faites-le vérifier.",
+        },
+    },
+};
+export function buildAvailabilityNotice(toolId, lang = "en", apiAvailability = null) {
+    // The API's availability object (sent with 503s and under-review results) wins over the local mirror,
+    // so a route the API flags is still flagged when this mirror is out of date.
+    const state = apiAvailability?.state === "withdrawn" || apiAvailability?.state === "under_review"
+        ? apiAvailability.state
+        : TOOL_AVAILABILITY[toolId]?.state;
+    if (!state)
+        return null;
+    const text = AVAILABILITY_TEXT[state];
+    return {
+        state,
+        since: apiAvailability?.since || TOOL_AVAILABILITY[toolId]?.since || "",
+        badge: text.badge[lang] || text.badge.en,
+        status: text.status[lang] || text.status.en,
+        message: apiAvailability?.message?.[lang] || text.message[lang] || text.message.en,
+    };
+}
+function buildAvailabilityBadgeHtml(toolId, lang) {
+    const notice = buildAvailabilityNotice(toolId, lang);
+    return notice
+        ? ` <span class="tool-availability-badge is-${notice.state}">${escapeHtml(notice.badge)}</span>`
+        : "";
+}
 const TOOL_CONTEXT_OVERRIDES = {
     beam_simple_diagrams: {
         summary: {
@@ -6603,7 +6659,7 @@ export function buildToolOverviewHtml(query, lang, activeToolId = "") {
         `<div class="tool-overview-groups">${groups.map((group) => (`<article class="tool-overview-card">
         <h3>${escapeHtml(group.label)}</h3>
         <p>${escapeHtml(group.summary)}</p>
-        <div class="tool-overview-items">${group.items.map((item) => (`<button type="button" class="tool-overview-item" data-tool-id="${item.toolId}" ${item.toolId === activeToolId ? 'aria-current="true"' : ""}>${escapeHtml(item.title)}</button>`)).join("")}</div>
+        <div class="tool-overview-items">${group.items.map((item) => (`<button type="button" class="tool-overview-item" data-tool-id="${item.toolId}" ${item.toolId === activeToolId ? 'aria-current="true"' : ""}>${escapeHtml(item.title)}${buildAvailabilityBadgeHtml(item.toolId, lang)}</button>`)).join("")}</div>
       </article>`)).join("")}</div>`,
     ].join("");
 }
@@ -6643,7 +6699,7 @@ function renderToolTabs(toolId, query, lang) {
     }
     return `<div class="tool-nav-groups">${groups.map((group) => (`<section class="tool-nav-group">
       <div class="tool-nav-group-title">${escapeHtml(group.label)}</div>
-      ${group.items.map((item) => (`<button type="button" data-tool-id="${item.toolId}" ${item.toolId === toolId ? 'aria-current="true"' : ""}>${escapeHtml(item.title)}</button>`)).join("")}
+      ${group.items.map((item) => (`<button type="button" data-tool-id="${item.toolId}" ${item.toolId === toolId ? 'aria-current="true"' : ""}>${escapeHtml(item.title)}${buildAvailabilityBadgeHtml(item.toolId, lang)}</button>`)).join("")}
     </section>`)).join("")}</div>`;
 }
 export function buildToolContextModel(toolId, lang = "en") {
@@ -6661,12 +6717,16 @@ export function buildToolContextModel(toolId, lang = "en") {
         route: TOOL_CATALOG[toolId].endpoint,
         summary: override?.summary?.[lang] || override?.summary?.en || group.summary[lang] || group.summary.en,
         limitations: override?.limitations?.[lang] || override?.limitations?.en || group.limitations[lang] || group.limitations.en,
+        availability: buildAvailabilityNotice(toolId, lang),
         assets,
     };
 }
 function renderToolContext(container, toolId, lang) {
     const context = buildToolContextModel(toolId, lang);
     container.innerHTML = [
+        context.availability
+            ? `<p class="tool-availability-notice is-${context.availability.state}" role="alert">${escapeHtml(context.availability.message)}</p>`
+            : "",
         `<div class="tool-context-header">`,
         `<h3>${escapeHtml(context.title)}</h3>`,
         `<span class="tool-context-chip">${escapeHtml(context.groupLabel)}</span>`,
@@ -7696,6 +7756,7 @@ export function buildReportModel(response, lang = "en", generatedAt = new Date()
     const sections = buildReportSections(response, lang);
     return {
         title: text.reportTitle,
+        availability: buildAvailabilityNotice(response.calculator_id || "", lang, response.availability),
         details: [
             { label: text.generatedAt, value: generatedAt.toISOString() },
             { label: text.calculator, value: response.calculator_id || text.notProvided },
@@ -7750,10 +7811,12 @@ export function buildReportHtml(response, lang = "en", generatedAt = new Date())
         "    .visual-metric-fill { background: #2b4c65; height: 100%; }",
         "    .visual-metric-fill.is-danger { background: #a5513d; }",
         "    .visual-metric-value { font-weight: 700; margin-top: 3px; }",
+        "    .availability-notice { border: 2px solid #a5513d; border-radius: 8px; color: #7a2e1d; font-weight: 700; padding: 10px 12px; }",
         "  </style>",
         "</head>",
         "<body>",
         `  <h1>${escapeHtml(report.title)}</h1>`,
+        report.availability ? `  <p class="availability-notice">${escapeHtml(report.availability.message)}</p>` : "",
         `  <dl>${report.details.map((item) => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`).join("")}</dl>`,
         `  <section class="summary"><h2>${escapeHtml(report.summaryHeading)}</h2><ul>${report.summaryItems.map((item) => `<li>${escapeHtml(`${item.label}: ${item.value}`)}</li>`).join("")}</ul></section>`,
         visuals ? `  <section class="detail-section"><h2>${escapeHtml(TEXT[lang]?.visuals || TEXT.en.visuals)}</h2>${visuals}</section>` : "",
@@ -7963,10 +8026,13 @@ export function initApp(documentRef = globalThis.document) {
         lastResponse = null;
         renderNavigation();
         documentRef.querySelector("[data-tool-title]").textContent = activeTool.title[state.lang];
-        documentRef.querySelector("[data-tool-status]").textContent = text.status;
+        documentRef.querySelector("[data-tool-status]").textContent =
+            buildAvailabilityNotice(state.toolId, state.lang)?.status || text.status;
         documentRef.querySelector("[data-input-label]").textContent = text.input;
         documentRef.querySelector("[data-result-heading]").textContent = text.result;
-        documentRef.querySelector("[data-calculate]").textContent = text.calculate;
+        const calculateButton = documentRef.querySelector("[data-calculate]");
+        calculateButton.textContent = text.calculate;
+        calculateButton.disabled = TOOL_AVAILABILITY[state.toolId]?.state === "withdrawn";
         documentRef.querySelector("[data-save]").textContent = text.save;
         documentRef.querySelector("[data-load]").textContent = text.load;
         downloadButton.textContent = text.download;
@@ -7997,7 +8063,8 @@ export function initApp(documentRef = globalThis.document) {
         writeUrlState(state);
     }
     tabs.addEventListener("click", (event) => {
-        const toolId = event.target?.dataset?.toolId;
+        const button = event.target?.closest?.("[data-tool-id]");
+        const toolId = button?.dataset?.toolId;
         if (!toolId)
             return;
         state.toolId = toolId;
@@ -8033,6 +8100,9 @@ export function initApp(documentRef = globalThis.document) {
     });
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (TOOL_AVAILABILITY[state.toolId]?.state === "withdrawn")
+            return;
+        const submittedToolId = state.toolId;
         renderResultOutput(outputPlaceholder, output, null, state.lang);
         renderResultSummary(resultSummary, null, state.lang);
         renderReport(report, null, state.lang);
@@ -8040,14 +8110,21 @@ export function initApp(documentRef = globalThis.document) {
         downloadButton.disabled = true;
         downloadHtmlButton.disabled = true;
         printButton.disabled = true;
+        let unavailableMessage = "";
         try {
             const payload = JSON.parse(input.value);
-            const response = await fetch(`${API_BASE_URL}${TOOL_CATALOG[state.toolId].endpoint}`, {
+            const response = await fetch(`${API_BASE_URL}${TOOL_CATALOG[submittedToolId].endpoint}`, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(payload),
             });
             const result = await response.json();
+            // Ignore a late answer for a tool the user has already left.
+            if (state.toolId !== submittedToolId)
+                return;
+            if (result?.availability?.state === "withdrawn") {
+                unavailableMessage = buildAvailabilityNotice(submittedToolId, state.lang, result.availability)?.message || "";
+            }
             if (!response.ok || !hasCalculationResult(result)) {
                 throw new Error(result?.error || "The calculation did not return a result record.");
             }
@@ -8066,6 +8143,8 @@ export function initApp(documentRef = globalThis.document) {
             renderReport(report, null, state.lang);
             renderVisuals(null);
             renderResultOutput(outputPlaceholder, output, null, state.lang);
+            if (unavailableMessage)
+                outputPlaceholder.textContent = unavailableMessage;
             lastResponse = null;
             downloadButton.disabled = true;
             downloadHtmlButton.disabled = true;
@@ -8172,6 +8251,9 @@ function renderReport(container, response, lang) {
     container.hidden = false;
     container.innerHTML = [
         `<h3>${escapeHtml(report.title)}</h3>`,
+        report.availability
+            ? `<p class="tool-availability-notice is-${report.availability.state}">${escapeHtml(report.availability.message)}</p>`
+            : "",
         `<dl class="report-details">${report.details.map((item) => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.value)}</dd></div>`).join("")}</dl>`,
         renderReportSection(report.summaryHeading, report.summaryItems.map((item) => `${item.label}: ${item.value}`)),
         ...report.sections.map((section) => renderReportDetailSection(section)),

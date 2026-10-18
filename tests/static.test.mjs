@@ -5,9 +5,11 @@ import { test } from "node:test";
 
 import {
   API_BASE_URL,
+  TOOL_AVAILABILITY,
   TOOL_CATALOG,
   TOOL_GROUP_ORDER,
   TURNSTILE_ENABLED,
+  buildAvailabilityNotice,
   buildFriendlyFieldHelp,
   buildCrossLinkHtml,
   buildCrossLinkItems,
@@ -3182,4 +3184,64 @@ test("ec3 bolted moment report helpers include detailed sections in standalone H
   assert.match(html, /Column profile/);
   assert.match(html, /Applied moment/);
   assert.match(html, /Critical component/);
+});
+
+test("withdrawn and under-review tools carry localized notices, badges and a report notice", () => {
+  assert.deepEqual(Object.keys(TOOL_AVAILABILITY).sort(), [
+    "ec3_bolted_moment_connection",
+    "ec3_splice_moment_connection",
+    "ec5_timber_beam_fire_check",
+    "ec6_beam_bearing",
+    "ec6_lateral_wall_resistance",
+  ]);
+  for (const [toolId, availability] of Object.entries(TOOL_AVAILABILITY)) {
+    assert.ok(TOOL_CATALOG[toolId], `${toolId} must be a catalog tool`);
+    for (const lang of ["nl", "en", "fr"]) {
+      const notice = buildAvailabilityNotice(toolId, lang);
+      assert.equal(notice.state, availability.state);
+      assert.ok(notice.message.length > 20);
+    }
+  }
+  assert.equal(TOOL_AVAILABILITY.ec6_lateral_wall_resistance.state, "withdrawn");
+  assert.equal(TOOL_AVAILABILITY.ec5_timber_beam_fire_check.state, "withdrawn");
+  assert.equal(buildAvailabilityNotice("ec1_roof_loads", "nl"), null);
+
+  assert.match(buildAvailabilityNotice("ec6_lateral_wall_resistance", "nl").message, /Tijdelijk uit dienst/);
+  assert.match(buildAvailabilityNotice("ec6_beam_bearing", "nl").message, /Indicatief - in herziening/);
+  assert.equal(buildToolContextModel("ec5_timber_beam_fire_check", "en").availability.state, "withdrawn");
+  assert.equal(buildToolContextModel("ec1_roof_loads", "en").availability, null);
+
+  const overview = buildToolOverviewHtml("", "nl");
+  assert.match(overview, /data-tool-id="ec6_lateral_wall_resistance"[^>]*>[^<]*<span class="tool-availability-badge is-withdrawn">uit dienst<\/span>/);
+  assert.match(overview, /data-tool-id="ec3_bolted_moment_connection"[^>]*>[^<]*<span class="tool-availability-badge is-under_review">in herziening<\/span>/);
+  assert.equal(buildAvailabilityNotice("ec6_beam_bearing", "nl").status, "Indicatief rekenrecord - in herziening.");
+  assert.equal(buildAvailabilityNotice("ec6_lateral_wall_resistance", "fr").status, "Temporairement retiré.");
+
+  // The API's availability object wins over the local mirror (e.g. a route flagged later in the API only).
+  const fromApi = buildAvailabilityNotice("ec1_roof_loads", "en", {
+    state: "withdrawn",
+    since: "2026-10-20",
+    message: { nl: "x", en: "API notice text for a later withdrawal", fr: "y" },
+  });
+  assert.equal(fromApi.state, "withdrawn");
+  assert.equal(fromApi.message, "API notice text for a later withdrawal");
+  assert.match(
+    buildReportHtml({ calculator_id: "ec1_roof_loads", status: "pass", result: {}, availability: { state: "under_review" } }, "en"),
+    /class="availability-notice">Indicative - under review/
+  );
+
+  const reviewed = buildReportHtml({ calculator_id: "ec6_beam_bearing", status: "pass", result: {} }, "nl");
+  assert.match(reviewed, /class="availability-notice">Indicatief - in herziening/);
+  const normal = buildReportHtml({ calculator_id: "ec1_roof_loads", status: "pass", result: {} }, "nl");
+  assert.doesNotMatch(normal, /availability-notice">/);
+});
+
+test("withdrawn tools cannot be calculated from the browser and the nav accepts badge clicks", async () => {
+  const appJs = await readFile(new URL("../app.js", import.meta.url), "utf8");
+  const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(appJs, /calculateButton\.disabled = TOOL_AVAILABILITY\[state\.toolId\]\?\.state === "withdrawn";/);
+  assert.match(appJs, /if \(TOOL_AVAILABILITY\[state\.toolId\]\?\.state === "withdrawn"\)\s*return;/);
+  assert.match(appJs, /if \(state\.toolId !== submittedToolId\)\s*return;/);
+  assert.match(appJs, /closest\?\.\("\[data-tool-id\]"\)/);
+  assert.match(html, /<script type="module" src="app\.js\?v=\d{8}"><\/script>/);
 });
