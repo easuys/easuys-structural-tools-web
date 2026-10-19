@@ -2018,7 +2018,7 @@ export const TOOL_CATALOG = {
         iz_mm4: 2836000,
         wy_pl_mm3: 366600,
         it_mm4: 130000,
-        iw_mm6: 37400000,
+        iw_mm6: 37390000000,
       },
       m_ed_knm: 40,
       unbraced_length_m: 3,
