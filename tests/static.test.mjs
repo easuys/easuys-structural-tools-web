@@ -1434,6 +1434,11 @@ test("lateral wall resistance form metadata builds the API payload", () => {
   assert.match(TOOL_CATALOG.ec6_lateral_wall_resistance.form.fields.find((field) => field.name === "fxk1_mpa").label.nl, /3\.10-ANB/);
   assert.match(TOOL_CATALOG.ec6_lateral_wall_resistance.form.fields.find((field) => field.name === "gamma_m").label.en, /2\.1-ANB/);
   assert.equal(TOOL_CATALOG.ec6_lateral_wall_resistance.sample.gamma_m, 2.5);
+  // EN 1996-1-1 Annex E: condition E (four edges simply supported) and condition A (top edge free), API 2026-10-20.1.
+  assert.deepEqual(
+    TOOL_CATALOG.ec6_lateral_wall_resistance.form.fields.find((field) => field.name === "support_case").options,
+    ["four_sides", "three_sides_top_free", "top_bottom", "left_right"]
+  );
 });
 
 test("masonry horizontal capacity form metadata builds the API payload", () => {

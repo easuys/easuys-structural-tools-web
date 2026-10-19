@@ -4646,7 +4646,7 @@ export const TOOL_CATALOG = {
                     value_type: "string",
                     control: "select",
                     label: { nl: "Ondersteuning", en: "Support case", fr: "Cas d'appui" },
-                    options: ["four_sides", "top_bottom", "left_right"],
+                    options: ["four_sides", "three_sides_top_free", "top_bottom", "left_right"],
                 },
                 {
                     name: "fxk1_mpa",
