@@ -1414,6 +1414,7 @@ test("lateral wall resistance form metadata builds the API payload", () => {
     fxk1_mpa: "0.2",
     fxk2_mpa: "0.4",
     n_ed_line_kn_per_m: "75.5",
+    fd_mpa: "3.2",
     w_ed_kn_per_m2: "1.8",
     gamma_m: "2.5",
   });
@@ -1426,9 +1427,12 @@ test("lateral wall resistance form metadata builds the API payload", () => {
     fxk1_mpa: 0.2,
     fxk2_mpa: 0.4,
     n_ed_line_kn_per_m: 75.5,
+    fd_mpa: 3.2,
     w_ed_kn_per_m2: 1.8,
     gamma_m: 2.5,
   });
+  // EN 1996-1-1 6.3.1(4)(i): the API needs f_d whenever a vertical load is entered; the sample carries one.
+  assert.equal(TOOL_CATALOG.ec6_lateral_wall_resistance.sample.fd_mpa, 3);
   const fieldNames = TOOL_CATALOG.ec6_lateral_wall_resistance.form.fields.map((field) => field.name);
   assert.ok(!fieldNames.includes("material_type") && !fieldNames.includes("mortar_class"));
   assert.match(TOOL_CATALOG.ec6_lateral_wall_resistance.form.fields.find((field) => field.name === "fxk1_mpa").label.nl, /3\.10-ANB/);

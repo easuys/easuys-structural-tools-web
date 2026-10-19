@@ -4612,6 +4612,7 @@ export const TOOL_CATALOG = {
             fxk1_mpa: 0.2,
             fxk2_mpa: 0.4,
             n_ed_line_kn_per_m: 60,
+            fd_mpa: 3,
             w_ed_kn_per_m2: 0.6,
             gamma_m: 2.5,
         },
@@ -4679,6 +4680,18 @@ export const TOOL_CATALOG = {
                     step: "0.1",
                     label: { nl: "NEd lijnlast (minimum)", en: "NEd line load (minimum)", fr: "Charge lineaire NEd (minimum)" },
                     unit: "kN/m",
+                },
+                {
+                    name: "fd_mpa",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.1",
+                    label: {
+                        nl: "fd metselwerk (nodig bij NEd > 0; sigma_d <= 0,2 fd)",
+                        en: "Masonry fd (needed when NEd > 0; sigma_d <= 0.2 fd)",
+                        fr: "fd maconnerie (requis si NEd > 0; sigma_d <= 0,2 fd)",
+                    },
+                    unit: "MPa",
                 },
                 {
                     name: "w_ed_kn_per_m2",
