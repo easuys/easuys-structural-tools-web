@@ -4887,6 +4887,144 @@ function buildAvailabilityBadgeHtml(toolId, lang, schemaMetadata = schemaMetadat
         ? ` <span class="tool-availability-badge is-${notice.state}">${escapeHtml(notice.badge)}</span>`
         : "";
 }
+// Evidence level per calculator (owner decision D5, API roadmap R12): the level and its label come from the
+// API's /schema `evidence` field; nothing here assigns a level to a route. Without that field (an older API, or
+// before /schema has loaded) no badge is shown and the page keeps only the link to the explanation.
+export const EVIDENCE_SECTION_ID = "tool-checks";
+const EVIDENCE_LEVEL_PATTERN = /^E\d{1,2}$/;
+export const EVIDENCE_TEXT = {
+    nl: {
+        levelName: "Controleniveau",
+        howChecked: "Hoe deze tools gecontroleerd zijn",
+        legendLink: "Controleniveaus E0-E2: hoe deze tools gecontroleerd zijn",
+        intro: "Elke calculator toont een controleniveau. Het zegt hoe de berekening tot nu toe gecontroleerd is, niet of een ontwerp volstaat.",
+        levels: {
+            E0: {
+                name: "Formulecontrole",
+                text: "De formules zijn uit de norm geïmplementeerd en gecontroleerd met geautomatiseerde codetests. Er is nog geen onafhankelijk referentiegeval.",
+            },
+            E1: {
+                name: "Onafhankelijke handberekeningen",
+                text: "De resultaten zijn vergeleken met onafhankelijke handberekeningen.",
+            },
+            E2: {
+                name: "Gepubliceerd rekenvoorbeeld",
+                text: "De resultaten zijn vergeleken met een gepubliceerd rekenvoorbeeld.",
+            },
+        },
+        notes: [
+            "De resultaten zijn hulpmiddelen voor gekwalificeerde ingenieurs. Ze zijn geen vrijgave van een ontwerp en vervangen geen projectspecifieke controle.",
+            "Belgische nationale bijlage (ANB): waar een waarde niet uit een vrij beschikbare bron geciteerd kan worden, is ze een verplichte invoer. De tool neemt ze niet zelf aan.",
+            "In herziening: de tool rekent, maar de rekenmethode wordt nagekeken; gebruik het resultaat enkel als eerste inschatting. Uit dienst: de tool rekent tijdelijk niet.",
+            "Het niveau van elke calculator komt van de rekendienst zelf en wijzigt wanneer een tool verder gecontroleerd wordt.",
+        ],
+        backToCalculators: "Terug naar de calculators",
+    },
+    en: {
+        levelName: "Evidence level",
+        howChecked: "How these tools are checked",
+        legendLink: "Evidence levels E0-E2: how these tools are checked",
+        intro: "Each calculator shows an evidence level. It states how the calculation has been checked so far, not whether a design is adequate.",
+        levels: {
+            E0: {
+                name: "Formula check",
+                text: "The formulas are implemented from the standard and checked with automated code tests. There is no independent reference case yet.",
+            },
+            E1: {
+                name: "Independent hand calculations",
+                text: "The results have been compared with independent hand calculations.",
+            },
+            E2: {
+                name: "Published worked example",
+                text: "The results have been compared with a published worked example.",
+            },
+        },
+        notes: [
+            "The results are aids for qualified engineers. They are not a design release and do not replace a project-specific check.",
+            "Belgian national annex (ANB) values: where a value cannot be cited from a freely available source, it is a required input. The tool does not assume it.",
+            "Under review: the tool calculates, but its method is being checked; use the result only as a first estimate. Withdrawn: the tool temporarily does not calculate.",
+            "The level of each calculator comes from the calculation service itself and changes when a tool is checked further.",
+        ],
+        backToCalculators: "Back to the calculators",
+    },
+    fr: {
+        levelName: "Niveau de vérification",
+        howChecked: "Comment ces outils sont vérifiés",
+        legendLink: "Niveaux de vérification E0-E2 : comment ces outils sont vérifiés",
+        intro: "Chaque calculateur affiche un niveau de vérification. Il indique comment le calcul a été vérifié jusqu'ici, pas si une conception est suffisante.",
+        levels: {
+            E0: {
+                name: "Contrôle des formules",
+                text: "Les formules sont implémentées à partir de la norme et vérifiées par des tests de code automatisés. Il n'y a pas encore de cas de référence indépendant.",
+            },
+            E1: {
+                name: "Calculs manuels indépendants",
+                text: "Les résultats ont été comparés à des calculs manuels indépendants.",
+            },
+            E2: {
+                name: "Exemple de calcul publié",
+                text: "Les résultats ont été comparés à un exemple de calcul publié.",
+            },
+        },
+        notes: [
+            "Les résultats sont des aides destinées à des ingénieurs qualifiés. Ils ne constituent pas une validation de conception et ne remplacent pas une vérification propre au projet.",
+            "Valeurs de l'annexe nationale belge (ANB) : lorsqu'une valeur ne peut pas être citée d'une source librement accessible, elle est une donnée d'entrée obligatoire. L'outil ne la suppose pas.",
+            "En révision : l'outil calcule, mais sa méthode est en cours de vérification ; utilisez le résultat uniquement comme première estimation. Retiré : l'outil ne calcule temporairement pas.",
+            "Le niveau de chaque calculateur provient du service de calcul lui-même et change lorsqu'un outil est vérifié davantage.",
+        ],
+        backToCalculators: "Retour aux calculateurs",
+    },
+};
+/** The evidence level and its localized API label for a calculator, or null when /schema does not serve one. */
+export function buildEvidenceBadge(toolId, lang = "en", schemaMetadata = schemaMetadataCache) {
+    const evidence = schemaEntryForTool(toolId, schemaMetadata)?.evidence;
+    const level = typeof evidence?.level === "string" ? evidence.level.trim().toUpperCase() : "";
+    if (!EVIDENCE_LEVEL_PATTERN.test(level))
+        return null;
+    return {
+        level,
+        label: localizedText(evidence.label, lang),
+        levelClass: `is-${level.toLowerCase()}`,
+    };
+}
+function evidenceTitle(badge, lang) {
+    const levelName = (EVIDENCE_TEXT[lang] || EVIDENCE_TEXT.en).levelName;
+    return badge.label ? `${levelName} ${badge.level}: ${badge.label}` : `${levelName} ${badge.level}`;
+}
+/** Compact level chip for the calculator lists; it sits inside the tool button, so it is not a link itself. */
+export function buildEvidenceChipHtml(toolId, lang = "en", schemaMetadata = schemaMetadataCache) {
+    const badge = buildEvidenceBadge(toolId, lang, schemaMetadata);
+    if (!badge)
+        return "";
+    const levelName = (EVIDENCE_TEXT[lang] || EVIDENCE_TEXT.en).levelName;
+    return ` <span class="evidence-badge ${badge.levelClass}" data-evidence-level="${badge.level}" title="${escapeHtml(evidenceTitle(badge, lang))}"><span class="visually-hidden">${escapeHtml(levelName)} </span>${escapeHtml(badge.level)}</span>`;
+}
+/** Level badge with the API label for the calculator page; the badge links to the explanation section. */
+export function buildEvidenceSummaryHtml(toolId, lang = "en", schemaMetadata = schemaMetadataCache) {
+    const text = EVIDENCE_TEXT[lang] || EVIDENCE_TEXT.en;
+    const badge = buildEvidenceBadge(toolId, lang, schemaMetadata);
+    const link = `<a class="evidence-link" href="#${EVIDENCE_SECTION_ID}" data-evidence-link>${escapeHtml(text.howChecked)}</a>`;
+    if (!badge)
+        return `<div class="evidence-summary is-unknown">${link}</div>`;
+    return [
+        `<div class="evidence-summary" data-evidence-level="${badge.level}">`,
+        `<a class="evidence-badge ${badge.levelClass}" href="#${EVIDENCE_SECTION_ID}" data-evidence-link title="${escapeHtml(text.howChecked)}">${escapeHtml(text.levelName)} ${escapeHtml(badge.level)}</a>`,
+        badge.label ? `<span class="evidence-label">${escapeHtml(badge.label)}</span>` : "",
+        link,
+        `</div>`,
+    ].join("");
+}
+/** The "How these tools are checked" section in the active language. */
+export function buildEvidenceExplainerHtml(lang = "en") {
+    const text = EVIDENCE_TEXT[lang] || EVIDENCE_TEXT.en;
+    return [
+        `<h2 id="${EVIDENCE_SECTION_ID}-title">${escapeHtml(text.howChecked)}</h2>`,
+        `<p>${escapeHtml(text.intro)}</p>`,
+        `<dl class="evidence-levels">${Object.entries(text.levels).map(([level, item]) => (`<div><dt><span class="evidence-badge is-${level.toLowerCase()}">${escapeHtml(level)}</span> ${escapeHtml(item.name)}</dt><dd>${escapeHtml(item.text)}</dd></div>`)).join("")}</dl>`,
+        `<ul class="evidence-notes">${text.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join("")}</ul>`,
+        `<p class="evidence-back"><a class="evidence-link" href="#calculators">${escapeHtml(text.backToCalculators)}</a></p>`,
+    ].join("");
+}
 const TOOL_CONTEXT_OVERRIDES = {
     beam_simple_diagrams: {
         summary: {
@@ -6695,13 +6833,14 @@ export function buildCrossLinkHtml(lang = "en") {
     return buildCrossLinkItems(lang).map((link) => `<a href="${escapeHtml(link.href)}" data-cross-link="${link.id}">${escapeHtml(link.label)}</a>`).join("");
 }
 function buildToolItemLabelHtml(toolId, title, lang, schemaMetadata) {
-    return `${escapeHtml(title)}${buildAvailabilityBadgeHtml(toolId, lang, schemaMetadata)}`;
+    return `${escapeHtml(title)}${buildEvidenceChipHtml(toolId, lang, schemaMetadata)}${buildAvailabilityBadgeHtml(toolId, lang, schemaMetadata)}`;
 }
 export function buildToolOverviewHtml(query, lang, activeToolId = "", schemaMetadata = schemaMetadataCache) {
     const groups = buildFilteredToolGroups(query, lang);
     const total = groups.reduce((sum, group) => sum + group.items.length, 0);
+    const evidenceText = EVIDENCE_TEXT[lang] || EVIDENCE_TEXT.en;
     return [
-        `<div class="tool-overview-summary"><strong>${total}</strong> ${escapeHtml(TEXT[lang].calculatorCount)}</div>`,
+        `<div class="tool-overview-summary"><span><strong>${total}</strong> ${escapeHtml(TEXT[lang].calculatorCount)}</span><a class="evidence-link" href="#${EVIDENCE_SECTION_ID}" data-evidence-link>${escapeHtml(evidenceText.legendLink)}</a></div>`,
         `<div class="tool-overview-groups">${groups.map((group) => (`<article class="tool-overview-card">
         <h3>${escapeHtml(group.label)}</h3>
         <p>${escapeHtml(group.summary)}</p>
@@ -7800,6 +7939,7 @@ export function buildReportModel(response, lang = "en", generatedAt = new Date()
     const warnings = collectWarningCodes(response);
     const summaryItems = buildResultSummaryItems(response, lang);
     const sections = buildReportSections(response, lang);
+    const evidence = buildEvidenceBadge(response.calculator_id || "", lang, schemaMetadata);
     return {
         title: text.reportTitle,
         availability: buildAvailabilityNotice(response.calculator_id || "", lang, response.availability, schemaMetadata),
@@ -7813,6 +7953,12 @@ export function buildReportModel(response, lang = "en", generatedAt = new Date()
                     : formatSummaryValue(status, { format: typeof status === "boolean" ? "check" : "status" }),
             },
             { label: text.formulaVersion, value: response.formula_version || text.notProvided },
+            ...(evidence
+                ? [{
+                        label: (EVIDENCE_TEXT[lang] || EVIDENCE_TEXT.en).levelName,
+                        value: evidence.label ? `${evidence.level} - ${evidence.label}` : evidence.level,
+                    }]
+                : []),
         ],
         summaryHeading: text.summary,
         summaryItems: summaryItems.length ? summaryItems : [{ label: text.summary, value: text.none }],
@@ -7918,6 +8064,8 @@ export function initApp(documentRef = globalThis.document) {
     const friendlyForm = documentRef.querySelector("[data-friendly-form]");
     const crossLinks = documentRef.querySelector("[data-cross-links]");
     const workspace = documentRef.querySelector("[data-workspace]");
+    const resultEvidence = documentRef.querySelector("[data-result-evidence]");
+    const toolChecks = documentRef.querySelector("[data-tool-checks]");
     const calculateButton = documentRef.querySelector("[data-calculate]");
     let lastResponse = null;
     function renderToolLists() {
@@ -7933,13 +8081,17 @@ export function initApp(documentRef = globalThis.document) {
         tabsMeta.textContent = `${total} ${TEXT[state.lang].calculatorCount}`;
         renderToolLists();
     }
-    // Everything that depends on the API's /schema route metadata (route availability), so it
+    // Everything that depends on the API's /schema route metadata (availability and evidence level), so it
     // can be refreshed once /schema arrives without resetting the user's input or result.
     function renderToolMeta() {
         const availability = buildAvailabilityNotice(state.toolId, state.lang);
         documentRef.querySelector("[data-tool-status]").textContent = availability?.status || TEXT[state.lang].status;
         calculateButton.disabled = availability?.state === "withdrawn";
         renderToolContext(context, state.toolId, state.lang);
+        if (resultEvidence)
+            resultEvidence.innerHTML = buildEvidenceSummaryHtml(state.toolId, state.lang);
+        if (toolChecks)
+            toolChecks.innerHTML = buildEvidenceExplainerHtml(state.lang);
     }
     function renderVisuals(response) {
         const html = buildVisualizationHtml(response, state.lang);
@@ -8235,7 +8387,7 @@ export function initApp(documentRef = globalThis.document) {
     });
     render();
     void loadSchemaMetadata().then(() => {
-        // Route availability lives in /schema: refresh the lists, notices and badges once it
+        // Route availability and evidence levels live in /schema: refresh the lists, notices and badges once it
         // arrives. The friendly form is re-rendered for its field help, as before.
         renderToolLists();
         renderToolMeta();

@@ -1282,3 +1282,125 @@ button[data-calculate]:disabled {
     cursor: not-allowed;
     opacity: 0.5;
 }
+
+/* Evidence level per calculator (served by the API's /schema) and the "How these tools are checked" section. */
+.evidence-badge {
+    background: #eef0f2;
+    border: 1px solid #c3cad0;
+    border-radius: 999px;
+    color: #3d4952;
+    display: inline-block;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+    margin-left: 6px;
+    padding: 0 7px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.evidence-badge.is-e1 {
+    background: #e4edf4;
+    border-color: #9fb6c8;
+    color: #1b3142;
+}
+
+.evidence-badge.is-e2 {
+    background: #d5e3ee;
+    border-color: #2b4c65;
+    color: #1b3142;
+}
+
+a.evidence-badge:hover,
+a.evidence-badge:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+}
+
+.evidence-link {
+    font-size: 0.9rem;
+    text-decoration: underline;
+    text-decoration-color: rgba(43, 76, 101, 0.35);
+    text-underline-offset: 2px;
+}
+
+.result-evidence:empty {
+    display: none;
+}
+
+.evidence-summary {
+    align-items: center;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    gap: 6px 10px;
+    line-height: 1.45;
+    margin: 0 0 12px;
+}
+
+.evidence-summary .evidence-badge {
+    font-size: 0.8rem;
+    margin-left: 0;
+    padding: 2px 9px;
+}
+
+.evidence-label {
+    color: var(--ink);
+}
+
+.evidence-explainer {
+    background: var(--paper-bright);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+}
+
+.evidence-levels {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 18px;
+    max-width: 80ch;
+}
+
+.evidence-levels > div {
+    border-left: 3px solid var(--line);
+    padding: 2px 0 2px 12px;
+}
+
+.evidence-levels dt {
+    font-weight: 700;
+}
+
+.evidence-levels dt .evidence-badge {
+    margin: 0 6px 0 0;
+}
+
+.evidence-levels dd {
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 4px 0 0;
+}
+
+.evidence-notes {
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0 0 16px;
+    max-width: 80ch;
+    padding-left: 20px;
+}
+
+.evidence-notes li + li {
+    margin-top: 6px;
+}
+
+.evidence-explainer .evidence-back {
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .evidence-explainer {
+        padding: 16px;
+    }
+}

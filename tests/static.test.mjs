@@ -5,12 +5,19 @@ import { test } from "node:test";
 
 import {
   API_BASE_URL,
+  EVIDENCE_SECTION_ID,
+  EVIDENCE_TEXT,
   TOOL_AVAILABILITY,
   TOOL_CATALOG,
   TOOL_GROUP_ORDER,
   TURNSTILE_ENABLED,
   buildAvailabilityNotice,
+  buildEvidenceBadge,
+  buildEvidenceChipHtml,
+  buildEvidenceExplainerHtml,
+  buildEvidenceSummaryHtml,
   buildToolTabsHtml,
+  schemaEntryForTool,
   buildFriendlyFieldHelp,
   buildCrossLinkHtml,
   buildCrossLinkItems,
@@ -3320,6 +3327,79 @@ function toolButtonHtml(html, toolId) {
   return match[1];
 }
 
+test("evidence badges render the API-served level and label per calculator", async () => {
+  assert.equal(schemaEntryForTool("ec6_beam_bearing", SAMPLE_SCHEMA).calculator_id, "ec6_beam_bearing");
+  assert.deepEqual(buildEvidenceBadge("ec6_beam_bearing", "nl", SAMPLE_SCHEMA), {
+    level: "E1",
+    label: "Gecontroleerd met onafhankelijke handberekeningen",
+    levelClass: "is-e1",
+  });
+  assert.equal(buildEvidenceBadge("ec5_timber_beam_fire_check", "fr", SAMPLE_SCHEMA).label, "Vérifié sur un exemple de calcul publié");
+
+  for (const render of [
+    (lang) => buildToolOverviewHtml("", lang, "", SAMPLE_SCHEMA),
+    (lang) => buildToolTabsHtml("ec1_roof_loads", "", lang, SAMPLE_SCHEMA),
+  ]) {
+    const html = render("nl");
+    const levels = [...html.matchAll(/class="evidence-badge is-e\d" data-evidence-level="(E\d)"/g)].map((match) => match[1]);
+    assert.deepEqual(levels.sort(), ["E0", "E0", "E1", "E2"]);
+    assert.match(toolButtonHtml(html, "ec1_roof_loads"), /data-evidence-level="E0" title="Controleniveau E0: Enkel formulecontrole: regressietests/);
+    assert.match(toolButtonHtml(html, "ec6_beam_bearing"), /<span class="visually-hidden">Controleniveau <\/span>E1<\/span>/);
+    assert.match(toolButtonHtml(html, "ec5_timber_beam_fire_check"), /data-evidence-level="E2" title="Controleniveau E2: Gecontroleerd met een gepubliceerd rekenvoorbeeld"/);
+    // A route without the field and a route the sample omits show no badge.
+    assert.doesNotMatch(toolButtonHtml(html, "ec6_masonry_strength"), /evidence-badge/);
+    assert.doesNotMatch(toolButtonHtml(html, "ec3_fillet_weld"), /evidence-badge/);
+    assert.match(render("en"), /title="Evidence level E1: Checked against independent hand calculations"/);
+    assert.match(render("fr"), /title="Niveau de vérification E2: Vérifié sur un exemple de calcul publié"/);
+  }
+
+  const summary = buildEvidenceSummaryHtml("ec6_beam_bearing", "en", SAMPLE_SCHEMA);
+  assert.match(summary, /<a class="evidence-badge is-e1" href="#tool-checks" data-evidence-link[^>]*>Evidence level E1<\/a>/);
+  assert.match(summary, /<span class="evidence-label">Checked against independent hand calculations<\/span>/);
+  assert.match(summary, /<a class="evidence-link" href="#tool-checks" data-evidence-link>How these tools are checked<\/a>/);
+  assert.match(buildEvidenceSummaryHtml("ec1_roof_loads", "nl", SAMPLE_SCHEMA), />Controleniveau E0<\/a><span class="evidence-label">Enkel formulecontrole/);
+
+  // The downloadable record carries the level as well.
+  const report = buildReportModel({ calculator_id: "ec5_timber_beam_fire_check", status: "pass", result: {} }, "en", new Date("2026-10-20T10:00:00.000Z"), SAMPLE_SCHEMA);
+  assert.deepEqual(report.details.at(-1), { label: "Evidence level", value: "E2 - Checked against a published worked example" });
+
+  // Levels are never assigned per route in this frontend; they come from /schema only.
+  const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(appTs, /level:\s*"E\d"/);
+  assert.doesNotMatch(appTs, /evidence:\s*\{/);
+});
+
+test("evidence badges fall back gracefully without the API field and escape API text", () => {
+  // No /schema (not loaded yet, or unreachable) and an older /schema without the evidence field.
+  for (const schema of [null, {}, { schemas: {} }, SAMPLE_SCHEMA]) {
+    assert.equal(buildEvidenceBadge("ec6_masonry_strength", "nl", schema), null);
+    assert.equal(buildEvidenceChipHtml("ec6_masonry_strength", "nl", schema), "");
+    const summary = buildEvidenceSummaryHtml("ec6_masonry_strength", "nl", schema);
+    assert.doesNotMatch(summary, /evidence-badge/);
+    assert.match(summary, /class="evidence-summary is-unknown"><a class="evidence-link" href="#tool-checks" data-evidence-link>Hoe deze tools gecontroleerd zijn<\/a>/);
+  }
+  const overview = buildToolOverviewHtml("", "en", "", null);
+  assert.doesNotMatch(overview, /evidence-badge/);
+  assert.match(overview, /<a class="evidence-link" href="#tool-checks" data-evidence-link>Evidence levels E0-E2: how these tools are checked<\/a>/);
+  assert.doesNotMatch(buildToolTabsHtml("ec1_roof_loads", "", "en", null), /evidence-badge/);
+  assert.equal(buildReportModel({ calculator_id: "ec1_roof_loads", status: "pass", result: {} }, "en", new Date(), null).details.length, 4);
+
+  // Malformed levels are ignored; a missing language falls back to English; API text is escaped.
+  const odd = {
+    schemas: {
+      "/calculate/ec1/roof-loads": { evidence: { level: "<b>E9</b>", label: { en: "x" } } },
+      "/calculate/ec6/beam-bearing": { evidence: { level: "E1", label: { en: "Checked <b>by hand</b> & \"twice\"" } } },
+      "/calculate/ec5/timber-beam-fire-check": { evidence: { level: "E2" } },
+    },
+  };
+  assert.equal(buildEvidenceBadge("ec1_roof_loads", "en", odd), null);
+  assert.equal(buildEvidenceBadge("ec6_beam_bearing", "fr", odd).label, "Checked <b>by hand</b> & \"twice\"");
+  assert.match(buildEvidenceChipHtml("ec6_beam_bearing", "fr", odd), /title="Niveau de vérification E1: Checked &lt;b&gt;by hand&lt;\/b&gt; &amp; &quot;twice&quot;"/);
+  assert.doesNotMatch(buildEvidenceSummaryHtml("ec6_beam_bearing", "en", odd), /<b>/);
+  assert.match(buildEvidenceChipHtml("ec5_timber_beam_fire_check", "en", odd), /title="Evidence level E2"/);
+  assert.doesNotMatch(buildEvidenceSummaryHtml("ec5_timber_beam_fire_check", "en", odd), /evidence-label/);
+});
+
 test("a route flagged in the API schema shows its availability state without a per-route frontend change", () => {
   const routeId = "ec3_double_sided_web_connection";
   for (const html of [buildToolOverviewHtml("", "nl", "", SAMPLE_SCHEMA), buildToolTabsHtml(routeId, "", "nl", SAMPLE_SCHEMA)]) {
@@ -3363,3 +3443,47 @@ test("a route flagged in the API schema shows its availability state without a p
   assert.equal(buildAvailabilityNotice(routeId, "nl", null, { schemas: { [TOOL_CATALOG[routeId].endpoint]: { availability: { state: "paused" } } } }), null);
 });
 
+test("the evidence explainer is localized, linked from the badges and names no solver", async () => {
+  const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
+  assert.equal(EVIDENCE_SECTION_ID, "tool-checks");
+  assert.match(html, /<section class="section evidence-explainer" id="tool-checks" aria-labelledby="tool-checks-title" data-tool-checks>/);
+  assert.match(html, /<h2 data-result-heading>Result<\/h2>\s*<div class="result-evidence" data-result-evidence><\/div>/);
+
+  const expectations = {
+    nl: [/Hoe deze tools gecontroleerd zijn/, /codetests/, /onafhankelijke handberekeningen/, /gepubliceerd rekenvoorbeeld/, /gekwalificeerde ingenieurs/, /geen vrijgave van een ontwerp/, /ANB/, /verplichte invoer/],
+    en: [/How these tools are checked/, /automated code tests/, /independent hand calculations/, /published worked example/, /qualified engineers/, /not a design release/, /ANB/, /required input/],
+    fr: [/Comment ces outils sont vérifiés/, /tests de code automatisés/, /calculs manuels indépendants/, /exemple de calcul publié/, /ingénieurs qualifiés/, /validation de conception/, /ANB/, /donnée d'entrée obligatoire/],
+  };
+  const solverNames = /code[\s_-]?aster|salome|calculix|abaqus|ansys|plaxis|sofistik|opensees|mfront|\bsolver\b/i;
+  for (const [lang, patterns] of Object.entries(expectations)) {
+    const explainer = buildEvidenceExplainerHtml(lang);
+    for (const pattern of patterns) assert.match(explainer, pattern, `${lang} ${pattern}`);
+    for (const level of ["E0", "E1", "E2"]) {
+      assert.match(explainer, new RegExp(`<span class="evidence-badge is-${level.toLowerCase()}">${level}</span>`));
+    }
+    assert.match(explainer, /<h2 id="tool-checks-title">/);
+    assert.doesNotMatch(explainer, solverNames);
+
+    // Every in-page link from the badges, the legend and the explainer resolves to an id on the page.
+    const linked = [
+      explainer,
+      buildEvidenceSummaryHtml("ec6_beam_bearing", lang, SAMPLE_SCHEMA),
+      buildEvidenceSummaryHtml("ec6_masonry_strength", lang, null),
+      buildToolOverviewHtml("", lang, "", SAMPLE_SCHEMA),
+    ].join("");
+    const targets = [...linked.matchAll(/href="#([^"]*)"/g)].map((match) => match[1]);
+    assert.ok(targets.includes("tool-checks"));
+    for (const target of targets) assert.ok(ids.has(target), `${lang}: #${target} has no target`);
+  }
+  assert.doesNotMatch(JSON.stringify(EVIDENCE_TEXT), solverNames);
+  assert.doesNotMatch(html, solverNames);
+  const appTs = await readFile(new URL("../app.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(appTs, solverNames);
+
+  // /schema arriving refreshes the lists, notices and badges without resetting the input.
+  const appJs = await readFile(new URL("../app.js", import.meta.url), "utf8");
+  assert.match(appJs, /loadSchemaMetadata\(\)\.then\(\(\) => \{[\s\S]*?renderToolLists\(\);\s*renderToolMeta\(\);/);
+  assert.match(appJs, /resultEvidence\.innerHTML = buildEvidenceSummaryHtml\(state\.toolId, state\.lang\)/);
+  assert.match(appJs, /toolChecks\.innerHTML = buildEvidenceExplainerHtml\(state\.lang\)/);
+});
