@@ -4853,25 +4853,50 @@ const AVAILABILITY_TEXT = {
   },
 } as const;
 
-export function buildAvailabilityNotice(toolId: string, lang: keyof typeof TEXT = "en", apiAvailability: any = null) {
-  // The API's availability object (sent with 503s and under-review results) wins over the local mirror,
-  // so a route the API flags is still flagged when this mirror is out of date.
-  const state = apiAvailability?.state === "withdrawn" || apiAvailability?.state === "under_review"
-    ? apiAvailability.state as "withdrawn" | "under_review"
-    : TOOL_AVAILABILITY[toolId]?.state;
+function availabilityState(value: any): "withdrawn" | "under_review" | undefined {
+  return value?.state === "withdrawn" || value?.state === "under_review" ? value.state : undefined;
+}
+
+function localizedText(value: any, lang: string) {
+  if (typeof value?.[lang] === "string" && value[lang].trim()) return value[lang].trim();
+  if (typeof value?.en === "string" && value.en.trim()) return value.en.trim();
+  return "";
+}
+
+/** The API's /schema entry for a calculator (null while /schema is not loaded or lacks the route). */
+export function schemaEntryForTool(toolId: string, schemaMetadata: any = schemaMetadataCache) {
+  const endpoint = TOOL_CATALOG[toolId]?.endpoint;
+  const entry = endpoint ? schemaMetadata?.schemas?.[endpoint] : null;
+  return entry && typeof entry === "object" ? entry : null;
+}
+
+export function buildAvailabilityNotice(
+  toolId: string,
+  lang: keyof typeof TEXT = "en",
+  apiAvailability: any = null,
+  schemaMetadata: any = schemaMetadataCache
+) {
+  // Strongest source first: the availability object of a calculation response (sent with 503s and
+  // under-review results), then the per-route availability that the API's /schema serves, then the local
+  // mirror. Any route the API flags is therefore flagged here without a per-route change in this frontend.
+  const schemaAvailability = schemaEntryForTool(toolId, schemaMetadata)?.availability;
+  const source = availabilityState(apiAvailability)
+    ? apiAvailability
+    : availabilityState(schemaAvailability) ? schemaAvailability : null;
+  const state = availabilityState(source) || TOOL_AVAILABILITY[toolId]?.state;
   if (!state) return null;
   const text = AVAILABILITY_TEXT[state];
   return {
     state,
-    since: apiAvailability?.since || TOOL_AVAILABILITY[toolId]?.since || "",
+    since: (typeof source?.since === "string" && source.since) || TOOL_AVAILABILITY[toolId]?.since || "",
     badge: text.badge[lang] || text.badge.en,
     status: text.status[lang] || text.status.en,
-    message: apiAvailability?.message?.[lang] || text.message[lang] || text.message.en,
+    message: localizedText(source?.message, lang) || text.message[lang] || text.message.en,
   };
 }
 
-function buildAvailabilityBadgeHtml(toolId: string, lang: keyof typeof TEXT) {
-  const notice = buildAvailabilityNotice(toolId, lang);
+function buildAvailabilityBadgeHtml(toolId: string, lang: keyof typeof TEXT, schemaMetadata: any = schemaMetadataCache) {
+  const notice = buildAvailabilityNotice(toolId, lang, null, schemaMetadata);
   return notice
     ? ` <span class="tool-availability-badge is-${notice.state}">${escapeHtml(notice.badge)}</span>`
     : "";
@@ -6702,7 +6727,11 @@ export function buildCrossLinkHtml(lang: keyof typeof TEXT = "en") {
   ).join("");
 }
 
-export function buildToolOverviewHtml(query: string, lang: keyof typeof TEXT, activeToolId = "") {
+function buildToolItemLabelHtml(toolId: string, title: string, lang: keyof typeof TEXT, schemaMetadata: any) {
+  return `${escapeHtml(title)}${buildAvailabilityBadgeHtml(toolId, lang, schemaMetadata)}`;
+}
+
+export function buildToolOverviewHtml(query: string, lang: keyof typeof TEXT, activeToolId = "", schemaMetadata: any = schemaMetadataCache) {
   const groups = buildFilteredToolGroups(query, lang);
   const total = groups.reduce((sum, group) => sum + group.items.length, 0);
   return [
@@ -6712,7 +6741,7 @@ export function buildToolOverviewHtml(query: string, lang: keyof typeof TEXT, ac
         <h3>${escapeHtml(group.label)}</h3>
         <p>${escapeHtml(group.summary)}</p>
         <div class="tool-overview-items">${group.items.map((item) => (
-          `<button type="button" class="tool-overview-item" data-tool-id="${item.toolId}" ${item.toolId === activeToolId ? 'aria-current="true"' : ""}>${escapeHtml(item.title)}${buildAvailabilityBadgeHtml(item.toolId, lang)}</button>`
+          `<button type="button" class="tool-overview-item" data-tool-id="${item.toolId}" ${item.toolId === activeToolId ? 'aria-current="true"' : ""}>${buildToolItemLabelHtml(item.toolId, item.title, lang, schemaMetadata)}</button>`
         )).join("")}</div>
       </article>`
     )).join("")}</div>`,
@@ -6745,7 +6774,7 @@ export function resolveInitialToolId(urlToolId = "", hash = "", storedToolId = "
   return buildFilteredToolGroups("", "en")[0]?.items[0]?.toolId || Object.keys(TOOL_CATALOG)[0];
 }
 
-function renderToolTabs(toolId: string, query: string, lang: keyof typeof TEXT) {
+export function buildToolTabsHtml(toolId: string, query: string, lang: keyof typeof TEXT, schemaMetadata: any = schemaMetadataCache) {
   const groups = buildFilteredToolGroups(query, lang);
   if (!groups.length) {
     return `<div class="tool-nav-empty">${escapeHtml(TEXT[lang].noSearchResults)}</div>`;
@@ -6754,13 +6783,13 @@ function renderToolTabs(toolId: string, query: string, lang: keyof typeof TEXT) 
     `<section class="tool-nav-group">
       <div class="tool-nav-group-title">${escapeHtml(group.label)}</div>
       ${group.items.map((item) => (
-        `<button type="button" data-tool-id="${item.toolId}" ${item.toolId === toolId ? 'aria-current="true"' : ""}>${escapeHtml(item.title)}${buildAvailabilityBadgeHtml(item.toolId, lang)}</button>`
+        `<button type="button" data-tool-id="${item.toolId}" ${item.toolId === toolId ? 'aria-current="true"' : ""}>${buildToolItemLabelHtml(item.toolId, item.title, lang, schemaMetadata)}</button>`
       )).join("")}
     </section>`
   )).join("")}</div>`;
 }
 
-export function buildToolContextModel(toolId: string, lang: keyof typeof TEXT = "en") {
+export function buildToolContextModel(toolId: string, lang: keyof typeof TEXT = "en", schemaMetadata: any = schemaMetadataCache) {
   const groupId = toolGroupId(toolId);
   const group = TOOL_GROUP_TEXT[groupId];
   const override = TOOL_CONTEXT_OVERRIDES[toolId as keyof typeof TOOL_CONTEXT_OVERRIDES] as any;
@@ -6775,7 +6804,7 @@ export function buildToolContextModel(toolId: string, lang: keyof typeof TEXT = 
     route: TOOL_CATALOG[toolId].endpoint,
     summary: override?.summary?.[lang] || override?.summary?.en || group.summary[lang] || group.summary.en,
     limitations: override?.limitations?.[lang] || override?.limitations?.en || group.limitations[lang] || group.limitations.en,
-    availability: buildAvailabilityNotice(toolId, lang),
+    availability: buildAvailabilityNotice(toolId, lang, null, schemaMetadata),
     assets,
   };
 }
@@ -7864,7 +7893,7 @@ function buildReportSections(response, lang = "en") {
     .filter(Boolean);
 }
 
-export function buildReportModel(response, lang = "en", generatedAt = new Date()) {
+export function buildReportModel(response, lang = "en", generatedAt = new Date(), schemaMetadata: any = schemaMetadataCache) {
   if (!response) return null;
   const text = TEXT[lang] || TEXT.en;
   const status = response.status || response.result?.overall_status || response.result?.check_passed;
@@ -7873,7 +7902,7 @@ export function buildReportModel(response, lang = "en", generatedAt = new Date()
   const sections = buildReportSections(response, lang);
   return {
     title: text.reportTitle,
-    availability: buildAvailabilityNotice(response.calculator_id || "", lang as keyof typeof TEXT, response.availability),
+    availability: buildAvailabilityNotice(response.calculator_id || "", lang as keyof typeof TEXT, response.availability, schemaMetadata),
     details: [
       { label: text.generatedAt, value: generatedAt.toISOString() },
       { label: text.calculator, value: response.calculator_id || text.notProvided },
@@ -7989,7 +8018,13 @@ export function initApp(documentRef = globalThis.document) {
   const friendlyForm = documentRef.querySelector("[data-friendly-form]") as HTMLElement;
   const crossLinks = documentRef.querySelector("[data-cross-links]") as HTMLElement;
   const workspace = documentRef.querySelector("[data-workspace]") as HTMLElement;
+  const calculateButton = documentRef.querySelector("[data-calculate]") as HTMLButtonElement;
   let lastResponse = null as any;
+
+  function renderToolLists() {
+    tabs.innerHTML = buildToolTabsHtml(state.toolId, state.query, state.lang);
+    overview.innerHTML = buildToolOverviewHtml(state.query, state.lang, state.toolId);
+  }
 
   function renderNavigation() {
     const groups = buildFilteredToolGroups(state.query, state.lang);
@@ -7998,8 +8033,16 @@ export function initApp(documentRef = globalThis.document) {
     searchInput.placeholder = TEXT[state.lang].findCalculator;
     searchInput.value = state.query;
     tabsMeta.textContent = `${total} ${TEXT[state.lang].calculatorCount}`;
-    tabs.innerHTML = renderToolTabs(state.toolId, state.query, state.lang);
-    overview.innerHTML = buildToolOverviewHtml(state.query, state.lang, state.toolId);
+    renderToolLists();
+  }
+
+  // Everything that depends on the API's /schema route metadata (route availability), so it
+  // can be refreshed once /schema arrives without resetting the user's input or result.
+  function renderToolMeta() {
+    const availability = buildAvailabilityNotice(state.toolId, state.lang);
+    documentRef.querySelector("[data-tool-status]").textContent = availability?.status || TEXT[state.lang].status;
+    calculateButton.disabled = availability?.state === "withdrawn";
+    renderToolContext(context, state.toolId, state.lang);
   }
 
   function renderVisuals(response: any) {
@@ -8141,13 +8184,9 @@ export function initApp(documentRef = globalThis.document) {
     lastResponse = null;
     renderNavigation();
     documentRef.querySelector("[data-tool-title]").textContent = activeTool.title[state.lang];
-    documentRef.querySelector("[data-tool-status]").textContent =
-      buildAvailabilityNotice(state.toolId, state.lang)?.status || text.status;
     documentRef.querySelector("[data-input-label]").textContent = text.input;
     documentRef.querySelector("[data-result-heading]").textContent = text.result;
-    const calculateButton = documentRef.querySelector("[data-calculate]") as HTMLButtonElement;
     calculateButton.textContent = text.calculate;
-    calculateButton.disabled = TOOL_AVAILABILITY[state.toolId]?.state === "withdrawn";
     documentRef.querySelector("[data-save]").textContent = text.save;
     documentRef.querySelector("[data-load]").textContent = text.load;
     downloadButton.textContent = text.download;
@@ -8158,7 +8197,7 @@ export function initApp(documentRef = globalThis.document) {
     printButton.disabled = true;
     crossLinks.setAttribute("aria-label", text.relatedLinks);
     crossLinks.innerHTML = buildCrossLinkHtml(state.lang);
-    renderToolContext(context, state.toolId, state.lang);
+    renderToolMeta();
     renderFriendlyForm(friendlyForm, state.toolId, activeTool, state.lang, text.form);
     renderResultSummary(resultSummary, null, state.lang);
     renderResultOutput(outputPlaceholder, output, null, state.lang);
@@ -8219,7 +8258,7 @@ export function initApp(documentRef = globalThis.document) {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (TOOL_AVAILABILITY[state.toolId]?.state === "withdrawn") return;
+    if (buildAvailabilityNotice(state.toolId, state.lang)?.state === "withdrawn") return;
     const submittedToolId = state.toolId;
     renderResultOutput(outputPlaceholder, output, null, state.lang);
     renderResultSummary(resultSummary, null, state.lang);
@@ -8303,6 +8342,10 @@ export function initApp(documentRef = globalThis.document) {
 
   render();
   void loadSchemaMetadata().then(() => {
+    // Route availability lives in /schema: refresh the lists, notices and badges once it
+    // arrives. The friendly form is re-rendered for its field help, as before.
+    renderToolLists();
+    renderToolMeta();
     renderFriendlyForm(friendlyForm, state.toolId, TOOL_CATALOG[state.toolId], state.lang, TEXT[state.lang].form);
   });
 }

@@ -10,6 +10,7 @@ import {
   TOOL_GROUP_ORDER,
   TURNSTILE_ENABLED,
   buildAvailabilityNotice,
+  buildToolTabsHtml,
   buildFriendlyFieldHelp,
   buildCrossLinkHtml,
   buildCrossLinkItems,
@@ -3257,9 +3258,108 @@ test("withdrawn and under-review tools carry localized notices, badges and a rep
 test("withdrawn tools cannot be calculated from the browser and the nav accepts badge clicks", async () => {
   const appJs = await readFile(new URL("../app.js", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
-  assert.match(appJs, /calculateButton\.disabled = TOOL_AVAILABILITY\[state\.toolId\]\?\.state === "withdrawn";/);
-  assert.match(appJs, /if \(TOOL_AVAILABILITY\[state\.toolId\]\?\.state === "withdrawn"\)\s*return;/);
+  // The withdrawn state comes from the same lookup as the notices: response, then /schema, then the mirror.
+  assert.match(appJs, /const availability = buildAvailabilityNotice\(state\.toolId, state\.lang\);/);
+  assert.match(appJs, /calculateButton\.disabled = availability\?\.state === "withdrawn";/);
+  assert.match(appJs, /if \(buildAvailabilityNotice\(state\.toolId, state\.lang\)\?\.state === "withdrawn"\)\s*return;/);
+  assert.doesNotMatch(appJs, /TOOL_AVAILABILITY\[state\.toolId\]/);
   assert.match(appJs, /if \(state\.toolId !== submittedToolId\)\s*return;/);
   assert.match(appJs, /closest\?\.\("\[data-tool-id\]"\)/);
   assert.match(html, /<script type="module" src="app\.js\?v=\d{8}"><\/script>/);
 });
+
+// A trimmed copy of the API's /schema route metadata (R12 evidence levels, availability object).
+const SAMPLE_EVIDENCE_LABELS = {
+  E0: {
+    nl: "Enkel formulecontrole: regressietests uit het bronscript, nog geen onafhankelijk referentiegeval",
+    en: "Formula-checked only: regression tests from the source script, no independent reference case yet",
+    fr: "Contrôle des formules uniquement : tests de régression issus du script source, pas encore de cas de référence indépendant",
+  },
+  E1: {
+    nl: "Gecontroleerd met onafhankelijke handberekeningen",
+    en: "Checked against independent hand calculations",
+    fr: "Vérifié par des calculs manuels indépendants",
+  },
+  E2: {
+    nl: "Gecontroleerd met een gepubliceerd rekenvoorbeeld",
+    en: "Checked against a published worked example",
+    fr: "Vérifié sur un exemple de calcul publié",
+  },
+};
+
+function sampleEvidence(level) {
+  return { level, label: SAMPLE_EVIDENCE_LABELS[level], anb_reviewed: false, basis: "sample" };
+}
+
+const SAMPLE_SCHEMA = {
+  schemas: {
+    "/calculate/ec1/roof-loads": { calculator_id: "ec1_roof_loads", evidence: sampleEvidence("E0") },
+    "/calculate/ec6/beam-bearing": { calculator_id: "ec6_beam_bearing", evidence: sampleEvidence("E1") },
+    "/calculate/ec5/timber-beam-fire-check": { calculator_id: "ec5_timber_beam_fire_check", evidence: sampleEvidence("E2") },
+    "/calculate/ec3/double-sided-web-connection": {
+      calculator_id: "ec3_double_sided_web_connection",
+      evidence: sampleEvidence("E0"),
+      availability: {
+        state: "under_review",
+        since: "2026-10-20",
+        message: {
+          nl: "Indicatief - in herziening: API-melding voor deze route.",
+          en: "Indicative - under review: API notice for this route.",
+          fr: "Indicatif - en révision : notice API pour cette route.",
+        },
+      },
+    },
+    // An older API entry without the evidence field.
+    "/calculate/ec6/masonry-strength": { calculator_id: "ec6_masonry_strength" },
+  },
+};
+
+function toolButtonHtml(html, toolId) {
+  const match = html.match(new RegExp(`<button[^>]*data-tool-id="${toolId}"[^>]*>([\\s\\S]*?)</button>`));
+  assert.ok(match, `missing button for ${toolId}`);
+  return match[1];
+}
+
+test("a route flagged in the API schema shows its availability state without a per-route frontend change", () => {
+  const routeId = "ec3_double_sided_web_connection";
+  for (const html of [buildToolOverviewHtml("", "nl", "", SAMPLE_SCHEMA), buildToolTabsHtml(routeId, "", "nl", SAMPLE_SCHEMA)]) {
+    assert.equal([...html.matchAll(/tool-availability-badge/g)].length, 1);
+    assert.match(toolButtonHtml(html, routeId), /<span class="tool-availability-badge is-under_review">in herziening<\/span>/);
+  }
+  assert.match(buildToolOverviewHtml("", "en", "", SAMPLE_SCHEMA), /tool-availability-badge is-under_review">under review</);
+  assert.match(buildToolOverviewHtml("", "fr", "", SAMPLE_SCHEMA), /tool-availability-badge is-under_review">en révision</);
+
+  const notice = buildAvailabilityNotice(routeId, "nl", null, SAMPLE_SCHEMA);
+  assert.deepEqual(notice, {
+    state: "under_review",
+    since: "2026-10-20",
+    badge: "in herziening",
+    status: "Indicatief rekenrecord - in herziening.",
+    message: "Indicatief - in herziening: API-melding voor deze route.",
+  });
+  assert.deepEqual(buildToolContextModel(routeId, "nl", SAMPLE_SCHEMA).availability, notice);
+  assert.equal(buildToolContextModel(routeId, "nl", null).availability, null);
+  // Before /schema has loaded (as in these tests) the record has no notice unless the response carries one.
+  assert.doesNotMatch(buildReportHtml({ calculator_id: routeId, status: "pass", result: {} }, "nl"), /availability-notice">/);
+  assert.equal(
+    buildReportModel({ calculator_id: routeId, status: "pass", result: {} }, "nl", new Date(), SAMPLE_SCHEMA).availability.message,
+    "Indicatief - in herziening: API-melding voor deze route."
+  );
+  // A calculation response's own availability object stays the strongest source.
+  assert.equal(buildAvailabilityNotice(routeId, "en", { state: "withdrawn", message: { en: "Withdrawn now." } }, SAMPLE_SCHEMA).state, "withdrawn");
+
+  // Any route: flag each catalog endpoint in turn and check that exactly that calculator carries the badge.
+  for (const [toolId, tool] of Object.entries(TOOL_CATALOG)) {
+    for (const state of ["under_review", "withdrawn"]) {
+      const schema = { schemas: { [tool.endpoint]: { availability: { state, since: "2026-10-20", message: {} } } } };
+      const html = buildToolOverviewHtml("", "nl", "", schema);
+      const flagged = [...html.matchAll(/data-tool-id="([^"]+)"[^>]*>(?:(?!<\/button>)[\s\S])*tool-availability-badge is-([a-z_]+)/g)]
+        .map((match) => `${match[1]}:${match[2]}`);
+      assert.deepEqual(flagged, [`${toolId}:${state}`], `${toolId} ${state}`);
+      assert.equal(buildAvailabilityNotice(toolId, "nl", null, schema).state, state);
+    }
+  }
+  // Unknown states in the API data are ignored rather than shown.
+  assert.equal(buildAvailabilityNotice(routeId, "nl", null, { schemas: { [TOOL_CATALOG[routeId].endpoint]: { availability: { state: "paused" } } } }), null);
+});
+
