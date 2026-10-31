@@ -214,6 +214,7 @@ test("frontend catalog has all first-wave tools and contains no formulas", async
     "ec6_masonry_contact_pressure",
     "ec6_masonry_horizontal_capacity",
     "ec6_masonry_strength",
+    "masonry_arch_thrust_line",
   ]);
 
   const appJs = await readFile(new URL("../app.js", import.meta.url), "utf8");
@@ -1381,6 +1382,67 @@ test("masonry contact pressure form metadata builds the API payload", () => {
     support_length_mm: 140,
     fd_design_mpa: 3,
   });
+});
+
+test("masonry arch form metadata builds the API payload; an empty fill means no fill", () => {
+  const payload = buildPayloadFromFormValues("masonry_arch_thrust_line", {
+    shape: "segmental",
+    span_m: "3",
+    rise_m: "0.75",
+    thickness_m: "0.22",
+    unit_weight_kn_per_m3: "18",
+    fill_height_above_crown_m: "",
+    fill_unit_weight_kn_per_m3: "16",
+    surcharge_kn_per_m2: "2.6",
+    line_load_position_m: "0.75",
+    variable_line_load_kn_per_m: "5",
+    gamma_g: "1",
+    gamma_q: "1.5",
+    geometric_factor: "2",
+  });
+
+  assert.deepEqual(payload, {
+    shape: "segmental",
+    span_m: 3,
+    rise_m: 0.75,
+    thickness_m: 0.22,
+    unit_weight_kn_per_m3: 18,
+    fill_height_above_crown_m: "",
+    fill_unit_weight_kn_per_m3: 16,
+    surcharge_kn_per_m2: 2.6,
+    line_load_position_m: 0.75,
+    variable_line_load_kn_per_m: 5,
+    gamma_g: 1,
+    gamma_q: 1.5,
+    geometric_factor: 2,
+  });
+});
+
+test("masonry arch visualization draws the ring, the thrust line, the hinges and the load", () => {
+  const xs = Array.from({ length: 5 }, (_, k) => k);
+  const html = buildVisualizationHtml({
+    calculator_id: "masonry_arch_thrust_line",
+    result: {
+      line_load_position_m: 1,
+      q_limit_kn_per_m: 2.933333,
+      q_limit_uls_kn_per_m: 5.866667,
+      utilization_ratio: 0.68,
+      hinges_uls: [{ x_m: 0, face: "extrados" }, { x_m: 1, face: "intrados" }, { x_m: 2, face: "extrados" }],
+      drawing: {
+        x_m: xs,
+        intrados_m: [0, 0.6, 0.8, 0.6, 0],
+        extrados_m: [0.1, 0.7, 0.9, 0.7, 0.1],
+        thrust_line_uls_m: [0.1, 0.6, 0.9, 0.6, 0.1],
+      },
+    },
+  }, "nl");
+  assert.match(html, /<polygon/);
+  assert.match(html, /<polyline/);
+  assert.equal((html.match(/<circle/g) || []).length, 3);
+  assert.match(html, /Drukkromme bij de grenslast/);
+  assert.match(html, /of 2\.933 kN\/m/);
+  assert.match(html, /5\.867 kN\/m/);
+  assert.equal(buildVisualizationHtml({ calculator_id: "masonry_arch_thrust_line", result: { drawing: null } }, "en").includes("<polygon"), false);
 });
 
 test("in-plane shear wall form metadata builds the API payload", () => {
