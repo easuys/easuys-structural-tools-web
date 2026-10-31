@@ -4373,6 +4373,133 @@ export const TOOL_CATALOG = {
             ],
         },
     },
+    masonry_arch_thrust_line: {
+        endpoint: "/calculate/masonry/arch-thrust-line",
+        title: {
+            nl: "Boog of tongewelf: drukkromme onder een nieuwe lijnlast",
+            en: "Masonry arch or barrel vault: thrust line under a new line load",
+            fr: "Arc ou voute en maconnerie : ligne des pressions sous une charge lineique",
+        },
+        sample: {
+            shape: "segmental",
+            span_m: 8,
+            rise_m: 2,
+            thickness_m: 0.22,
+            unit_weight_kn_per_m3: 18,
+            fill_height_above_crown_m: "",
+            fill_unit_weight_kn_per_m3: 16,
+            surcharge_kn_per_m2: 0,
+            line_load_position_m: 2,
+            variable_line_load_kn_per_m: 2,
+            gamma_g: 1,
+            gamma_q: 1.5,
+            geometric_factor: 2,
+        },
+        form: {
+            fields: [
+                {
+                    name: "shape",
+                    value_type: "string",
+                    control: "select",
+                    label: { nl: "Vorm", en: "Shape", fr: "Forme" },
+                    options: ["segmental", "parabolic"],
+                },
+                {
+                    name: "span_m",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.01",
+                    label: { nl: "Overspanning", en: "Span", fr: "Portee" },
+                    unit: "m",
+                },
+                {
+                    name: "rise_m",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.01",
+                    label: { nl: "Pijl (intrados)", en: "Rise (intrados)", fr: "Fleche (intrados)" },
+                    unit: "m",
+                },
+                {
+                    name: "thickness_m",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.01",
+                    label: { nl: "Dikte van de boog", en: "Ring thickness", fr: "Epaisseur de l'arc" },
+                    unit: "m",
+                },
+                {
+                    name: "unit_weight_kn_per_m3",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.1",
+                    label: { nl: "Volumegewicht metselwerk", en: "Masonry unit weight", fr: "Poids volumique maconnerie" },
+                    unit: "kN/m3",
+                },
+                {
+                    name: "fill_height_above_crown_m",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.01",
+                    label: { nl: "Aanvulling boven de kruin (leeg = geen)", en: "Fill above the crown (empty = none)", fr: "Remblai au-dessus de la cle (vide = aucun)" },
+                    unit: "m",
+                },
+                {
+                    name: "fill_unit_weight_kn_per_m3",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.1",
+                    label: { nl: "Volumegewicht aanvulling", en: "Fill unit weight", fr: "Poids volumique remblai" },
+                    unit: "kN/m3",
+                },
+                {
+                    name: "surcharge_kn_per_m2",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.1",
+                    label: { nl: "Permanente last bovenop (vloer, dekvloer)", en: "Permanent surcharge (floor, screed)", fr: "Charge permanente (plancher, chape)" },
+                    unit: "kN/m2",
+                },
+                {
+                    name: "line_load_position_m",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.01",
+                    label: { nl: "Positie van de lijnlast vanaf de linkeraanzet", en: "Line load position from the left springing", fr: "Position de la charge depuis la naissance gauche" },
+                    unit: "m",
+                },
+                {
+                    name: "variable_line_load_kn_per_m",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.1",
+                    label: { nl: "Nieuwe lijnlast Qk", en: "New line load Qk", fr: "Nouvelle charge lineique Qk" },
+                    unit: "kN/m",
+                },
+                {
+                    name: "gamma_g",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.05",
+                    label: { nl: "gamma_G (permanent)", en: "gamma_G (permanent)", fr: "gamma_G (permanent)" },
+                },
+                {
+                    name: "gamma_q",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.05",
+                    label: { nl: "gamma_Q (lijnlast)", en: "gamma_Q (line load)", fr: "gamma_Q (charge lineique)" },
+                },
+                {
+                    name: "geometric_factor",
+                    value_type: "number",
+                    control: "number",
+                    step: "0.1",
+                    label: { nl: "Geometrische veiligheidsfactor", en: "Geometric safety factor", fr: "Facteur de securite geometrique" },
+                },
+            ],
+        },
+    },
     ec6_inplane_shear_wall: {
         endpoint: "/calculate/ec6/inplane-shear-wall",
         title: {
@@ -4792,11 +4919,11 @@ const TOOL_GROUP_TEXT = {
         },
     },
     ec6: {
-        label: { nl: "EC6 metselwerk", en: "EC6 masonry", fr: "EC6 maconnerie" },
+        label: { nl: "EC6 metselwerk en bogen", en: "EC6 masonry and arches", fr: "EC6 maconnerie et arcs" },
         summary: {
-            nl: "Ongewapende metselwerkhulpen voor druk, opleg, in-plane en uit-vlak snelle controles.",
-            en: "Unreinforced masonry helpers for compression, bearing, in-plane, and out-of-plane quick checks.",
-            fr: "Aides maconnerie non armee pour compression, appui, en plan et hors plan.",
+            nl: "Ongewapende metselwerkhulpen voor druk, opleg, in-plane en uit-vlak snelle controles, en de drukkromme van bogen en gewelven.",
+            en: "Unreinforced masonry helpers for compression, bearing, in-plane, and out-of-plane quick checks, and the thrust line of arches and vaults.",
+            fr: "Aides maconnerie non armee pour compression, appui, en plan et hors plan, et la ligne des pressions des arcs et voutes.",
         },
         limitations: {
             nl: "Geen openingen, wapening, verankering of projectspecifieke detaillering.",
@@ -5059,6 +5186,13 @@ const TOOL_CONTEXT_OVERRIDES = {
             nl: "Conservatieve contactdrukquickcheck met beta = 1.0 voor profielopleggingen op metselwerk.",
             en: "Conservative contact-pressure quick check with beta = 1.0 for profile bearings on masonry.",
             fr: "Verification rapide conservative de pression de contact avec beta = 1.0 pour appuis de profils sur maconnerie.",
+        },
+    },
+    masonry_arch_thrust_line: {
+        summary: {
+            nl: "Stabiliteit van een gemetselde boog of tongewelf onder een nieuwe lijnlast (drukkromme, Heyman): grenslast, spatkracht en scharnieren. Alleen stabiliteit: verbrijzeling, glijden en de steunpunten apart nakijken.",
+            en: "Stability of a masonry arch or barrel vault under a new line load (thrust line, Heyman): limit load, thrust and hinges. Stability only: check crushing, sliding and the abutments separately.",
+            fr: "Stabilite d'un arc ou d'une voute en maconnerie sous une nouvelle charge lineique (ligne des pressions, Heyman) : charge limite, poussee et rotules. Stabilite seulement : verifier a part l'ecrasement, le glissement et les appuis.",
         },
     },
 };
@@ -5619,6 +5753,15 @@ const RESULT_SUMMARY_FIELDS = {
         { path: ["result", "f_rdc_mpa"], label: { nl: "Weerstand", en: "Resistance", fr: "Resistance" }, unit: "MPa" },
         { path: ["result", "utilization_percent"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" }, unit: "%" },
         { path: ["result", "required_length_mm"], label: { nl: "Vereiste lengte", en: "Required length", fr: "Longueur requise" }, unit: "mm" },
+        { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
+    ],
+    masonry_arch_thrust_line: [
+        { path: ["result", "overall_status"], label: { nl: "Status", en: "Status", fr: "Statut" }, format: "status" },
+        { path: ["result", "q_limit_kn_per_m"], label: { nl: "Grenslast (maatgevend)", en: "Limit load (governing)", fr: "Charge limite (determinante)" }, unit: "kN/m" },
+        { path: ["result", "q_limit_uls_kn_per_m"], label: { nl: "Grenslast UGT", en: "ULS limit", fr: "Limite ELU" }, unit: "kN/m" },
+        { path: ["result", "q_limit_geometric_kn_per_m"], label: { nl: "Grenslast met geometrische factor", en: "Limit with geometric factor", fr: "Limite avec facteur geometrique" }, unit: "kN/m" },
+        { path: ["result", "utilization_percent"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" }, unit: "%" },
+        { path: ["result", "h_min_kn_per_m"], label: { nl: "Kleinste spatkracht", en: "Smallest thrust", fr: "Poussee minimale" }, unit: "kN/m" },
         { path: ["result", "warning_codes"], label: { nl: "Waarschuwingen", en: "Warnings", fr: "Avertissements" }, format: "warnings" },
     ],
     ec6_inplane_shear_wall: [
@@ -6662,6 +6805,45 @@ const REPORT_SECTION_FIELDS = {
             ],
         },
     ],
+    masonry_arch_thrust_line: [
+        {
+            heading: { nl: "Boog en belasting", en: "Arch and loads", fr: "Arc et charges" },
+            fields: [
+                { path: ["result", "shape"], label: { nl: "Vorm", en: "Shape", fr: "Forme" } },
+                { path: ["result", "span_m"], label: { nl: "Overspanning", en: "Span", fr: "Portee" }, unit: "m" },
+                { path: ["result", "rise_m"], label: { nl: "Pijl", en: "Rise", fr: "Fleche" }, unit: "m" },
+                { path: ["result", "thickness_m"], label: { nl: "Dikte", en: "Thickness", fr: "Epaisseur" }, unit: "m" },
+                { path: ["result", "radius_m"], label: { nl: "Straal intrados", en: "Intrados radius", fr: "Rayon intrados" }, unit: "m" },
+                { path: ["result", "springing_angle_deg"], label: { nl: "Hoek bij de aanzet", en: "Springing angle", fr: "Angle a la naissance" }, unit: "deg" },
+                { path: ["result", "vertical_thickness_at_springing_m"], label: { nl: "Verticale dikte bij de aanzet", en: "Vertical thickness at the springing", fr: "Epaisseur verticale a la naissance" }, unit: "m" },
+                { path: ["result", "permanent_load_kn_per_m"], label: { nl: "Permanente last (totaal)", en: "Permanent load (total)", fr: "Charge permanente (totale)" }, unit: "kN/m" },
+                { path: ["result", "line_load_position_m"], label: { nl: "Positie lijnlast", en: "Line load position", fr: "Position charge" }, unit: "m" },
+                { path: ["result", "variable_line_load_kn_per_m"], label: { nl: "Lijnlast Qk", en: "Line load Qk", fr: "Charge Qk" }, unit: "kN/m" },
+            ],
+        },
+        {
+            heading: { nl: "Grenslasten", en: "Limit loads", fr: "Charges limites" },
+            fields: [
+                { path: ["result", "limit_status_uls"], label: { nl: "UGT, volle dikte", en: "ULS, full thickness", fr: "ELU, pleine epaisseur" } },
+                { path: ["result", "q_limit_uls_kn_per_m"], label: { nl: "Grenslast UGT", en: "ULS limit", fr: "Limite ELU" }, unit: "kN/m" },
+                { path: ["result", "h_at_uls_limit_kn_per_m"], label: { nl: "Spatkracht bij de grens", en: "Thrust at the limit", fr: "Poussee a la limite" }, unit: "kN/m" },
+                { path: ["result", "limit_status_geometric"], label: { nl: "Geometrische factor", en: "Geometric factor check", fr: "Facteur geometrique" } },
+                { path: ["result", "q_limit_geometric_kn_per_m"], label: { nl: "Grenslast met geometrische factor", en: "Limit with geometric factor", fr: "Limite avec facteur geometrique" }, unit: "kN/m" },
+                { path: ["result", "q_limit_kn_per_m"], label: { nl: "Maatgevende grenslast", en: "Governing limit", fr: "Limite determinante" }, unit: "kN/m" },
+                { path: ["result", "governing_check"], label: { nl: "Maatgevend", en: "Governing check", fr: "Determinant" } },
+                { path: ["result", "utilization_ratio"], label: { nl: "Benutting", en: "Utilization", fr: "Utilisation" } },
+                { path: ["result", "check_passed"], label: { nl: "Controle", en: "Check", fr: "Controle" }, format: "check" },
+            ],
+        },
+        {
+            heading: { nl: "Spatkracht (karakteristiek)", en: "Thrust (characteristic)", fr: "Poussee (caracteristique)" },
+            fields: [
+                { path: ["result", "thrust_status"], label: { nl: "Drukkromme", en: "Thrust line", fr: "Ligne des pressions" } },
+                { path: ["result", "h_min_kn_per_m"], label: { nl: "Kleinste spatkracht", en: "Smallest thrust", fr: "Poussee minimale" }, unit: "kN/m" },
+                { path: ["result", "h_max_kn_per_m"], label: { nl: "Grootste spatkracht", en: "Largest thrust", fr: "Poussee maximale" }, unit: "kN/m" },
+            ],
+        },
+    ],
     ec6_inplane_shear_wall: [
         {
             heading: { nl: "Materiaal en toestand", en: "Material and stress state", fr: "Materiau et etat de contrainte" },
@@ -6764,7 +6946,7 @@ function toolGroupId(toolId) {
         return "ec3";
     if (toolId.startsWith("ec5_"))
         return "ec5";
-    if (toolId.startsWith("ec6_"))
+    if (toolId.startsWith("ec6_") || toolId.startsWith("masonry_"))
         return "ec6";
     return "composite";
 }
@@ -7416,7 +7598,86 @@ function buildEc6VisualizationCard(response, lang) {
         ]);
         return `<article class="visual-card">${svg}${metrics}</article>`;
     }
+    if (response.calculator_id === "masonry_arch_thrust_line") {
+        const svg = buildArchSvg(response.result?.drawing, numberOrNull(response.result?.line_load_position_m), response.result?.hinges_uls, lang);
+        const limit = numberOrNull(response.result?.q_limit_kn_per_m);
+        const ulsLimit = numberOrNull(response.result?.q_limit_uls_kn_per_m);
+        const qk = numberOrNull(response.result?.variable_line_load_kn_per_m) ?? 0;
+        const metrics = buildMetricBars([
+            { label: "Qk / governing limit", value: utilizationPercent(response.result?.utilization_ratio), display: limit !== null ? `${formatVisualizationRatio(response.result?.utilization_ratio)} of ${formatSummaryNumber(limit)} kN/m` : "n/a" },
+            { label: "Qk / ULS limit", value: ratioPercent(qk, ulsLimit), display: ulsLimit !== null ? `${formatSummaryNumber(ulsLimit)} kN/m` : "n/a" },
+        ]);
+        return `<article class="visual-card">${svg}${metrics}</article>`;
+    }
     return "";
+}
+const ARCH_SVG_TEXT = {
+    nl: "Drukkromme bij de grenslast (UGT) met de scharnieren",
+    en: "Thrust line at the ULS limit with the hinges",
+    fr: "Ligne des pressions a la limite ELU avec les rotules",
+};
+function interpolateAt(xs, ys, x) {
+    for (let k = 1; k < xs.length; k += 1) {
+        if (x <= xs[k]) {
+            const x0 = xs[k - 1];
+            const x1 = xs[k];
+            const t = x1 > x0 ? (x - x0) / (x1 - x0) : 0;
+            return ys[k - 1] + t * (ys[k] - ys[k - 1]);
+        }
+    }
+    return ys[ys.length - 1];
+}
+export function buildArchSvg(drawing, positionM, hinges, lang) {
+    const xs = drawing?.x_m;
+    const yi = drawing?.intrados_m;
+    const ye = drawing?.extrados_m;
+    if (!Array.isArray(xs) || !Array.isArray(yi) || !Array.isArray(ye) || xs.length < 3 || yi.length !== xs.length || ye.length !== xs.length)
+        return "";
+    const width = 320;
+    const height = 180;
+    const pad = 16;
+    const top = 40;
+    const span = xs[xs.length - 1] - xs[0];
+    const yMin = Math.min(0, ...yi);
+    const yMax = Math.max(...ye);
+    const scale = Math.min((width - 2 * pad) / Math.max(span, 1e-6), (height - top - pad) / Math.max(yMax - yMin, 1e-6));
+    const x0 = (width - span * scale) / 2;
+    const base = height - pad;
+    const px = (x) => roundVisual(x0 + (x - xs[0]) * scale, 2);
+    const py = (y) => roundVisual(base - (y - yMin) * scale, 2);
+    const ring = [
+        ...xs.map((x, k) => `${px(x)},${py(ye[k])}`),
+        ...xs.map((x, k) => `${px(x)},${py(yi[k])}`).reverse(),
+    ].join(" ");
+    const line = drawing?.thrust_line_uls_m;
+    const lineSvg = Array.isArray(line) && line.length === xs.length
+        ? `<polyline points="${xs.map((x, k) => `${px(x)},${py(line[k])}`).join(" ")}" fill="none" stroke="#a5513d" stroke-width="2"></polyline>`
+        : "";
+    const hingeSvg = Array.isArray(hinges)
+        ? hinges.map((hinge) => {
+            const x = numberOrNull(hinge?.x_m);
+            if (x === null)
+                return "";
+            const y = interpolateAt(xs, hinge?.face === "intrados" ? yi : ye, x);
+            return `<circle cx="${px(x)}" cy="${py(y)}" r="4" fill="#ffffff" stroke="#2b4c65" stroke-width="2"></circle>`;
+        }).join("")
+        : "";
+    let arrow = "";
+    if (positionM !== null && positionM > xs[0] && positionM < xs[xs.length - 1]) {
+        const yTop = py(interpolateAt(xs, ye, positionM));
+        const ax = px(positionM);
+        arrow = `<line x1="${ax}" y1="${roundVisual(yTop - 30, 2)}" x2="${ax}" y2="${roundVisual(yTop - 4, 2)}" stroke="#2b4c65" stroke-width="2"></line>`
+            + `<path d="M ${roundVisual(ax - 5, 2)} ${roundVisual(yTop - 10, 2)} L ${ax} ${roundVisual(yTop - 3, 2)} L ${roundVisual(ax + 5, 2)} ${roundVisual(yTop - 10, 2)}" fill="none" stroke="#2b4c65" stroke-width="2"></path>`;
+    }
+    const caption = ARCH_SVG_TEXT[lang] || ARCH_SVG_TEXT.en;
+    return `
+    <svg class="visual-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Masonry arch thrust line">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="10" fill="#ffffff"></rect>
+      <polygon points="${ring}" fill="#d7c4ae" stroke="#7b6448" stroke-width="1"></polygon>
+      ${lineSvg}${hingeSvg}${arrow}
+      <line x1="${px(xs[0])}" y1="${base}" x2="${px(xs[xs.length - 1])}" y2="${base}" stroke="#5a6772" stroke-dasharray="3 3"></line>
+      <text x="${width / 2}" y="16" text-anchor="middle" font-size="11" fill="#5a6772">${escapeHtml(caption)}</text>
+    </svg>`;
 }
 function buildMetricBars(metrics) {
     return `<div class="visual-metrics">${metrics.map((metric) => {
