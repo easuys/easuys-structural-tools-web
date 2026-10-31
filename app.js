@@ -5321,6 +5321,7 @@ const FRIENDLY_FIELD_HELP_OVERRIDES = {
 const TEXT = {
     nl: {
         form: "Invoerformulier",
+        analyticsNote: "Bezoeken worden geteld met Cloudflare Web Analytics, zonder cookies en zonder individuele bezoekers te volgen.",
         input: "Invoer JSON",
         result: "Resultaat",
         findCalculator: "Zoek calculator",
@@ -5370,6 +5371,7 @@ const TEXT = {
     },
     en: {
         form: "Input form",
+        analyticsNote: "Visits are counted with Cloudflare Web Analytics, without cookies and without tracking individual visitors.",
         input: "Input JSON",
         result: "Result",
         findCalculator: "Find calculator",
@@ -5419,6 +5421,7 @@ const TEXT = {
     },
     fr: {
         form: "Formulaire",
+        analyticsNote: "Les visites sont comptées avec Cloudflare Web Analytics, sans cookies et sans suivre les visiteurs individuellement.",
         input: "JSON d'entrée",
         result: "Résultat",
         findCalculator: "Trouver un calculateur",
@@ -8494,6 +8497,9 @@ export function initApp(documentRef = globalThis.document) {
     function render() {
         const text = TEXT[state.lang];
         const activeTool = TOOL_CATALOG[state.toolId];
+        const analyticsNote = documentRef.querySelector("[data-analytics-note]");
+        if (analyticsNote)
+            analyticsNote.textContent = text.analyticsNote;
         lastResponse = null;
         renderNavigation();
         documentRef.querySelector("[data-tool-title]").textContent = activeTool.title[state.lang];
